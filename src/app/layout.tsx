@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useState } from 'react';
+import Link from 'next/link';
 import "./globals.css"; // Ensure Tailwind is loaded
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
