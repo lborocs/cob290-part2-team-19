@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,5 +19,25 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
+  font-family: "Inter", sans-serif;
+}
+
+.login-input {
+  @apply bg-gray-200  px-[.5em] py-[0.25em] border border-gray-300 text-gray-900 border-2 rounded-lg block w-full  transition-all duration-150 ease-in-out transform hover:ring-blue-500 hover:border-blue-500;
+}
+.login-label {
+  @apply text-[#8f7572];
+}
+.login-button {
+  @apply shadow border-4 border-[#ffffff00] font-semibold bg-[#2baee6] text-white w-[100%] py-[.15em] rounded-full transition-all duration-150 ease-in-out transform hover:border-[#a9c3e1]; 
+}
+.login-button.login-new-button {
+  @apply bg-gray-400
+}
+
+
+.login-icon {
+  @apply rounded-lg w-[3em] h-[3em] float-right p-[.5em];
+  box-shadow: inset rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }

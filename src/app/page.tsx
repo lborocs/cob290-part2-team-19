@@ -1,3 +1,5 @@
+"use client"
+
 import Layout from "./layout";
 
 export default function RootLayout({
@@ -5,5 +7,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <Layout>{children}</Layout>;
+  // If you need to see the layout page comment the next line, and uncomment the following line
+  return <Layout>{children}{false}</Layout>;
+  // return <Layout>{children}{true}</Layout>;
 }
+
