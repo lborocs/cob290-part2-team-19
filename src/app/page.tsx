@@ -1,14 +1,24 @@
-"use client"
+"use client";
+import React, { useState } from 'react';
+import "./globals.css"; // Ensure Tailwind is loaded
+import Login from './login/login'
+// Define the user roles as a union type
+type UserRole = "Manager" | "Team Leader" | "Employee";
 
-import Layout from "./layout";
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <html>
+      <head>
+        <title>Make It All</title>
+      </head>
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // If you need to see the layout page comment the next line, and uncomment the following line
-  return <Layout>{children}{false}</Layout>;
-  // return <Layout>{children}{true}</Layout>;
-}
+      <body>
+        {/*since we want to start with a login */}
+        <Login></Login>
+      </body>
+    </html>
+  );
 
+};
+
+export default Layout;
