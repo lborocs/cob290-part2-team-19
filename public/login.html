@@ -1,0 +1,77 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make-It-All Login Screen</title>
+
+    <link rel="stylesheet" href="./checkbox-preset.css">
+    <link rel="stylesheet" href="./login-create.css">
+    <link rel="stylesheet" href="./spinner.css">
+    <script src="./spinner.js"></script>
+
+
+    <!-- FontAwesome Icons -->
+    <script src="https://kit.fontawesome.com/c8b5e2a200.js" crossorigin="anonymous"></script>
+</head>
+
+<body onload="hideSpinner()">
+    <div class="spinner-back" aria-hidden="true">
+        <div class="spinner"></div>
+        <div class="spinner-text">Loading...</div>
+    </div>
+    <main>
+        <div class="panel">
+            <div class="intro">
+                <div class="introText">
+                    <h1><i class="fa-solid fa-door-open"></i> Welcome back</h1>
+                    <sub>Please enter your details to sign in.</sub>
+                </div>
+                <div class="introLogo">
+                    <img src="./squarelogo.png" alt="logo" class="logo">
+                </div>
+            </div>
+            <div class="form">
+                <!-- TODO: Fix post/get to correct address -->
+                <form action="/login" method="post">
+                    <div class="formGroup">
+                        <div class="textInput">
+                            <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
+                            <input type="email" id="email" name="email" required  placeholder="Your email">
+                        </div>
+                        <div class="textInput" style="transform:translateY(-10px)">
+                            <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+                            <input type="password" id="password" name="password" required  placeholder="Your password">
+                        </div>
+                    </div>
+                    <div class="mobileRow rememberForgotGroup">
+                        <div class="rememberMeGroup">
+                            <div class="checkbox-wrapper-2">
+                                <input type="checkbox" id="remember" class="sc-gJwTLC ikxBAC" name="remember">
+                            </div>
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <div class="forgotPass">
+                            <a href="#" class="forgotPass">Forgot password?</a>
+                        </div>
+                    </div>
+                    <div class="formGroup">
+                        <button type="submit" class="signInBtn" style="margin-top:5px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+                        <div class="signInSignUpSep">
+                            <hr class="formPreHr">
+                            <span class="formMidHrCont">or</span>
+                            <hr class="formPostHr">
+                        </div>
+                        <div class="formGroupAlt">
+                            Don't have an account yet? 
+                            <a href="./create-account.html" class="signUpLink" onclick="showSpinner()"><i class="fa-solid fa-user-plus"></i> Sign Up</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <aside>
+        <img class="absLogo" src="./logo.png" alt="logo" aria-hidden="true">
+    </aside>
+
+    <!-- <script>setTimeout(() => {hideSpinner();},1000)</script> -->
+</body>
