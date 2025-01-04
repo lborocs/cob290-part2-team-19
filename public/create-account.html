@@ -10,32 +10,17 @@
 
     
     <!-- FontAwesome Icons -->
-    <script src="https://kit.fontawesome.com/c8b5e2a200.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/c8b5e2a200.js" defer crossorigin="anonymous"></script>
 
-    <script defer>    
-function passwordConfirm() {
-    var pass = document.querySelector('input[name="password"]');
-    var confirm = document.querySelector('input[name="confirm_password"]');
-    var tip = document.getElementById('pass-tip');
-    if (pass.value != confirm.value) {
-        tip.setAttribute('aria-hidden', 'false');
-        pass.classList.add('dont-match');
-        confirm.classList.add('dont-match');
-    } else {
-        tip.setAttribute('aria-hidden', 'true');
-        pass.classList.remove('dont-match');
-        confirm.classList.remove('dont-match');
-    }
-}
-</script>
+
 
 </head>
 
 <body onload="hideSpinner()">
-    <div class="spinner-back" aria-hidden="true">
+    <!-- <div class="spinner-back" aria-hidden="true">
         <div class="spinner"></div>
         <div class="spinner-text">Loading...</div>
-    </div>
+    </div> -->
     <main>
         <div class="panel">
             <div class="intro">
@@ -50,8 +35,8 @@ function passwordConfirm() {
             <div class="form">
                 <!-- TODO: Fix post/get to correct address -->
                 <form action="/create" method="post">
-                    <div class="formGroup">
-                        <div class="textInput">
+                    <div class="formGroup" style="width:100qcw;">
+                        <div class="textInput" style="width:100%;">
                             <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
                             <input type="email" id="email" name="email" required  placeholder="Your work-provided email">
                         </div>
@@ -65,17 +50,17 @@ function passwordConfirm() {
                             <span id="pass-tip" class="password-confirmation" aria-hidden="true">Passwords do not match...</span>
                         </div>
                     </div>
-                    <div class="mobileRow rememberForgotGroup">
+                    <!-- <div class="mobileRow rememberForgotGroup">
                         <div class="rememberMeGroup">
                             <div class="checkbox-wrapper-2">
                                 <input type="checkbox" id="remember" class="sc-gJwTLC ikxBAC" name="remember">
                             </div>
                             <label for="remember">Remember me</label>
                         </div>
-                        <div class="forgotPass">
-                            <a href="#" class="forgotPass">Forgot password?</a>
+                        <div class="forgotPass" style="text-decoration:underline;">
+                            <a href="#" class="forgotPass">Need help?</a>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="formGroup">
                         <button type="submit" class="signInBtn" style="margin-top:5px; margin-bottom:5px;"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
                         <div class="signInSignUpSep">
@@ -85,7 +70,8 @@ function passwordConfirm() {
                         </div>
                         <div class="formGroupAlt">
                             Have an account? 
-                            <a href="./login.html" class="signUpLink" onclick="showSpinner()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</a>
+                            <!-- <a href="./login" class="signUpLink" onclick="showSpinner()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</a> -->
+                            <a href="./login" class="signUpLink" onclick=""><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</a>
                         </div>
                     </div>
                 </form>
@@ -96,5 +82,4 @@ function passwordConfirm() {
         <img class="absLogo" src="./logo.png" alt="logo" aria-hidden="true">
     </aside>
     <script>setTimeout(() => {hideSpinner();},1000)</script>
-
 </body>

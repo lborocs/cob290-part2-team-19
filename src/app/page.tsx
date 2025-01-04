@@ -18,7 +18,8 @@ import { useEffect } from 'react';
 const Layout = () => {
   const router = useRouter();
   useEffect(() => {
-    router.push('/login.html');
+    
+    router.push('/login');
   }, []);
 
   return (

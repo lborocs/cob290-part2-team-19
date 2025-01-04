@@ -62,8 +62,7 @@ div.introLogo:has(img.logo) {
     border:1px solid #ccc;
     border-radius: 50%;
     background-color: #f0f0f0;
-    box-shadow: inset rgba(75, 75, 73, 0.2) 0px 7px 29px 0px,
-                 rgba(75, 75, 73, 0.2) 0px 7px 29px 0px;
+    box-shadow: inset rgba(75, 75, 73, 0.2) 0px 7px 29px 0px,rgba(75, 75, 73, 0.2) 0px 7px 29px 0px;
                  
 }
 div.introLogo img.logo {
@@ -107,6 +106,7 @@ div.textInput label {
 }
 div.textInput input, div.textInput input:hover, div.textInput input:focus {
     padding:10px;
+    width:300px;
     border:1px solid #ccc;
     background-color:white;
     border-radius:15px;
@@ -219,9 +219,9 @@ span.password-confirmation[aria-hidden="false"], span.password-confirmation {
     display: initial;
     color:red;
     font-size: 0.9em;
-    position:absolute;
-    top:5em;
-    left:1em;
+    /* position:absolute; */
+    /* top:5em; */
+    /* left:1em; */
 }
 
 input.create-password {

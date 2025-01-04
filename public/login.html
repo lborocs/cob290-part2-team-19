@@ -10,14 +10,14 @@
 
 
     <!-- FontAwesome Icons -->
-    <script src="https://kit.fontawesome.com/c8b5e2a200.js" crossorigin="anonymous"></script>
+    <script defer src="https://kit.fontawesome.com/c8b5e2a200.js" crossorigin="anonymous"></script>
 </head>
 
 <body onload="hideSpinner()">
-    <div class="spinner-back" aria-hidden="true">
+    <!-- <div class="spinner-back" aria-hidden="true">
         <div class="spinner"></div>
         <div class="spinner-text">Loading...</div>
-    </div>
+    </div> -->
     <main>
         <div class="panel">
             <div class="intro">
@@ -49,12 +49,12 @@
                             </div>
                             <label for="remember">Remember me</label>
                         </div>
-                        <div class="forgotPass">
+                        <div class="forgotPass" style="text-decoration:underline;">
                             <a href="#" class="forgotPass">Forgot password?</a>
                         </div>
                     </div>
                     <div class="formGroup">
-                        <button type="submit" class="signInBtn" style="margin-top:5px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+                        <button type="submit" class="signInBtn" style="margin-top:5px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</button>
                         <div class="signInSignUpSep">
                             <hr class="formPreHr">
                             <span class="formMidHrCont">or</span>
@@ -62,7 +62,8 @@
                         </div>
                         <div class="formGroupAlt">
                             Don't have an account yet? 
-                            <a href="./create-account.html" class="signUpLink" onclick="showSpinner()"><i class="fa-solid fa-user-plus"></i> Sign Up</a>
+                            <!-- <a href="/create-account" class="signUpLink" onclick="showSpinner()"><i class="fa-solid fa-user-plus"></i> Sign Up</a> -->
+                            <a href="/create-account" class="signUpLink" onclick=""><i class="fa-solid fa-user-plus"></i> Sign Up</a>
                         </div>
                     </div>
                 </form>
