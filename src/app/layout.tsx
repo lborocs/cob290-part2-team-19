@@ -9,6 +9,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
         <html>
             <head>
+                <meta charSet="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <meta name="description" content="Make It All" />
+                <meta name="author" content="Loughborough Team Projects Group 19" />
+
+                <link rel="icon" href="/squarelogo.png" />
+
                 <title>Make It All</title>
             </head>
             <body>

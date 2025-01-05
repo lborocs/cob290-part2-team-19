@@ -11,23 +11,23 @@ interface SidebarProps {
 const Sidebar = ({ userRole }: SidebarProps) => {
     const navigation: Record<UserRole, { name: string; href: string }[]> = {
         Manager: [
-            { name: "Dashboard", href: "/Pages/Dashboard" },
-            { name: "Projects", href: "/Pages/Projects" },
-            { name: "Tasks", href: "/Pages/Tasks" },
-            { name: "Knowledge Base", href: "/Pages/KnowledgeBase" },
+            { name: "Dashboard", href: "/dashboard" },
+            { name: "Projects", href: "/projects" },
+            { name: "Tasks", href: "/tasks" },
+            { name: "Knowledge Base", href: "/knowledge-base" },
         ],
         "Team Leader": [
-            { name: "Dashboard", href: "/Pages/Dashboard" },
-            { name: "Projects", href: "/Pages/Projects" },
-            { name: "Tasks", href: "/Pages/Tasks" },
-            { name: "Knowledge Base", href: "/Pages/KnowledgeBase" },
-            { name: "New Project", href: "/Pages/NewProject" },
+            { name: "Dashboard", href: "/dashboard" },
+            { name: "Projects", href: "/projects" },
+            { name: "Tasks", href: "/tasks" },
+            { name: "Knowledge Base", href: "/knowledge-base" },
+            { name: "New Project", href: "/new-project" },
         ],
         Employee: [
-            { name: "Dashboard", href: "/Pages/Dashboard" },
-            { name: "Projects", href: "/Pages/Projects" },
-            { name: "Tasks", href: "/Pages/Tasks" },
-            { name: "Knowledge Base", href: "/Pages/KnowledgeBase" },
+            { name: "Dashboard", href: "/Dashboard" },
+            { name: "Projects", href: "/Projects" },
+            { name: "Tasks", href: "/tasks" },
+            { name: "Knowledge Base", href: "/knowledge-base" },
         ],
     };
 

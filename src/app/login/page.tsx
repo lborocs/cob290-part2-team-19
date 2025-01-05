@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 const Login = () => {
     const [htmlContent, setHtmlContent] = useState('');
-
+    const router = useRouter();
     useEffect(() => {
         const script = document.createElement('script');
         script.src = 'https://kit.fontawesome.com/c8b5e2a200.js';
@@ -27,7 +27,10 @@ const Login = () => {
     }, []);
 
     return (
-        <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
+        <div>
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
+            </div>
+            <button className="absolute top-0 left-0 text-black" onClick={() => router.push("/layout")}>Dev goto layout</button>
         </div>
     );
 
