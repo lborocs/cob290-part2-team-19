@@ -1,0 +1,23 @@
+.centreIt {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    width:95vw;
+    height:95vh;
+}
+
+.cardIt {
+    width:50%;
+    height:50%;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: #ccc;
+    
+    border-radius:20px;
+    border: 2px solid #ddd;
+    
+    overflow:clip;
+}
