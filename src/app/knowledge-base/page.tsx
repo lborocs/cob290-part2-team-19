@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function KnowledgeBasePage() {
   return (
-    <Layout>
+    <Layout tabName={"ICON | Knowledge Base"}>
       <div>
         <h2 className="text-2xl font-bold mb-4">Knowledge Base</h2>
         <p>Welcome to the Knowledge Base!</p>
