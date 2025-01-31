@@ -7,7 +7,12 @@ import Sidebar from '../Components/Sidebar';
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
-const Layout = ({tabName, children}: { any, children: React.ReactNode }) => {
+interface LayoutProps {
+  tabName: string;
+  children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({tabName, children}) => {
   const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
 
   return (

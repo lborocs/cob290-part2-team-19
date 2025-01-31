@@ -10,7 +10,6 @@ interface HeaderProps {
 }
 
 const Header = ({ userRole, onRoleChange, tabName }: HeaderProps) => {
-    console.log(tabName);
     return (
         <header className="bg-gray-800 text-white py-4 px-6 flex justify-between items-center">
             <div className="flex gap-4 items-center">

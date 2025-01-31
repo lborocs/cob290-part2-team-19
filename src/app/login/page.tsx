@@ -30,7 +30,8 @@ const Login = () => {
         <div>
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
             </div>
-            <button className="absolute top-0 left-0 text-black" onClick={() => router.push("/layout")}>Dev goto layout</button>
+            <button className="absolute top-0 left-0 text-black" onClick={() => router.push("/dashboard")}>Dev goto dashboard</button>
+            <button className="absolute top-[1em] left-0 text-black" onClick={() => router.push("/search-component")}>Dev goto search component preview</button>
         </div>
     );
 
