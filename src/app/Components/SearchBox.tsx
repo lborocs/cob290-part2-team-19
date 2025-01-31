@@ -1,54 +1,77 @@
 "use client"
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 
-interface SearchBoxProps {
-    searchType?: string;
+interface SearchBoxButtonProps {
     placeholder?:string;
-    callback?: (query: string) => void;
+    inputChangeCallback?: (query: string) => void;
+    clickCallback?: (query: string) => void;
+    searchButtonText?: any;
 }
-
-
-const SearchBox = ({
-    searchType="default", 
+export const SearchBoxButton = ({
     placeholder="Search", 
-    callback=(q)=>{}
-} : SearchBoxProps) => {
+    inputChangeCallback=(q)=>{},
+    clickCallback=(q)=>{},
+    searchButtonText=<i className="fas fa-search"></i>
+} : SearchBoxButtonProps) => {
+    const [text, setText] = useState('');
 
-    const [query, setQuery] = React.useState('');
+    const handleInputChange = (e: any) => {
+        setText(e.target.value);
+        if (inputChangeCallback) {
+            inputChangeCallback(e.target.value);
+        }
+    };
+    const handleClick = (e: any) => {
+        console.log(text);
+        if (clickCallback) {
+            clickCallback(text);
+        }
+    };
     
-    const handleInputChange = (e:any) => {
-        setQuery(e.target.value);
-    }
-    useEffect(() => {
-        callback(query);
-    }, [query]);
+    return (
+    <div className="inline-block w-full">
+        <input
+            type="text"
+            placeholder={placeholder}
+            className="w-5/6 bg-gray-200 text-gray-700 py-2 px-4 mr-1 rounded"
+            onChange={handleInputChange}
+        />
+        <button 
+            className="bg-gray-200 text-gray-700 py-2 px-4 rounded" 
+            onClick={handleClick}
+        >
+            {searchButtonText}
+        </button>
+    </div>
+    );
     
-
-    if (searchType=="simple") {
-        return (
-            <div className="inline-block w-full">
-            <input
-                type="text"
-                placeholder={placeholder}
-                className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded"
-                onChange={(e) => handleInputChange(e as any)}
-            />
-            </div>
-        )
-    }
-    else {
-        return (
-            <div className="inline-block w-full">
-                <input
-                    type="text"
-                    placeholder={placeholder}
-                    className="w-4/5 bg-gray-200 text-gray-700 py-2 px-4 mr-1 rounded"
-                    onChange={(e) => handleInputChange(e as any)}
-                />
-                <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded"><i className="fas fa-search"></i></button>
-            </div>
-        );
-    }
 }
-export default SearchBox;
+
+
+interface SimpleSearchBoxProps {
+    placeholder?:string;
+    inputChangeCallback?: (query: string) => void;
+}
+export const SimpleSearchBox = ({
+    placeholder="Search", 
+    inputChangeCallback=(q)=>{}
+} : SimpleSearchBoxProps) => {
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (inputChangeCallback) {
+            inputChangeCallback(e.target.value);
+        }
+    };
+
+    return (
+    <div className="inline-block w-full">
+        <input
+            type="text"
+            placeholder={placeholder}
+            className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded"
+            onChange={handleInputChange}
+        />
+    </div>
+    )
+};
