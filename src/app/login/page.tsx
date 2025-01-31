@@ -30,8 +30,23 @@ const Login = () => {
         <div>
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
             </div>
-            <button className="absolute top-0 left-0 text-black" onClick={() => router.push("/dashboard")}>Dev goto dashboard</button>
-            <button className="absolute top-[1em] left-0 text-black" onClick={() => router.push("/search-component")}>Dev goto search component preview</button>
+
+            <div className="absolute top-[1em] left-[1em]">
+                <div className="flex gap-[.3em] justify-start items-center">
+                    <i className="fa-solid fa-table-columns w-[1em]"></i>
+                    <button className="" onClick={() => router.push("/dashboard")}>Dev: Dashboard</button>
+                </div>
+                
+                <div className="flex gap-[.3em] justify-start items-center">
+                    <i className="fa-solid fa-database w-[1em]"></i>
+                    <button className="" onClick={() => router.push("/db-test")}>Dev: Database Test</button>
+                </div>
+
+                <div className="flex gap-[.3em] justify-start items-center">
+                    <i className="fa-solid fa-computer-mouse w-[1em]"></i> 
+                    <button className="" onClick={() => router.push("/input-components")}>Dev: Input Previews</button>
+                </div>
+            </div>
         </div>
     );
 

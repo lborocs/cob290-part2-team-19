@@ -11,13 +11,17 @@ export default async function DBTest() {
     // read   (GET)    - must have a query param of (id: number)
     // update (PUT)    - must have a query of (id:number) and body of (name: string, age: number)
     // delete (DELETE) - must have a query param of (id: number)
+    let json = null;
+    try {
+        const response = await fetch('http://localhost:3300/read/1');
+        json = JSON.stringify(await response.json());
+    } catch (e) {
 
-    const response = await fetch('http://localhost:3300/read/1');
-    const json = JSON.stringify(await response.json());
+    }
 
     return (
         <Layout tabName={"DB Test"}>
-            <div>Data: {json}</div>
+            <div>Data: {json ?? "Could not fetch data"}</div>
         </Layout>
     )
 }

@@ -1,18 +1,21 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 
-
 interface SearchBoxButtonProps {
     placeholder?:string;
     inputChangeCallback?: (query: string) => void;
     clickCallback?: (query: string) => void;
-    searchButtonText?: any;
+    buttonElement?: any;
+    width?: string;
+    height?: string;
 }
 export const SearchBoxButton = ({
     placeholder="Search", 
     inputChangeCallback=(q)=>{},
     clickCallback=(q)=>{},
-    searchButtonText=<i className="fas fa-search"></i>
+    buttonElement=<i className="fas fa-search"></i>,
+    width="20em",
+    height="auto",
 } : SearchBoxButtonProps) => {
     const [text, setText] = useState('');
 
@@ -30,18 +33,19 @@ export const SearchBoxButton = ({
     };
     
     return (
-    <div className="inline-block w-full">
+    <div className="fit-content inline-block">
         <input
             type="text"
             placeholder={placeholder}
-            className="w-5/6 bg-gray-200 text-gray-700 py-2 px-4 mr-1 rounded"
+            className=" bg-gray-200 text-gray-700 py-2 px-4 mr-1 rounded"
             onChange={handleInputChange}
+            style={{width: width, height: height}}
         />
         <button 
             className="bg-gray-200 text-gray-700 py-2 px-4 rounded" 
             onClick={handleClick}
         >
-            {searchButtonText}
+            {buttonElement}
         </button>
     </div>
     );
@@ -52,10 +56,14 @@ export const SearchBoxButton = ({
 interface SimpleSearchBoxProps {
     placeholder?:string;
     inputChangeCallback?: (query: string) => void;
+    width?: string;
+    height?: string;
 }
 export const SimpleSearchBox = ({
     placeholder="Search", 
-    inputChangeCallback=(q)=>{}
+    inputChangeCallback=(q)=>{},
+    width="20em",
+    height="auto",
 } : SimpleSearchBoxProps) => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,12 +73,13 @@ export const SimpleSearchBox = ({
     };
 
     return (
-    <div className="inline-block w-full">
+    <div className="fit-content inline-block">
         <input
             type="text"
             placeholder={placeholder}
-            className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded"
+            className="bg-gray-200 text-gray-700 py-2 px-4 rounded"
             onChange={handleInputChange}
+            style={{width: width, height: height}}
         />
     </div>
     )

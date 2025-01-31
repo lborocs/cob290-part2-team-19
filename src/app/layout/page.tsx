@@ -23,8 +23,8 @@ const Layout: React.FC<LayoutProps> = ({tabName, children}) => {
       <body>
         <div className="min-h-screen flex flex-col">
           <Header userRole={userRole} onRoleChange={setUserRole} tabName={tabName}/>
-          <div className="flex flex-1">
-            <Sidebar userRole={userRole} />
+          <Sidebar userRole={userRole} />
+          <div className="flex flex-1 ml-[15em]">
             <main className="flex-1 p-6">{children}</main>
           </div>
         </div>

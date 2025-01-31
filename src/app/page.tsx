@@ -15,10 +15,9 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-const Layout = () => {
+const RootLayout = () => {
   const router = useRouter();
   useEffect(() => {
-    
     router.push('/login');
   }, []);
 
@@ -28,4 +27,4 @@ const Layout = () => {
   );
 }
 
-export default Layout;
+export default RootLayout;

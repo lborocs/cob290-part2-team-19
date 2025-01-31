@@ -32,8 +32,8 @@ const Sidebar = ({ userRole }: SidebarProps) => {
     };
 
     return (
-        <nav className="bg-gray-100 w-64 p-4">
-            <div className="h-full flex flex-col items-start">
+        <nav className="fixed top-0 left-0 z-[0] bg-gray-100 w-[15em] p-4 h-[100vh]">
+            <div className="flex flex-col items-start mt-[4em]">
                 {navigation[userRole].map((item) => (
                     <div key={item.name} className="mb-2">
                         <Link href={item.href} className="text-blue-600 hover:text-blue-800">
