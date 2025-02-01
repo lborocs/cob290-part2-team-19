@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { SimpleSearchBox } from "./Text";
 
 interface DropdownProps {
-    options: string[];
+    options: DropDownOptions[];
     selected?: string;
     selectedCallback?: (s: string) => void;
     width?: string;
@@ -10,6 +10,12 @@ interface DropdownProps {
     style?: any;
     bindValue?: ()=>string | undefined;
 }
+
+export type DropDownOptions = {
+    name: string;
+    value: string;
+}
+
 export const DropdownSelect = ({
     options,
     selected="",
@@ -40,14 +46,14 @@ export const DropdownSelect = ({
             style={{width: width, height: height, ...style}}
         >
             {options.map((option, i) => (
-                <option key={i} value={option}>{option}</option>
+                <option key={i} value={option.value}>{option.name}</option>
             ))}
         </select>
     );
 }
 
 interface SearchableDropdownProps {
-    options: string[];
+    options: DropDownOptions[];
     selected?: string;
     selectedCallback?: (s: string) => void;
     inputChangeCallback?: (s: string) => void;
@@ -75,9 +81,14 @@ export const SearchableDropdownSelect = ({
 
     const modifiedInputChangeCallback = (q: string) => {
         const qLower = q.toLowerCase();
-        const optionsLower = options.map((o)=>o.toLowerCase());
-        if (optionsLower.includes(qLower)) {
-            selectedCallback(options[optionsLower.indexOf(qLower)]);
+        const optionsLower = options.map((o)=>o.name.toLowerCase());
+        for (let i = 0; i < optionsLower.length; i++) {
+            console.log(optionsLower[i], qLower);
+            if (optionsLower[i].includes(qLower)) {
+                setQ(options[i].value);
+                selectedCallback(options[i].value);
+                break;
+            }
         }
     }
 
@@ -87,7 +98,7 @@ export const SearchableDropdownSelect = ({
                 width={width}
                 height={height}
                 style={iStyle}
-                inputChangeCallback={(q)=>{setQ(q); inputChangeCallback(q); modifiedInputChangeCallback(q)}}
+                inputChangeCallback={(q)=>{inputChangeCallback(q); modifiedInputChangeCallback(q)}}
             />
             <DropdownSelect 
                 options={options} 

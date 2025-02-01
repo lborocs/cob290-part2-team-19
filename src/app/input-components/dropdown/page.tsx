@@ -1,5 +1,5 @@
 "use client"
-import { DropdownSelect, SearchableDropdownSelect } from "@/app/Components/Input/Dropdown";
+import { DropdownSelect, SearchableDropdownSelect, DropDownOptions } from "@/app/Components/Input/Dropdown";
 import Layout from "@/app/layout/page";
 import { useState } from "react";
 
@@ -9,6 +9,25 @@ export default function DropdownPage() {
     const [q3,setQ3] = useState("");
     const [q4,setQ4] = useState("");
     
+    
+    const ddOptions1: DropDownOptions[] = [
+        {name: "ABC",value: "ABC"},
+        {name: "CDE",value: "cde special option"},
+        {name: "Very very long text, so much so, that it should not display on the dropdown fully",value: "long text"},
+        {name: "Nothing or something",value: "something"},
+    ];
+    const ddOptions2: DropDownOptions[] = [
+        {name: "0", value: ""},
+        {name: "1", value: "1"},
+        {name: "2", value: "2"},
+        {name: "3", value: "3"},
+    ];
+    const ddOptions3: DropDownOptions[] = [
+        {name:"", value:""},
+        {name:"Abc", value:"Abc"},
+        {name:"Def", value:"dEf"},
+        {name:"Ghi", value:"ghI"},
+    ]
     return (
     <Layout tabName="Dropdown Component Preview">
         <p className="mb-4">
@@ -20,7 +39,7 @@ export default function DropdownPage() {
 
         <div className="mb-8">
             <DropdownSelect 
-                options={["ABC","DEF", "Some Long text, like very long text, so much that it should not fit in the normal dropdown", "Default"]} 
+                options={ddOptions1} 
                 selected="Default"
                 selectedCallback={setQ1}
             />
@@ -28,7 +47,7 @@ export default function DropdownPage() {
         </div>
         <div className="mb-8">
             <DropdownSelect 
-                options={["0", "1","2", "3",]}
+                options={ddOptions2}
                 selectedCallback={setQ2}
                 width="[4em]"
             />
@@ -36,7 +55,7 @@ export default function DropdownPage() {
         </div>
         <div className="mb-8">
             <SearchableDropdownSelect 
-                options={["Select one", "Abc", "Def", "Ghi"]}
+                options={ddOptions3}
                 inputChangeCallback={setQ3}
                 selectedCallback={setQ4}
             />
