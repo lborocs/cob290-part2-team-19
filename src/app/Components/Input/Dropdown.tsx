@@ -20,7 +20,7 @@ export const DropdownSelect = ({
     bindValue=()=>undefined,
 }: DropdownProps) => {
     // if selected is not in options, don't set it as selected
-    const [sel, setSelected] = useState("");
+    const [sel, setSelected] = useState(selected);
 
     const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelected(e.target.value);
@@ -74,8 +74,13 @@ export const SearchableDropdownSelect = ({
     const iStyle = {borderBottomLeftRadius:"0px",borderBottomRightRadius: "0px", ...inputStyle};
 
     const modifiedInputChangeCallback = (q: string) => {
-        if (options.includes(q)) {
-            selectedCallback(q)
+        // make q lowercase, and compare against lowercase options
+        // modify copies of params
+        const qLower = q.toLowerCase();
+        const optionsLower = options.map((o)=>o.toLowerCase());
+        // if qLower is in optionsLower, set it as selected
+        if (optionsLower.includes(qLower)) {
+            selectedCallback(options[optionsLower.indexOf(qLower)]);
         }
     }
 
