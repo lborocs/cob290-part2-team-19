@@ -1,0 +1,10 @@
+.card>* {
+    pointer-events: auto;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.title {
+    overflow: visible;
+    overflow-y: visible;
+}
