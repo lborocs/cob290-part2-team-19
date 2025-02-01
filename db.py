@@ -275,6 +275,7 @@ generate_crud_routes('KnowledgeBaseEdits', 'post_id')
 def search_employees():
     employee_email = request.args.get('employee_email')
     user_type_id = request.args.get('user_type_id')
+    employee_id = request.args.get('employee_id')
     query = "SELECT * FROM Employees WHERE 1=1"
     params = []
     if employee_email:
@@ -282,6 +283,9 @@ def search_employees():
         params.append(f"%{employee_email}%")
     if user_type_id:
         query += " AND user_type_id = ?"
+        params.append(user_type_id)
+    if employee_id:
+        query += " AND employee_id = ?"
         params.append(user_type_id)
     db = get_db()
     cursor = db.cursor()
@@ -294,7 +298,11 @@ def search_employees():
 def search_projects():
     project_name = request.args.get('project_name')
     team_leader_id = request.args.get('team_leader_id')
+    start_date = request.args.get('start_date')
+    finish_date = request.args.get('finish_date')
+    authorised_by = request.args.get('authorised_by')
     completed = request.args.get('completed')
+    archived = request.args.get('archived')
     query = "SELECT * FROM Projects WHERE 1=1"
     params = []
     if project_name:
@@ -305,7 +313,19 @@ def search_projects():
         params.append(team_leader_id)
     if completed is not None:
         query += " AND completed = ?"
-        params.append(completed)
+        params.append(completed)#
+    if start_date:
+        query += " AND start_date = ?"
+        params.append(start_date)
+    if finish_date:
+        query += " AND finish_date = ?"
+        params.append(finish_date)
+    if authorised_by:
+        query += " AND authorised_by = ?"
+        params.append(authorised_by)
+    if archived:
+        query += " AND archived = ?"
+        params.append(archived)
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
@@ -318,6 +338,9 @@ def search_tasks():
     task_name = request.args.get('task_name')
     project_id = request.args.get('project_id')
     completed = request.args.get('completed')
+    start_date = request.args.get('start_date')
+    finish_date = request.args.get('finish_date')
+    archived = request.args.get('archived')
     query = "SELECT * FROM Tasks WHERE 1=1"
     params = []
     if task_name:
@@ -329,6 +352,15 @@ def search_tasks():
     if completed is not None:
         query += " AND completed = ?"
         params.append(completed)
+    if start_date:
+        query += " AND start_date = ?"
+        params.append(start_date)
+    if finish_date:
+        query += " AND finish_date = ?"
+        params.append(finish_date)
+    if archived:
+        query += " AND archived = ?"
+        params.append(archived)
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
@@ -354,6 +386,49 @@ def search_knowledgebase():
     posts = cursor.fetchall()
     return jsonify([dict(post) for post in posts])
 
+# Search function for Employees assigned to Tasks
+@app.route('/employees/tasks', methods=['GET'])
+def search_employees_tasks():
+    task_id = request.args.get('task_id')
+    query = "SELECT employee_id FROM EmployeeTasks WHERE task_id = ?"
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, (task_id,))
+    employees = cursor.fetchall()
+    return jsonify([row['employee_id'] for row in employees])
+
+# Search function for Employees assigned to Projects
+@app.route('/employees/projects', methods=['GET'])
+def search_employees_projects():
+    project_id = request.args.get('project_id')
+    query = "SELECT employee_id FROM EmployeeProjects WHERE project_id = ?"
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, (project_id,))
+    employees = cursor.fetchall()
+    return jsonify([row['employee_id'] for row in employees])
+
+# Search function for Projects associated with Tags
+@app.route('/projects/tags', methods=['GET'])
+def search_projects_tags():
+    tag_name = request.args.get('tag_name')
+    query = "SELECT project_id FROM ProjectTags WHERE tag_name = ?"
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, (tag_name,))
+    projects = cursor.fetchall()
+    return jsonify([row['project_id'] for row in projects])
+
+# Search function for Tasks associated with Tags
+@app.route('/tasks/tags', methods=['GET'])
+def search_tasks_tags():
+    tag_name = request.args.get('tag_name')
+    query = "SELECT task_id FROM Tasks WHERE project_id IN (SELECT project_id FROM ProjectTags WHERE tag_name = ?)"
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, (tag_name,))
+    tasks = cursor.fetchall()
+    return jsonify([row['task_id'] for row in tasks])
 
 if __name__ == '__main__':
     app.run(port=PORT)
