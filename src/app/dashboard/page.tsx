@@ -143,21 +143,8 @@ export default function Dashboard() {
           {/* Card 2: To-Do List */}
           <div className="card bg-white shadow rounded min-h-full p-4 flex flex-col">
             {/* Header */}
-            <div className="mb-4 flex justify-between items-center">
+            <div className="mb-3 mt-1 flex justify-between items-center">
               <h3 className="text-lg font-semibold">To-Do List</h3>
-              <div className="flex gap-4">
-                <select className="border p-2 rounded">
-                  <option value="today">Today</option>
-                  <option value="month">This Month</option>
-                  <option value="all">All Tasks</option>
-                </select>
-                <select className="border p-2 rounded">
-                  <option value="all">All Projects</option>
-                  <option value="project1">Project 1</option>
-                  <option value="project2">Project 2</option>
-                  <option value="project3">Project 3</option>
-                </select>
-              </div>
             </div>
 
             {/* Divider */}
