@@ -30,7 +30,6 @@ const Login = () => {
         <div>
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
             </div>
-            {process.env.NODE_ENV === 'development' && (
                 <div>
                     <div className="absolute top-[1em] right-[1em]">
                         <div className="flex gap-[.3em] justify-start items-center">
@@ -55,7 +54,6 @@ const Login = () => {
                         </div>
                     </div>
                 </div>
-            )}
         </div>
     );
 
