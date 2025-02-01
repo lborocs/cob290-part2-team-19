@@ -1,30 +1,16 @@
-// "use client";
-// import React, { useState } from 'react';
-// import "./globals.css"; // Ensure Tailwind is loaded
-// // Define the user roles as a union type
-// type UserRole = "Manager" | "Team Leader" | "Employee";
-
-// const Layout = ({ children }: { children: React.ReactNode }) => {
-//   return (
-    
-//   );
-// };
-
-// export default Layout;
-"use client"
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import Login from './login/page';
 
 const RootLayout = () => {
-  const router = useRouter();
-  useEffect(() => {
-    router.push('/login');
-  }, []);
+  // const router = useRouter();
+  // useEffect(() => {
+  //   router.push('/login');
+  // }, []);
 
-  return (
-    <div>
-    </div>
-  );
+  // return (
+  //   <div>
+  //   </div>
+  // );
+  return <Login></Login>
 }
 
 export default RootLayout;

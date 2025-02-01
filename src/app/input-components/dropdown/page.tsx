@@ -1,13 +1,14 @@
 "use client"
-import { DropdownSelect } from "@/app/Components/Input/Dropdown";
+import { DropdownSelect, SearchableDropdownSelect } from "@/app/Components/Input/Dropdown";
 import Layout from "@/app/layout/page";
 import { useState } from "react";
 
 export default function DropdownPage() {
-    const [q1,setQ1] = useState("Default");
+    const [q1,setQ1] = useState("");
     const [q2,setQ2] = useState("");
+    const [q3,setQ3] = useState("");
+    const [q4,setQ4] = useState("");
     
-
     return (
     <Layout tabName="Dropdown Component Preview">
         <p className="mb-4">
@@ -32,6 +33,15 @@ export default function DropdownPage() {
                 width="[4em]"
             />
             <p className="ml-[.2em] mt-[.4em]">Callback Data: {q2}</p>
+        </div>
+        <div className="mb-8">
+            <SearchableDropdownSelect 
+                options={["Select one", "Abc", "Def", "Ghi"]}
+                inputChangeCallback={setQ3}
+                selectedCallback={setQ4}
+            />
+            <p className="ml-[.2em] mt-[.4em]">Input Data: {q3}</p>
+            <p className="ml-[.2em] ">Dropdown Data: {q4}</p>
         </div>
     </Layout>
     )

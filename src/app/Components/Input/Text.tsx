@@ -8,6 +8,7 @@ interface SearchBoxButtonProps {
     buttonElement?: any;
     width?: string;
     height?: string;
+    style?: any;
 }
 export const SearchBoxButton = ({
     placeholder="Search", 
@@ -16,6 +17,7 @@ export const SearchBoxButton = ({
     buttonElement=<i className="fas fa-search"></i>,
     width="20em",
     height="auto",
+    style={},
 } : SearchBoxButtonProps) => {
     const [text, setText] = useState('');
 
@@ -39,7 +41,7 @@ export const SearchBoxButton = ({
             placeholder={placeholder}
             className=" bg-gray-200 text-gray-700 py-2 px-4 mr-1 rounded"
             onChange={handleInputChange}
-            style={{width: width, height: height}}
+            style={{width: width, height: height, ...style}}
         />
         <button 
             className="bg-gray-200 text-gray-700 py-2 px-4 rounded" 
@@ -58,12 +60,14 @@ interface SimpleSearchBoxProps {
     inputChangeCallback?: (query: string) => void;
     width?: string;
     height?: string;
+    style?: any;
 }
 export const SimpleSearchBox = ({
     placeholder="Search", 
     inputChangeCallback=(q)=>{},
     width="20em",
     height="auto",
+    style={},
 } : SimpleSearchBoxProps) => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +83,7 @@ export const SimpleSearchBox = ({
             placeholder={placeholder}
             className="bg-gray-200 text-gray-700 py-2 px-4 rounded"
             onChange={handleInputChange}
-            style={{width: width, height: height}}
+            style={{width: width, height: height, ...style}}
         />
     </div>
     )

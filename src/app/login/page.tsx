@@ -30,23 +30,32 @@ const Login = () => {
         <div>
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
             </div>
+            {process.env.NODE_ENV === 'development' && (
+                <div>
+                    <div className="absolute top-[1em] right-[1em]">
+                        <div className="flex gap-[.3em] justify-start items-center">
+                            <i className="fa-solid fa-code w-[1em]"></i>
+                            <span>Development Mode</span>
+                        </div>
+                    </div>
+                    <div className="absolute top-[1em] left-[1em]">
+                        <div className="flex gap-[.3em] justify-start items-center">
+                            <i className="fa-solid fa-table-columns w-[1em]"></i>
+                            <button className="" onClick={() => router.push("/dashboard")}>Dev: Dashboard</button>
+                        </div>
+                        
+                        <div className="flex gap-[.3em] justify-start items-center">
+                            <i className="fa-solid fa-database w-[1em]"></i>
+                            <button className="" onClick={() => router.push("/db-test")}>Dev: Database Test</button>
+                        </div>
 
-            <div className="absolute top-[1em] left-[1em]">
-                <div className="flex gap-[.3em] justify-start items-center">
-                    <i className="fa-solid fa-table-columns w-[1em]"></i>
-                    <button className="" onClick={() => router.push("/dashboard")}>Dev: Dashboard</button>
+                        <div className="flex gap-[.3em] justify-start items-center">
+                            <i className="fa-solid fa-computer-mouse w-[1em]"></i> 
+                            <button className="" onClick={() => router.push("/input-components")}>Dev: Input Previews</button>
+                        </div>
+                    </div>
                 </div>
-                
-                <div className="flex gap-[.3em] justify-start items-center">
-                    <i className="fa-solid fa-database w-[1em]"></i>
-                    <button className="" onClick={() => router.push("/db-test")}>Dev: Database Test</button>
-                </div>
-
-                <div className="flex gap-[.3em] justify-start items-center">
-                    <i className="fa-solid fa-computer-mouse w-[1em]"></i> 
-                    <button className="" onClick={() => router.push("/input-components")}>Dev: Input Previews</button>
-                </div>
-            </div>
+            )}
         </div>
     );
 
