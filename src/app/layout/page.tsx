@@ -9,11 +9,11 @@ type UserRole = "Manager" | "Team Leader" | "Employee";
 
 interface LayoutProps {
   tabName: string;
-  icon?:any;
+  icon?: any;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({tabName, icon="", children}) => {
+const Layout: React.FC<LayoutProps> = ({ tabName, icon = "", children }) => {
   const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
 
   return (
@@ -23,10 +23,10 @@ const Layout: React.FC<LayoutProps> = ({tabName, icon="", children}) => {
       </head>
       <body>
         <div className="min-h-screen flex flex-col">
-          <Header userRole={userRole} onRoleChange={setUserRole} tabName={tabName} icon={icon}/>
+          <Header userRole={userRole} onRoleChange={setUserRole} tabName={tabName} icon={icon} />
           <Sidebar userRole={userRole} />
           <div className="flex flex-1 ml-[15em]">
-            <main className="flex-1 p-6">{children}</main>
+            <main className="flex-1 p-6 pt-1">{children}</main>
           </div>
         </div>
       </body>
