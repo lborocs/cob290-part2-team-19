@@ -23,15 +23,28 @@ const KnowledgeBasePage = () => {
   const [guideSearchQuery, setGuideSearchQuery] = useState(""); // Universal guide search
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
-  const [isCreatingCategory, setIsCreatingCategory] = useState(false); // To toggle the category modal
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false); // Toggle for create category modal
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [isCreatingGuide, setIsCreatingGuide] = useState(false); // For Create Guide Modal
+
+  const [isCreatingGuide, setIsCreatingGuide] = useState(false); // Toggle for create guide modal
   const [newGuideName, setNewGuideName] = useState("");
   const [newGuideContent, setNewGuideContent] = useState("");
   const [newGuideAuthor, setNewGuideAuthor] = useState("Current User");
 
+  // New state for editing category
+  const [isEditingCategory, setIsEditingCategory] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+
+  // New state for editing guide
+  const [isEditingGuide, setIsEditingGuide] = useState(false);
+  const [editingGuide, setEditingGuide] = useState<Guide | null>(null);
+  const [editGuideName, setEditGuideName] = useState("");
+  const [editGuideContent, setEditGuideContent] = useState("");
+  const [editGuideAuthor, setEditGuideAuthor] = useState("Current User");
+
   useEffect(() => {
-    // Mock Data - Replace with database fetch when ready
+    // Mock Data - Replace with a database fetch when ready
     setCategories([
       {
         name: "General",
@@ -98,7 +111,7 @@ const KnowledgeBasePage = () => {
     guide.title.toLowerCase().startsWith(guideSearchQuery.toLowerCase())
   );
 
-  // Guides within a selected category
+  // Guides within the selected category
   const selectedCategoryGuides = selectedCategory
     ? categories
       .find((category) => category.name === selectedCategory)
@@ -107,13 +120,13 @@ const KnowledgeBasePage = () => {
       ) ?? []
     : [];
 
-  // Function to add a new category
+  // Create Category
   const addCategory = () => {
     if (!newCategoryName.trim()) {
       alert("Category name cannot be empty.");
       return;
     }
-    // Ensure no categories have the same name
+    // Ensure no duplicate category names
     const isDuplicate = categories.some(
       (category) =>
         category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
@@ -143,7 +156,7 @@ const KnowledgeBasePage = () => {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  // Function to add a new guide within the selected category
+  // Create Guide
   const addGuide = () => {
     if (!newGuideName.trim() || !newGuideContent.trim()) {
       alert("Guide name and content cannot be empty.");
@@ -170,7 +183,7 @@ const KnowledgeBasePage = () => {
       return;
     }
 
-    // Add the new guide to the current category
+    // Add the new guide
     const updatedCategories = categories.map((category) => {
       if (category.name === selectedCategory) {
         return {
@@ -195,6 +208,124 @@ const KnowledgeBasePage = () => {
     setNewGuideContent("");
     setNewGuideAuthor("Current User");
     setIsCreatingGuide(false);
+  };
+
+  // Delete Category
+  const deleteCategory = (categoryName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      setCategories(categories.filter((cat) => cat.name !== categoryName));
+      if (selectedCategory === categoryName) {
+        setSelectedCategory(null);
+      }
+    }
+  };
+
+  // Open Edit Category Modal
+  const openEditCategoryModal = (category: Category, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCategoryToEdit(category);
+    setEditCategoryName(category.name);
+    setIsEditingCategory(true);
+  };
+
+  // Save Category Edit
+  const saveCategoryEdit = () => {
+    if (!editCategoryName.trim()) {
+      alert("Category name cannot be empty.");
+      return;
+    }
+    // Check for duplicate names (ignoring the category being edited)
+    const isDuplicate = categories.some(
+      (cat) =>
+        cat.name.toLowerCase() === editCategoryName.trim().toLowerCase() &&
+        cat.name !== categoryToEdit?.name
+    );
+    if (isDuplicate) {
+      alert("Another category with that name already exists.");
+      return;
+    }
+    // Update category name and update each guide's category field
+    const updatedCategories = categories.map((cat) => {
+      if (cat.name === categoryToEdit?.name) {
+        const updatedGuides = cat.guides.map((guide) => ({
+          ...guide,
+          category: editCategoryName.trim(),
+        }));
+        return { ...cat, name: editCategoryName.trim(), guides: updatedGuides };
+      }
+      return cat;
+    });
+    setCategories(updatedCategories);
+    if (selectedCategory === categoryToEdit?.name) {
+      setSelectedCategory(editCategoryName.trim());
+    }
+    setIsEditingCategory(false);
+    setCategoryToEdit(null);
+    setEditCategoryName("");
+  };
+
+  // Delete Guide
+  const deleteGuide = (guideId: string) => {
+    if (window.confirm("Are you sure you want to delete this guide?")) {
+      const updatedCategories = categories.map((cat) => ({
+        ...cat,
+        guides: cat.guides.filter((guide) => guide.id !== guideId),
+      }));
+      setCategories(updatedCategories);
+      if (selectedGuide && selectedGuide.id === guideId) {
+        setSelectedGuide(null);
+      }
+    }
+  };
+
+  // Open Edit Guide Modal
+  const openEditGuideModal = (guide: Guide) => {
+    setEditingGuide(guide);
+    setEditGuideName(guide.title);
+    setEditGuideContent(guide.content);
+    setEditGuideAuthor(guide.author || "Current User");
+    setIsEditingGuide(true);
+  };
+
+  // Save Guide Edit
+  const saveGuideEdit = () => {
+    if (!editGuideName.trim() || !editGuideContent.trim()) {
+      alert("Guide name and content cannot be empty.");
+      return;
+    }
+    const updatedCategories = categories.map((cat) => {
+      if (cat.name === editingGuide?.category) {
+        const updatedGuides = cat.guides.map((guide) => {
+          if (guide.id === editingGuide?.id) {
+            return {
+              ...guide,
+              title: editGuideName.trim(),
+              content: editGuideContent.trim(),
+              author: editGuideAuthor === "No Author" ? null : editGuideAuthor,
+            };
+          }
+          return guide;
+        });
+        return { ...cat, guides: updatedGuides };
+      }
+      return cat;
+    });
+    setCategories(updatedCategories);
+    if (selectedGuide && editingGuide && selectedGuide.id === editingGuide.id) {
+      setSelectedGuide({
+        ...selectedGuide,
+        title: editGuideName.trim(),
+        content: editGuideContent.trim(),
+        author: editGuideAuthor === "No Author" ? null : editGuideAuthor,
+      });
+    }
+
+    setIsEditingGuide(false);
+    setEditingGuide(null);
+    setEditGuideName("");
+    setEditGuideContent("");
+    setEditGuideAuthor("Current User");
   };
 
   return (
@@ -249,11 +380,30 @@ const KnowledgeBasePage = () => {
                   className={`p-6 rounded-lg shadow-md hover:shadow-lg cursor-pointer ${category.color}`}
                   onClick={() => setSelectedCategory(category.name)}
                 >
-                  <h2 className="text-xl font-bold mb-2">{category.name}</h2>
+                  <h2 className="text-xl font-bold mb-2">
+                    {category.name}
+                  </h2>
                   <p className="text-sm">
                     Created by: {category.author || "No Author"}
                   </p>
-                  <p className="text-sm">{category.guides.length} guides</p>
+                  <p className="text-sm mb-2">
+                    {category.guides.length} guides
+                  </p>
+                  {/* Edit and Delete Buttons for Category */}
+                  <div className="flex gap-2">
+                    <button
+                      className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                      onClick={(e) => openEditCategoryModal(category, e)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="px-2 py-1 bg-red-500 text-white rounded text-xs"
+                      onClick={(e) => deleteCategory(category.name, e)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -273,10 +423,12 @@ const KnowledgeBasePage = () => {
                 {selectedCategoryGuides.map((guide) => (
                   <div
                     key={guide.id}
-                    className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg"
+                    className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg cursor-pointer"
                     onClick={() => setSelectedGuide(guide)}
                   >
-                    <h3 className="text-lg font-semibold">{guide.title}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {guide.title}
+                    </h3>
                     <p className="text-sm text-gray-500">
                       Created by: {guide.author || "No Author"}
                     </p>
@@ -292,6 +444,20 @@ const KnowledgeBasePage = () => {
           {/* Guide Detail View */}
           {selectedGuide && (
             <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex gap-2 mb-4">
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                  onClick={() => openEditGuideModal(selectedGuide)}
+                >
+                  Edit Guide
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded"
+                  onClick={() => deleteGuide(selectedGuide.id)}
+                >
+                  Delete Guide
+                </button>
+              </div>
               <h2 className="text-2xl font-bold mb-4">
                 {selectedGuide.title}
               </h2>
@@ -310,47 +476,17 @@ const KnowledgeBasePage = () => {
             <i className="fa-solid fa-plus"></i> Add Category
           </div>
 
-          {/* Add Category Modal */}
-          {isCreatingCategory && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-                <h3 className="text-xl font-bold mb-4">
-                  Create New Category
-                </h3>
-                <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                  placeholder="Category Name"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                />
-                <div className="flex justify-end gap-4">
-                  <button
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
-                    onClick={() => setIsCreatingCategory(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-green-500 text-white rounded"
-                    onClick={addCategory}
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Universal Guide Search Results */}
           {!selectedCategory && guideSearchQuery && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
               {filteredGuides.map((guide) => (
                 <div
                   key={guide.id}
                   className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-semibold">{guide.title}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {guide.title}
+                  </h3>
                   <p className="text-sm text-gray-500">
                     Category: {guide.category}
                   </p>
@@ -408,8 +544,113 @@ const KnowledgeBasePage = () => {
           </div>
         </div>
       )}
+
+      {/* Create Category Modal */}
+      {isCreatingCategory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h3 className="text-xl font-bold mb-4">Create New Category</h3>
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Category Name"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+            />
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+                onClick={() => setIsCreatingCategory(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded"
+                onClick={addCategory}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Category Modal */}
+      {isEditingCategory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h3 className="text-xl font-bold mb-4">Edit Category</h3>
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={editCategoryName}
+              onChange={(e) => setEditCategoryName(e.target.value)}
+            />
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+                onClick={() => setIsEditingCategory(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={saveCategoryEdit}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Guide Modal */}
+      {isEditingGuide && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h3 className="text-xl font-bold mb-4">Edit Guide</h3>
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Guide Name"
+              value={editGuideName}
+              onChange={(e) => setEditGuideName(e.target.value)}
+            />
+            <textarea
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Guide Content"
+              rows={4}
+              value={editGuideContent}
+              onChange={(e) => setEditGuideContent(e.target.value)}
+            />
+            <select
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={editGuideAuthor}
+              onChange={(e) => setEditGuideAuthor(e.target.value)}
+            >
+              <option value="Current User">Current User</option>
+              <option value="No Author">No Author</option>
+            </select>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+                onClick={() => setIsEditingGuide(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={saveGuideEdit}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
 
 export default KnowledgeBasePage;
+
