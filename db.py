@@ -149,33 +149,41 @@ def init_db():
 
         db.commit()
 
-#TO-DO: INCLUDE ERROR MESSAGES
 def add_user(email, password, first_name, second_name):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM Employees WHERE employee_email = ?", (email,))
-    row = cursor.fetchone()
-    if row[0] > 0:  
-        return False 
-    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    cursor.execute("""
-        INSERT INTO Employees (employee_email, first_name, second_name, hashed_password, user_type_id, current_employee)
-        VALUES (?, ?, ?, ?, 2, TRUE)
-    """, (email, first_name, second_name, hashed_password))
-    db.commit()
-    return True  
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT COUNT(*) FROM Employees WHERE employee_email = ?", (email,))
+        row = cursor.fetchone()
+        if row[0] > 0:  
+            return "There is already an account with this email." 
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        cursor.execute("""
+            INSERT INTO Employees (employee_email, first_name, second_name, hashed_password, user_type_id, current_employee)
+            VALUES (?, ?, ?, ?, 2, TRUE)
+        """, (email, first_name, second_name, hashed_password))
+        db.commit()
+        return True  
+    except sqlite3.DatabaseError as e:
+        return f"Database error: {str(e)}. Please try again later."
+    except Exception as e:
+        return f"An unexpected error occurred: {str(e)}. Please try again later."
 
 # Function to verify user login
 def login(email, entered_password):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT password FROM Employees WHERE employee_email = ?", (email,))
-    row = cursor.fetchone()
-
-    if row and bcrypt.checkpw(entered_password.encode(), row[0]):
-        return True
-    else:
-        return False
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT hashed_password FROM Employees WHERE employee_email = ?", (email,))
+        row = cursor.fetchone()
+        if row and bcrypt.checkpw(entered_password.encode(), row[0]):
+            return True
+        else:
+            return "Email or password is incorrect. Please try again."
+    except sqlite3.DatabaseError as e:
+        return f"Database error: {str(e)}. Please try again later."
+    except Exception as e:
+        return f"An unexpected error occurred: {str(e)}. Please try again later."
 
 app = Flask(__name__)
 @app.route('/create', methods=['POST'])
