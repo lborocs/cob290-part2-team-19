@@ -1,4 +1,5 @@
 import sqlite3
+import bcrypt
 from flask import Flask, g
 from flask import request, jsonify
 
@@ -17,7 +18,9 @@ def init_db():
             CREATE TABLE IF NOT EXISTS Employees (
                 employee_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 employee_email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
+                first_name TEXT NOT NULL,
+                second_name TEXT NOT NULL,
+                hashed_password TEXT NOT NULL,
                 user_type_id INTEGER NOT NULL,
                 current_employee BOOL NOT NULL,
                 FOREIGN KEY (user_type_id) REFERENCES UserTypes(type_id)
@@ -30,6 +33,10 @@ def init_db():
                 type_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 type_name TEXT NOT NULL UNIQUE
             )
+                       
+            INSERT INTO UserTypes (type_id, type_name) VALUES (0, Manager)
+            INSERT INTO UserTypes (type_id, type_name) VALUES (1, ProjectLead)
+            INSERT INTO UserTypes (type_id, type_name) VALUES (2, Employee)
         ''')
 
         # Table for projects
@@ -142,7 +149,33 @@ def init_db():
 
         db.commit()
 
+#TO-DO: INCLUDE ERROR MESSAGES
+def add_user(email, password, first_name, second_name):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT COUNT(*) FROM Employees WHERE employee_email = ?", (email,))
+    row = cursor.fetchone()
+    if row[0] > 0:  
+        return False 
+    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    cursor.execute("""
+        INSERT INTO Employees (employee_email, first_name, second_name, hashed_password, user_type_id, current_employee)
+        VALUES (?, ?, ?, ?, 2, TRUE)
+    """, (email, first_name, second_name, hashed_password))
+    db.commit()
+    return True  
 
+# Function to verify user login
+def login(email, entered_password):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT password FROM Employees WHERE employee_email = ?", (email,))
+    row = cursor.fetchone()
+
+    if row and bcrypt.checkpw(entered_password.encode(), row[0]):
+        return True
+    else:
+        return False
 
 app = Flask(__name__)
 @app.route('/create', methods=['POST'])
