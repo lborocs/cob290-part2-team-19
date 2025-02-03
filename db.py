@@ -431,20 +431,21 @@ def search_tasks_tags():
     return jsonify([row['task_id'] for row in tasks])
     
     
-if app.debug:
-    @app.route('/query', methods=['GET'])
-    def execute_query():
-        sql_query = request.args.get('sql')
-        if not sql_query:
-            return jsonify({'error': 'No SQL query provided'}), 400
-        try:
-            db = get_db()
-            cursor = db.cursor()
-            cursor.execute(sql_query)
-            results = cursor.fetchall()
-            return jsonify([dict(row) for row in results])
-        except sqlite3.Error as e:
-            return jsonify({'error': str(e)}), 400
+@app.route('/query', methods=['GET'])
+def execute_query():
+    if app.debug:
+        print('Running in debug mode')
+    sql_query = request.args.get('sql')
+    if not sql_query:
+        return jsonify({'error': 'No SQL query provided'}), 400
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(sql_query)
+        results = cursor.fetchall()
+        return jsonify([dict(row) for row in results])
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 400
 
 
         
