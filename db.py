@@ -209,7 +209,7 @@ def index():
     return "SQLite instance is running!"
 
 def generate_crud_routes(table, key):
-    @app.route(f'/{table}', methods=['POST'])
+    @app.route(f'/{table}', methods=['POST'], endpoint=f'create_{table}')
     def create():
         data = request.get_json()
         columns = ', '.join(data.keys())
@@ -221,7 +221,7 @@ def generate_crud_routes(table, key):
         db.commit()
         return jsonify({key: cursor.lastrowid}), 201
 
-    @app.route(f'/{table}/<int:id>', methods=['GET'])
+    @app.route(f'/{table}/<int:id>', methods=['GET'], endpoint=f'read_{table}')
     def read(id):
         query = f"SELECT * FROM {table} WHERE {key} = ?"
         db = get_db()
@@ -232,7 +232,7 @@ def generate_crud_routes(table, key):
             return jsonify({'error': f'{table} not found'}), 404
         return jsonify(dict(record))
 
-    @app.route(f'/{table}/<int:id>', methods=['PUT'])
+    @app.route(f'/{table}/<int:id>', methods=['PUT'], endpoint=f'update_{table}')
     def update(id):
         data = request.get_json()
         updates = ', '.join([f"{col} = ?" for col in data.keys()])
@@ -245,7 +245,7 @@ def generate_crud_routes(table, key):
             return jsonify({'error': f'{table} not found'}), 404
         return jsonify({'success': True})
 
-    @app.route(f'/{table}/<int:id>', methods=['DELETE'])
+    @app.route(f'/{table}/<int:id>', methods=['DELETE'], endpoint=f'delete_{table}')
     def delete(id):
         query = f"DELETE FROM {table} WHERE {key} = ?"
         db = get_db()
@@ -429,7 +429,25 @@ def search_tasks_tags():
     cursor.execute(query, (tag_name,))
     tasks = cursor.fetchall()
     return jsonify([row['task_id'] for row in tasks])
+    
+    
+if app.debug:
+    @app.route('/query', methods=['GET'])
+    def execute_query():
+        sql_query = request.args.get('sql')
+        if not sql_query:
+            return jsonify({'error': 'No SQL query provided'}), 400
+        try:
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute(sql_query)
+            results = cursor.fetchall()
+            return jsonify([dict(row) for row in results])
+        except sqlite3.Error as e:
+            return jsonify({'error': str(e)}), 400
 
+
+        
 if __name__ == '__main__':
     app.run(port=PORT)
     init_db()
