@@ -12,7 +12,7 @@ This is repo is for Team Projects - Phase 2 of the Make-It-All Hub.
 ## How to run (dev build)?
 To run the project:
 1. Open command line @ root of project
-2. Enter the command `npm run dev`
+2. Enter the command `npm run dbdev`
 3. Open `localhost:3000` in browser
 
 ## How to compile/build?
