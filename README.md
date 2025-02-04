@@ -8,7 +8,7 @@ This is repo is for Team Projects - Phase 2 of the Make-It-All Hub.
 - Vit Sittaprasert
 - Faizan Anwar
 - Kofi Addison
-- 
+
 ## How to run (dev build)?
 To run the project:
 1. Open command line @ root of project
