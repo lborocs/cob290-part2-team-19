@@ -1,6 +1,6 @@
 "use client"
 import Layout from '../../layout/page';
-import {SimpleSearchBox, SearchBoxButton} from '../../Components/Input/Text';
+import {TextInput, TextInputButton} from '../../Components/Input/Text';
 import { useCallback, useState } from 'react';
 
 export default function SearchCompPreview() {
@@ -29,30 +29,30 @@ export default function SearchCompPreview() {
 
         <h1 className='text-xl font-bold'>No Functionality</h1>
         <div className="mb-8">
-            <SimpleSearchBox 
+            <TextInput 
                 placeholder="Simple (No functionality)"
             />
         </div>
 
         <div className="mb-8">
-            <SimpleSearchBox 
+            <TextInput 
             width="50em"
                 placeholder="Simple (No functionality) with width change"
             />
         </div>
         
         <div className="mb-8">
-            <SearchBoxButton 
+            <TextInputButton 
                 placeholder="V2 with width change"
                 width="30em"
             />
         </div>
         
         <div className="mb-8">
-            <SearchBoxButton 
+            <TextInputButton 
                 placeholder="V2 with diff icon"
                 width=""
-                buttonElement={<i className="fa-solid fa-download"></i>}
+                icon={<i className="fa-solid fa-download"></i>}
             />
         </div>
         
@@ -60,7 +60,7 @@ export default function SearchCompPreview() {
 
         <h1 className='text-xl font-bold'>With Functionality</h1>
         <div className="">
-            <SimpleSearchBox 
+            <TextInput 
                 placeholder="Simple w/ inputChangeCallback" 
                 inputChangeCallback={handleInputChange2} 
             />
@@ -68,7 +68,7 @@ export default function SearchCompPreview() {
         <p className="mb-4">Query: {query2}</p>
         
         <div className="">
-            <SearchBoxButton 
+            <TextInputButton 
                 placeholder="inputChange Callback" 
                 inputChangeCallback={handleInputChange0}
             />
@@ -76,7 +76,7 @@ export default function SearchCompPreview() {
         <p className="mb-4">Query: {query0}</p>
         
         <div className="">
-            <SearchBoxButton 
+            <TextInputButton 
                 placeholder="clickChange Callback"
                 clickCallback={handleClick1}
             />

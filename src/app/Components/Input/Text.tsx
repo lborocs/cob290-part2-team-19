@@ -1,24 +1,24 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 
-interface SearchBoxButtonProps {
+interface TextInputButtonProps {
     placeholder?:string;
     inputChangeCallback?: (query: string) => void;
     clickCallback?: (query: string) => void;
-    buttonElement?: any;
+    icon?: any;
     width?: string;
     height?: string;
     style?: any;
 }
-export const SearchBoxButton = ({
+export const TextInputButton = ({
     placeholder="Search", 
     inputChangeCallback=(q)=>{},
     clickCallback=(q)=>{},
-    buttonElement=<i className="fas fa-search"></i>,
+    icon=<i className="fas fa-search"></i>,
     width="20em",
     height="auto",
     style={},
-} : SearchBoxButtonProps) => {
+} : TextInputButtonProps) => {
     const [text, setText] = useState('');
 
     const handleInputChange = (e: any) => {
@@ -47,7 +47,7 @@ export const SearchBoxButton = ({
             className="bg-gray-200 text-gray-700 py-2 px-4 rounded" 
             onClick={handleClick}
         >
-            {buttonElement}
+            {icon}
         </button>
     </div>
     );
@@ -55,20 +55,20 @@ export const SearchBoxButton = ({
 }
 
 
-interface SimpleSearchBoxProps {
+interface TextInputProps {
     placeholder?:string;
     inputChangeCallback?: (query: string) => void;
     width?: string;
     height?: string;
     style?: any;
 }
-export const SimpleSearchBox = ({
+export const TextInput = ({
     placeholder="Search", 
     inputChangeCallback=(q)=>{},
     width="20em",
     height="auto",
     style={},
-} : SimpleSearchBoxProps) => {
+} : TextInputProps) => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (inputChangeCallback) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { SimpleSearchBox } from "./Text";
+import { TextInput } from "./Text";
 
 interface DropdownProps {
     options: DropDownOptions[];
@@ -94,7 +94,7 @@ export const SearchableDropdownSelect = ({
 
     return (
         <div className="inline-flex flex-col">
-            <SimpleSearchBox 
+            <TextInput 
                 width={width}
                 height={height}
                 style={iStyle}
