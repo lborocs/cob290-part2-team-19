@@ -8,12 +8,12 @@ import Sidebar from '../Components/Sidebar';
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
 interface LayoutProps {
-  tabName: string;
+  tabName?: string;
   icon?: any;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ tabName, icon = "", children }) => {
+const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
   const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
 
   return (

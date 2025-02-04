@@ -46,6 +46,18 @@ export default function InputPage() {
                                 Colour Select
                         </a>
                     </li>
+                    <li>
+                        <a  href="/input-components/button" 
+                            className="text-blue-600 underline">
+                                Buttons
+                        </a>
+                    </li>
+                    <li>
+                        <a  href="/input-components/modal" 
+                            className="text-blue-600 underline">
+                                Modals
+                        </a>
+                    </li>
                 </ul>
             </div>
         </Layout>
