@@ -7,10 +7,10 @@ interface HeaderProps {
     userRole: UserRole;
     onRoleChange: (role: UserRole) => void;
     tabName: string;
-    icon?:any;
+    icon?: any;
 }
 
-const Header = ({ userRole, onRoleChange, tabName, icon="" }: HeaderProps) => {
+const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => {
     const [role, setUserRole] = useState<UserRole>("Manager"); // Default role
 
     const handleRoleChange = (role: UserRole) => {
@@ -21,7 +21,7 @@ const Header = ({ userRole, onRoleChange, tabName, icon="" }: HeaderProps) => {
     return (
         <header className="sticky top-0 left-0 z-[1] bg-gray-800 text-white py-4 px-6 flex justify-between items-center">
             <div className="flex gap-4 items-center">
-                <img src="/squarelogo.png" alt="icon" className='h-6'/>
+                <img src="/squarelogo.png" alt="icon" className='h-6' />
                 <h1 className="text-lg font-bold">Make It All</h1>
             </div>
             <div className="text-lg font-semibold">
