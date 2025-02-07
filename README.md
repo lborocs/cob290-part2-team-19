@@ -26,4 +26,4 @@ To build the project:
 
 ## How to start local DB (dev)?
 1. Open command line @ root of project
-2. Run `py db.py`
+2. Run `npm run db`
