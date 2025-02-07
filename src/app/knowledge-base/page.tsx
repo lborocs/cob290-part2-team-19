@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
+import Link from "next/link";
+
 
 interface Guide {
   id: string;
@@ -331,7 +333,18 @@ const KnowledgeBasePage = () => {
   return (
     <Layout tabName="Knowledge Base">
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Hello, [User's Name]</h1>
+        {/* header section */}
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Hello, [User's Name]</h1>
+          <Link
+            href="/knowledge-base/archived"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white transition ease-in-out font-bold py-2 px-4 rounded"
+          >
+            Archived
+          </Link>
+
+
+        </div>
 
         {/* Main Container */}
         <div className="bg-white rounded-lg shadow-lg p-6">
