@@ -13,140 +13,18 @@ def init_db():
         db = get_db()
         cursor = db.cursor()
 
-        # Table for employees
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Employees (
-                employee_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                employee_email TEXT NOT NULL UNIQUE,
-                first_name TEXT NOT NULL,
-                second_name TEXT NOT NULL,
-                hashed_password TEXT NOT NULL,
-                user_type_id INTEGER NOT NULL,
-                current_employee BOOL NOT NULL,
-                FOREIGN KEY (user_type_id) REFERENCES UserTypes(type_id)
-            )
-        ''')
-
-        # Table for types of employees
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS UserTypes (
-                type_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                type_name TEXT NOT NULL UNIQUE
-            )
-                       
-            INSERT INTO UserTypes (type_id, type_name) VALUES (0, Manager)
-            INSERT INTO UserTypes (type_id, type_name) VALUES (1, ProjectLead)
-            INSERT INTO UserTypes (type_id, type_name) VALUES (2, Employee)
-        ''')
-
-        # Table for projects
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Projects (
-                project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_name TEXT NOT NULL,
-                team_leader_id INTEGER NOT NULL,
-                description TEXT NOT NULL,
-                start_date DATE NOT NULL,
-                finish_date DATE NOT NULL,
-                completed BOOLEAN NOT NULL DEFAULT 0,
-                authorised BOOLEAN NOT NULL DEFAULT 0,
-                authorised_by INTEGER,
-                FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id),
-                FOREIGN KEY (team_leader_id) REFERENCES Employees(employee_id)
-            )
-        ''')
-
-        # Table for tasks
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Tasks (
-                task_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_name TEXT NOT NULL,
-                project_id INTEGER NOT NULL,
-                description TEXT NOT NULL,
-                start_date DATE NOT NULL,
-                finish_date DATE NOT NULL,
-                completed BOOLEAN NOT NULL DEFAULT 0,
-                archived BOOLEAN NOT NULL DEFAULT 0,
-                FOREIGN KEY (project_id) REFERENCES Projects(project_id)
-            )
-        ''')
-
-        # Table for tags
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Tags (
-                tag_name TEXT PRIMARY KEY
-            )
-        ''')
-
-        # Table to link projects with tags
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS ProjectTags (
-                project_id INTEGER NOT NULL,
-                tag_name TEXT NOT NULL,
-                PRIMARY KEY (project_id, tag_name),
-                FOREIGN KEY (project_id) REFERENCES Projects(project_id),
-                FOREIGN KEY (tag_name) REFERENCES Tags(tag_name)
-            )
-        ''')
-
-        # Table to link employees to tasks
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS EmployeeTasks (
-                task_id INTEGER NOT NULL,
-                employee_id INTEGER NOT NULL,
-                PRIMARY KEY (task_id, employee_id),
-                FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
-                FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
-            )
-        ''')
-
-        # Table to link employees to projects
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS EmployeeProjects (
-                project_id INTEGER NOT NULL,
-                employee_id INTEGER NOT NULL,
-                PRIMARY KEY (project_id, employee_id),
-                FOREIGN KEY (project_id) REFERENCES Projects(project_id),
-                FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
-            )
-        ''')
-
-        # Table for knowledge base
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS KnowledgeBase (
-                post_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                author_id INTEGER NOT NULL,
-                post_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                authorised BOOLEAN NOT NULL DEFAULT 0,
-                content TEXT NOT NULL,
-                category_id INTEGER,
-                FOREIGN KEY (author_id) REFERENCES Employees(employee_id),
-                FOREIGN KEY (category_id) REFERENCES KnowledgeBaseCategories(category_id)
-            )
-        ''')
-
-        # Table for knowledge base categories
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS KnowledgeBaseCategories (
-                category_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                category_name TEXT UNIQUE NOT NULL
-            )
-        ''')
-
-        # Table for knowledge base edits
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS KnowledgeBaseEdits (
-                post_id INTEGER NOT NULL,
-                employee_id INTEGER NOT NULL,
-                edit_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                previous_contents TEXT,
-                current_contents TEXT,
-                PRIMARY KEY (post_id, employee_id, edit_date),
-                FOREIGN KEY (employee_id) REFERENCES Employees(employee_id),
-                FOREIGN KEY (post_id) REFERENCES KnowledgeBase(post_id)
-            )
-        ''')
-
+        with open('schema.sql', 'r') as f:
+            schema_sql = f.read()
+        cursor.executescript(schema_sql)
+        
+        
+        cursor.execute("""
+            INSERT OR IGNORE INTO UserTypes (type_id, type_name) VALUES
+                (0, 'Manager'),
+                (1, 'ProjectLead'),
+                (2, 'Employee')
+        """)
+        
         db.commit()
 
 def add_user(email, password, first_name, second_name):
@@ -317,6 +195,8 @@ def search_employees():
     employee_email = request.args.get('employee_email')
     user_type_id = request.args.get('user_type_id')
     employee_id = request.args.get('employee_id')
+    first_name = request.args.get('first_name')
+    second_name = request.args.get('second_name')
     query = "SELECT * FROM Employees WHERE 1=1"
     params = []
     if employee_email:
@@ -328,6 +208,13 @@ def search_employees():
     if employee_id:
         query += " AND employee_id = ?"
         params.append(user_type_id)
+    if first_name:
+        query += " AND first_name LIKE ?"
+        params.append(f"%{first_name}%")
+    if second_name:
+        query += " AND second_name LIKE ?"
+        params.append(f"%{second_name}%")        
+    print(params)
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
@@ -364,9 +251,10 @@ def search_projects():
     if authorised_by:
         query += " AND authorised_by = ?"
         params.append(authorised_by)
-    if archived:
-        query += " AND archived = ?"
-        params.append(archived)
+    ### TODO: Get archived status by looking up in ArchivedProjects
+    # if archived:
+    #     query += " AND archived = ?"
+    #     params.append(archived)
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
@@ -381,7 +269,7 @@ def search_tasks():
     completed = request.args.get('completed')
     start_date = request.args.get('start_date')
     finish_date = request.args.get('finish_date')
-    archived = request.args.get('archived')
+    # archived = request.args.get('archived')
     query = "SELECT * FROM Tasks WHERE 1=1"
     params = []
     if task_name:
@@ -399,9 +287,10 @@ def search_tasks():
     if finish_date:
         query += " AND finish_date = ?"
         params.append(finish_date)
-    if archived:
-        query += " AND archived = ?"
-        params.append(archived)
+    ### TODO: Get archived status by looking up in ArchivedTasks
+    # if archived:
+    #     query += " AND archived = ?"
+    #     params.append(archived)
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
@@ -413,6 +302,7 @@ def search_tasks():
 def search_knowledgebase():
     author_id = request.args.get('author_id')
     category_id = request.args.get('category_id')
+    archived = request.args.get('archived')
     query = "SELECT * FROM KnowledgeBase WHERE 1=1"
     params = []
     if author_id:
@@ -421,6 +311,10 @@ def search_knowledgebase():
     if category_id:
         query += " AND category_id = ?"
         params.append(category_id)
+    ### TODO: Get archived status by looking up in ArchivedProjects
+    # if (archived):
+    #
+    #
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
