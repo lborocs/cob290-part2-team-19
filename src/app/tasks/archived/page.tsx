@@ -6,23 +6,23 @@ import Layout from "@/app/layout/page";
 import { useState } from "react";
 
 
-const ArchivedProjects = () => {
+const ArchivedTasks = () => {
     const [m1, setM1] = useState(true);
     const [m2, setM2] = useState(true);
     const [m3, setM3] = useState(true);
     const [m4, setM4] = useState(true);
 
     return (
-        <Layout tabName="Archived Projects" icon={<i className='fa-solid fa-box-archive'/>}>
+        <Layout tabName="Archived Tasks" icon={<i className='fa-solid fa-list-check'/>}>
             <div className="mt-4">
-                <h1 className="text-xl font-bold"><i className='fa-solid fa-box-archive mr-2'/>Archived Projects</h1>
-                <p className="text-gray-500">View all archived projects here.</p>
-                <p className="text-gray-500">Projects will automatically deleted <b>2 months</b> from the archive date.</p>
-                <p className="text-gray-500">Deleted projects <b>will</b> delete attached tasks.</p>
+                <h1 className="text-xl font-bold"><i className='fa-solid fa-list-check mr-2'/>Archived Tasks</h1>
+                <p className="text-gray-500">View all archived tasks here.</p>
+                <p className="text-gray-500">Tasks will automatically deleted <b>2 months</b> from the archive date.</p>
             </div>
+
             <style jsx>{`
                 .table-cell {
-                    max-width: 15em;
+                    max-width: 20em;
                     width: min-content;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -35,14 +35,17 @@ const ArchivedProjects = () => {
             <table className="min-w-full  mt-4">
                 <thead className="bg-[#1f2937] text-gray-50 uppercase tracking-wider text-left text-xs">
                     <tr>
-                        <th scope="col" className="table-cell max-w-[10em] px-3 py-3 text-center font-normal" style={{borderTopLeftRadius: '1rem'}}>
+                        <th scope="col" className="max-w-[10em] table-cell px-3 py-3 text-center font-normal" style={{borderTopLeftRadius: '1rem'}}>
                             Select
                         </th>
-                        <th scope="col" className="table-cell font-normal w-[5em] overflow-ellipsis whitespace-nowrap">
-                            <i className="fa-solid fa-font"></i> Project Name
+                        <th scope="col" className="table-cell font-normal">
+                            <i className="fa-solid fa-font"></i> Task Name
                         </th>
                         <th scope="col" className="table-cell font-normal">
-                            <i className="fa-solid fa-user"></i> Team Lead
+                            <i className="fa-solid fa-user"></i> Project
+                        </th>
+                        <th scope="col" className="table-cell font-normal">
+                            <i className="fa-solid fa-user"></i> Assigned to
                         </th>
                         <th scope="col" className="table-cell font-normal date-cell" >
                             <i className="fa-solid fa-calendar-days"></i> Date Archived
@@ -53,7 +56,7 @@ const ArchivedProjects = () => {
                         <th scope="col" className="table-cell font-normal" >
                             Delete in
                         </th>
-                        <th scope="col" className="table-cell text-center font-normal" style={{borderTopRightRadius: '1rem'}}>
+                        <th scope="col" className="table-cell text-center font-normal" style={{ borderTopRightRadius: '1rem'}}>
                             Actions
                         </th>
                         
@@ -61,43 +64,49 @@ const ArchivedProjects = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 whitespace-nowrap text-sm">
                     <tr className="hover:bg-blue-50">
-                        <td className="table-cell px-2 py-3 font-medium text-gray-900 text-center" 
+                        <td className="px-2 py-3 table-cell max-w-[10em] font-medium text-gray-900 text-center" 
                             style={{boxShadow:"inset 0.5px 0px 0px 0px #e5e7eb"}}>
                             <input type="checkbox" className="w-6 h-6"/>
                         </td>
-                        <td className="table-cell px-2 py-3 font-medium text-gray-900">
-                            Project 1
+                        <td className="px-2 py-3 table-cell font-medium text-gray-900">
+                            Print this doc
                         </td>
-                        <td className="table-cell px-2 py-3 font-medium text-gray-900">
-                            Team Lead A
+                        <td className="px-2 py-3 table-cell font-medium text-gray-900">
+                            Project 4
                         </td>
-                        <td className="table-cell px-2 py-3 text-gray-500 date-cell">
+                        <td className="px-2 py-3 table-cell font-medium text-gray-900">
+                            Employee A
+                        </td>
+                        <td className="px-2 py-3 table-cell text-gray-500 date-cell">
                             2023-01-01
                         </td>
-                        <td className="table-cell px-2 py-3 text-green-600 text-center">
+                        <td className="px-2 py-3 table-cell text-green-600 text-center">
                             Completed
                         </td>
-                        <td className="table-cell px-2 py-3 text-gray-500">
+                        <td className="px-2 py-3 table-cell text-gray-500">
                             1mo, 15d
                         </td>
-                        <td className="table-cell px-2 py-3 text-gray-500 text-center"
+                        <td className="px-2 py-3 table-cell text-gray-500 text-center"
                             style={{boxShadow:"inset -0.5px 0px 0px 0px #e5e7eb"}}>
                             <IconButton callback={()=>{setM1(false)}}/>                                
                         </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-blue-50">
-                        <td className="table-cell px-2 py-3 text-sm font-medium text-gray-900 text-center"
+                        <td className="px-2 py-3 table-cell max-w-[10em] text-sm font-medium text-gray-900 text-center"
                             style={{boxShadow:"inset 0.5px 0px 0px 0px #e5e7eb"}}>
                             <input type="checkbox" className="w-6 h-6"/>
                         </td>
-                        <td className="table-cell px-2 py-3 ">
-                            Project 2 - A very long project name, that shouldn't fit in this box
+                        <td className="px-2 py-3 table-cell ">
+                            Integrate db to app
                         </td>
                         <td className="px-2 py-3 table-cell ">
-                            Team Lead B
+                            Project 2
+                        </td>
+                        <td className="px-2 py-3 table-cell ">
+                            Jake Brooks
                         </td>
                         <td className="px-2 py-3 table-cell text-gray-500 date-cell">
-                            2023-02-01
+                            2025-02-07
                         </td>
                         <td className="px-2 py-3 table-cell text-yellow-600 text-center">
                             Unfinished
@@ -111,15 +120,18 @@ const ArchivedProjects = () => {
                         </td>
                     </tr>
                     <tr className="hover:bg-blue-50">
-                        <td className="px-2 py-3 table-cell  text-sm font-medium text-gray-900 text-center"
+                        <td className="px-2 py-3 table-cell max-w-[10em] text-sm font-medium text-gray-900 text-center"
                             style={{boxShadow:"inset 0.5px 0px 0px 0px #e5e7eb"}}>
                             <input type="checkbox" className="w-6 h-6"/>
+                        </td>
+                        <td className="px-2 py-3 table-cell ">
+                            Fix this darned thing. This is a very long task name that should not fit
                         </td>
                         <td className="px-2 py-3 table-cell ">
                             Project 3
                         </td>
                         <td className="px-2 py-3 table-cell ">
-                            Team Lead C
+                            Someone here
                         </td>
                         <td className="px-2 py-3 table-cell text-gray-500 date-cell">
                             2023-02-01
@@ -139,6 +151,7 @@ const ArchivedProjects = () => {
                 <tfoot>
                     <tr className="h-3 bg-gray-200">
                         <td style={{borderBottomLeftRadius:"0.2em"}}></td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -170,9 +183,9 @@ const ArchivedProjects = () => {
                         color="bg-yellow-500"
                         hoverColor="hover:bg-yellow-600"
                         textColor="text-white"
-                        icon={<i className="fa-solid fa-box-archive mr-2"></i>}
-                        callback={()=>{alert("Archive Project")}}>
-                            Archive Project
+                        icon={<i className="fa-solid fa-list-check mr-2"></i>}
+                        callback={()=>{alert("Archive Task")}}>
+                            Archive Task
                     </TextButton>
                     <TextButton
                         color="bg-red-500"
@@ -194,7 +207,7 @@ const ArchivedProjects = () => {
                 header="Are you sure"
                 icon={<i className="fa-solid fa-trash-can mr-2 ml-2"></i>}>
                 <p>
-                    Do you want to <b>delete</b> these projects? <br />
+                    Do you want to <b>delete</b> these tasks? <br />
                     This process cannot be <b>undone</b>!
                 </p>
                 <div className="flex justify-between w-[100%] mt-4">
@@ -211,4 +224,4 @@ const ArchivedProjects = () => {
         </Layout>
     );
 }
-export default ArchivedProjects;
+export default ArchivedTasks;
