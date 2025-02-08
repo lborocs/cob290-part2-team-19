@@ -365,7 +365,39 @@ def search_tasks_tags():
     tasks = cursor.fetchall()
     return jsonify([row['task_id'] for row in tasks])
     
-    
+# Search function for Tasks that employees are assigned to for a given project
+@app.route('/projects/<int:project_id>/tasks/employees', methods=['GET'])
+def get_tasks_employees_for_project(project_id):
+    query = """
+    SELECT t.task_id, t.task_name, et.employee_id
+    FROM Tasks t
+    JOIN EmployeeTasks et ON t.task_id = et.task_id
+    WHERE t.project_id = ?
+    """
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, (project_id,))
+    tasks_employees = cursor.fetchall()
+    return jsonify([dict(task_employee) for task_employee in tasks_employees])
+
+# Search function for User Type and Employee data by Employee ID
+@app.route('/employees/<int:employee_id>/details', methods=['GET'])
+def get_employee_details(employee_id):
+    query = """
+    SELECT e.employee_id, e.employee_email, e.first_name, e.second_name, e.user_type_id, ut.type_name
+    FROM Employees e
+    JOIN UserTypes ut ON e.user_type_id = ut.type_id
+    WHERE e.employee_id = ?
+    """
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, (employee_id,))
+    employee_details = cursor.fetchone()
+    if employee_details is None:
+        return jsonify({'error': 'Employee not found'}), 404
+    return jsonify(dict(employee_details))
+
+
 @app.route('/query', methods=['GET'])
 def execute_query():
     if app.debug:
