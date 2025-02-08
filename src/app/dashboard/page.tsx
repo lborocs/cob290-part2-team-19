@@ -88,7 +88,7 @@ export default function Dashboard() {
               <hr className="border-gray-300 my-2" />
 
               {/* Upcoming Task List */}
-              <ul className="space-y-3 pe-2 ">
+              <ul className="space-y-3 pe-2 overflow-clip overflow-y-auto">
                 <li className="flex items-center justify-between border p-2 rounded shadow-sm">
                   <span className="w-3 h-3 bg-red-500 rounded-full"></span>
                   <div className="flex-1 ml-2">
