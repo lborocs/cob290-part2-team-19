@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
-import Page from "./(Page)";
+import Page from "./components/(Page)";
 
 function SampleAPIRequest() {
     const [data, setData] = useState(null);

@@ -1,4 +1,4 @@
-import Page from "./(Page)";
+import Page from "./components/(Page)";
 
 const icon = <i className="fa-solid fa-table-columns" />;
 

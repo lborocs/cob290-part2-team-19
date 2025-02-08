@@ -9,14 +9,18 @@ interface PageProps {
     children : React.ReactNode;
     tabName?: string;
     icon?: any;
+    silent?: boolean;
 }
 
 export default function Page({
     children,
     tabName = "Tab Name",
-    icon = ""
+    icon = "",
+    silent=false
 } : PageProps) {
     const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
+    const isSilent = silent ? "hidden" : "";
+
 
     return (
         <>
@@ -26,7 +30,7 @@ export default function Page({
             <title>{tabName}</title>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
         </Head>
-        <div>
+        <div className={isSilent}>
             <Header userRole={userRole} onRoleChange={setUserRole} 
                 tabName={tabName} icon={icon}/>
             <Sidebar userRole={userRole} />
