@@ -1,6 +1,7 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { IconButton } from './Input/Buttons';
 
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
@@ -40,17 +41,17 @@ const navigation = {
 
 const Sidebar = ({ userRole }: SidebarProps) => {
     return (
-        <nav className="fixed top-0 left-0 z-[0] bg-[#374151] w-[15em] p-4 h-[100vh] sidebar">
-            <div className="flex flex-col items-start mt-[4em] gap-2">
-                {navigation[userRole].map((item) => (
-                    <div key={item.name} className="nav-link">
-                        <Link href={item.href} className="text-blue-50">
-                            <span className="mr-1">{item.icon}</span>{item.name}
-                        </Link>
-                    </div>
-                ))}
-            </div>
-        </nav>
+    <nav className={`fixed top-0 left-0 z-[0] bg-[#374151] w-[15em] p-4 h-[100vh] sidebar`}>
+        <div className="flex flex-col items-start mt-[4em] gap-2">
+            {navigation[userRole].map((item) => (
+                <div key={item.name} className="nav-link">
+                    <Link href={item.href} className="text-blue-50">
+                        <span className="mr-1">{item.icon}</span>{item.name}
+                    </Link>
+                </div>
+            ))}
+        </div>
+    </nav>
     );
 };
 

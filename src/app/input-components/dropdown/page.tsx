@@ -1,5 +1,5 @@
 "use client"
-import { DropdownSelect, SearchableDropdownSelect, DropDownOptions } from "@/app/(components)/Input/Dropdown";
+import { DropdownSelect, SearchableDropdownSelect, DropDownOptions } from "@/app/components/Input/Dropdown";
 import Layout from "@/app/layout/page";
 import { useState } from "react";
 

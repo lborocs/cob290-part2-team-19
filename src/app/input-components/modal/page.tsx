@@ -1,6 +1,6 @@
 "use client"
-import { TextButton } from "@/app/(components)/Input/Buttons";
-import { Modal } from "@/app/(components)/Input/Modals";
+import { TextButton } from "@/app/components/Input/Buttons";
+import { Modal } from "@/app/components/Input/Modals";
 import Layout from "@/app/layout/page";
 import { useState } from "react";
 

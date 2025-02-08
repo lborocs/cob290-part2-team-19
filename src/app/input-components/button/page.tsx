@@ -1,5 +1,5 @@
 "use client"
-import { IconButton, TextButton } from "@/app/(components)/Input/Buttons";
+import { IconButton, TextButton } from "@/app/components/Input/Buttons";
 import Layout from "@/app/layout/page";
 
 export default function ButtonPage() {

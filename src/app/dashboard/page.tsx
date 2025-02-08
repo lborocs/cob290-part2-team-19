@@ -2,9 +2,9 @@
 import Layout from '../layout/page';
 import React, { useEffect, useState } from 'react';
 import './dashboard.css';
-import TaskCompletionChart from '../(components)/TaskCompletionChart';
+import TaskCompletionChart from '../components/TaskCompletionChart';
 import FullscreenModal from './fullscreen-modal';
-import Card from '../(components)/Card';
+import Card from '../components/Card';
 import Link from 'next/link';
 
 interface Project {
@@ -67,7 +67,6 @@ export default function Dashboard() {
   return (
     <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
       <div className={`h-full p-4 ps-0 ${isFullscreen ? 'hidden' : ''}`}>
-
         <div className="h-full">
           {/* Top Section */}
           <div className="grid grid-cols-2 gap-4 h-2/5">
