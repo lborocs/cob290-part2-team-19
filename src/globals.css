@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin:0;
+    padding:0;
+    font-family: "Inter", sans-serif;
+    background-color: #f2f2f2 !important;
+}
+.nav-link {
+    position:relative;
+    transition: transform 250ms cubic-bezier(0.075, 0.82, 0.165, 1),
+                font-weight 150ms cubic-bezier(0.075, 0.82, 0.165, 1);
+    transform-origin: left center;
+    >* {
+        transition: color 250ms ease-in-out;
+            
+    }
+}
+
+nav:hover:has(.nav-link:hover) {
+    .nav-link:not(:hover) {
+        transform:scale(0.8); 
+        >* {        
+            color: #1e40af !important;
+            font-weight:400;
+        }
+        
+    }
+}
+
+.custom404 {
+    background-color: #622;
+    color:#fdd;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color:#1f1f1f !important;
+    }
+    nav {
+        background-color: #181818 !important;
+        .nav-link > * {
+            color: #ffffff !important;
+        }
+    }
+    nav:hover:has(.nav-link:hover) {
+        .nav-link:not(:hover) {
+            > * {        
+                color: #858991 !important;
+            }
+            
+        }
+    }
+    header {
+        background-color: #292929!important;
+    }
+    div.main {
+        color:#ffffff;
+    }
+    .custom404 {
+        background-color: #2d2d2d !important;
+        color:#fff !important;
+    }
+}
