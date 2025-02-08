@@ -2,13 +2,14 @@ import sqlite3
 import bcrypt
 from flask import Flask, g
 from flask import request, jsonify
+from flask_cors import CORS
 
 DATABASE = 'database.db'
 PORT = 3300
 
 # To add commands, change the below function
 # To reset DB, delete 'database.db' file
-def init_db():
+def init_db():  
     with app.app_context():
         db = get_db()
         cursor = db.cursor()
@@ -64,6 +65,7 @@ def login(email, entered_password):
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
 app = Flask(__name__)
+CORS(app)
 @app.route('/create', methods=['POST'])
 def create_entry():
     data = request.get_json()
@@ -73,6 +75,7 @@ def create_entry():
     cursor = db.cursor()
     cursor.execute(query, values)
     db.commit()
+    req
     return jsonify({'id': cursor.lastrowid}), 201
 
 @app.route('/read/<int:id>', methods=['GET'])

@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from 'react';
 import "../globals.css"; // Ensure Tailwind is loaded
-import Header from '../Components/Header';
-import Sidebar from '../Components/Sidebar';
+import Header from '../(components)/Header';
+import Sidebar from '../(components)/Sidebar';
 
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";

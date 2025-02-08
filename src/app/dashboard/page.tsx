@@ -2,9 +2,9 @@
 import Layout from '../layout/page';
 import React, { useEffect, useState } from 'react';
 import './dashboard.css';
-import TaskCompletionChart from '../Components/Task-completion-chart';
+import TaskCompletionChart from '../(components)/Task-completion-chart';
 import FullscreenModal from './fullscreen-modal';
-import Card from '../Components/Card';
+import Card from '../(components)/Card';
 import Link from 'next/link';
 
 interface Project {

@@ -1,6 +1,6 @@
 "use client"
 import Layout from '../../layout/page';
-import {TextInput, TextInputButton} from '../../Components/Input/Text';
+import {TextInput, TextInputButton} from '../../(components)/Input/Text';
 import { useCallback, useState } from 'react';
 
 export default function SearchCompPreview() {
