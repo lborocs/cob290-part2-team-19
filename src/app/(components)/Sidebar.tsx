@@ -8,36 +8,44 @@ interface SidebarProps {
     userRole: UserRole;
 }
 
-const Sidebar = ({ userRole }: SidebarProps) => {
-    const navigation: Record<UserRole, { name: string; href: string }[]> = {
-        Manager: [
-            { name: "Dashboard", href: "/dashboard" },
-            { name: "Projects", href: "/projects" },
-            { name: "Tasks", href: "/tasks" },
-            { name: "Knowledge Base", href: "/knowledge-base" },
-        ],
-        "Team Leader": [
-            { name: "Dashboard", href: "/dashboard" },
-            { name: "Projects", href: "/projects" },
-            { name: "Tasks", href: "/tasks" },
-            { name: "Knowledge Base", href: "/knowledge-base" },
-            { name: "New Project", href: "/new-project" },
-        ],
-        Employee: [
-            { name: "Dashboard", href: "/Dashboard" },
-            { name: "Projects", href: "/Projects" },
-            { name: "Tasks", href: "/tasks" },
-            { name: "Knowledge Base", href: "/knowledge-base" },
-        ],
-    };
+const LinkDefinition = {
+    "dash" : {name:"Dashboard",      href:"/dashboard",      icon: <i className="fa-solid fa-table-columns" />},
+    "proj" : {name:"Projects",       href:"/projects",       icon: <i className="fa-solid fa-project-diagram" />},
+    "task" : {name:"Tasks",          href:"/tasks",          icon: <i className="fa-solid fa-tasks" />},
+    "know" : {name:"Knowledge Base", href:"/knowledge-base", icon: <i className="fa-solid fa-book" />},
+    "pro+" : {name:"New Project",    href:"/projects/new",   icon: <i className="fa-solid fa-square-plus" />},
+}
 
+const navigation = {
+    Manager: [
+        LinkDefinition["dash"],
+        LinkDefinition["proj"],
+        LinkDefinition["task"],
+        LinkDefinition["know"],
+    ],
+    "Team Leader": [
+        LinkDefinition["dash"],
+        LinkDefinition["proj"],
+        LinkDefinition["task"],
+        LinkDefinition["know"],
+        LinkDefinition["pro+"],
+    ],
+    Employee: [
+        LinkDefinition["dash"],
+        LinkDefinition["proj"],
+        LinkDefinition["task"],
+        LinkDefinition["know"]
+    ],
+};
+
+const Sidebar = ({ userRole }: SidebarProps) => {
     return (
-        <nav className="fixed top-0 left-0 z-[0] bg-gray-100 w-[15em] p-4 h-[100vh]">
-            <div className="flex flex-col items-start mt-[4em]">
+        <nav className="fixed top-0 left-0 z-[0] bg-[#374151] w-[15em] p-4 h-[100vh] sidebar">
+            <div className="flex flex-col items-start mt-[4em] gap-2">
                 {navigation[userRole].map((item) => (
-                    <div key={item.name} className="mb-2">
-                        <Link href={item.href} className="text-blue-600 hover:text-blue-800">
-                            {item.name}
+                    <div key={item.name} className="nav-link">
+                        <Link href={item.href} className="text-blue-50">
+                            <span className="mr-1">{item.icon}</span>{item.name}
                         </Link>
                     </div>
                 ))}
