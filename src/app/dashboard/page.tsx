@@ -1,20 +1,68 @@
 'use client';
 import Layout from '../layout/page';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './dashboard.css';
 import TaskCompletionChart from '../Components/Task-completion-chart';
 import FullscreenModal from './fullscreen-modal';
 import Card from '../Components/Card';
+import Link from 'next/link';
+
+interface Project {
+  project_id: number;
+  project_name: string;
+  team_leader_id: number;
+  start_date: Date;
+  finish_date: Date;
+  authorised_by: string;
+  authorised: boolean;
+  completed: boolean;
+  status: string;
+  dueDate: string;
+}
+
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showCompleted, setShowCompleted] = useState(false);
+  const [ToDo, setToDo] = useState(1);
+  const [projects, setProjects] = useState<Project[]>([])
+  const [employeeDetails, setEmployeeDetails] = useState<{ [key: number]: any }>({});
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-  const toggleShowCompleted = () => {
-    setShowCompleted(!showCompleted);
+
+
+  const fetchEmployeeDetails = async (employeeId: number) => {
+    try {
+      const response = await fetch(`http://localhost:3300/employees/${employeeId}/details`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log('error fetching employee details', error);
+      return null;
+    }
   };
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('http://localhost:3300/projects/search');
+        const data = await response.json();
+        setProjects(data);
+        //once we have projects we need to get the manager foreach project based on the team leader number
+        const promise = data.map((project: Project) => fetchEmployeeDetails(project.team_leader_id))
+        const employeeDeetsArr = await Promise.all(promise);
+        const employeeDeetsMap = data.reduce((acc: any, project: Project, index: number) => {
+          acc[project.team_leader_id] = employeeDeetsArr[index]
+          return acc;
+        }, {});
+        setEmployeeDetails(employeeDeetsMap);
+      } catch (error) {
+        console.log('error fetching projects', error);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   return (
     <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
@@ -31,7 +79,7 @@ export default function Dashboard() {
             {/* Card 2: Upcoming Tasks */}
             <Card className="min-h-full p-4 flex flex-col">
               <div className="pb-2 flex justify-between items-center title">
-                <h3 className="text-lg font-semibold pt-2">Upcoming</h3>
+                <h3 className="text-lg font-semibold pt-2">Upcoming Tasks</h3>
                 <button onClick={toggleFullscreen} className="pe-2 rounded">
                   <i className="fa-solid fa-expand hover:bg-gray-200 transition"></i>
                 </button>
@@ -44,8 +92,8 @@ export default function Dashboard() {
                 <li className="flex items-center justify-between border p-2 rounded shadow-sm">
                   <span className="w-3 h-3 bg-red-500 rounded-full"></span>
                   <div className="flex-1 ml-2">
-                    <div className="font-medium">Design Review</div>
-                    <div className="text-sm text-gray-500">Manager 1</div>
+                    <div className="font-medium">Task 1</div>
+                    <div className="text-sm text-gray-500">Project 1</div>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <i className="fa-solid fa-calendar-alt mr-1"></i>
@@ -56,8 +104,8 @@ export default function Dashboard() {
                 <li className="flex items-center justify-between border p-2 rounded shadow-sm">
                   <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
                   <div className="flex-1 ml-2">
-                    <div className="font-medium">Team Meeting</div>
-                    <div className="text-sm text-gray-500">Manager 2</div>
+                    <div className="font-medium">Task 2</div>
+                    <div className="text-sm text-gray-500">Project 2</div>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <i className="fa-solid fa-calendar-alt mr-1"></i>
@@ -68,8 +116,8 @@ export default function Dashboard() {
                 <li className="flex items-center justify-between border p-2 rounded shadow-sm">
                   <span className="w-3 h-3 bg-green-500 rounded-full"></span>
                   <div className="flex-1 ml-2">
-                    <div className="font-medium">Documentation</div>
-                    <div className="text-sm text-gray-500">Manager 1</div>
+                    <div className="font-medium">Task 3</div>
+                    <div className="text-sm text-gray-500">Project 3</div>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <i className="fa-solid fa-calendar-alt mr-1"></i>
@@ -110,63 +158,77 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Divider */}
+              {/* line */}
               <hr className="border-gray-300 my-2" />
 
-              {/* Table Section */}
-              <div className="w-full overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border p-2">Project Name</th>
-                      <th className="border p-2">Manager</th>
-                      <th className="border p-2">Due Date</th>
-                      <th className="border p-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Add table rows dynamically here */}
+              {/* Card-style Table Section */}
+              <div className="w-full space-y-3">
+                {/* replace with db results */}
+                {projects.map((project) => {
+                  const currentDate = new Date();
+                  const finishDate = new Date(project.finish_date);
+                  const tlDetails = employeeDetails[project.team_leader_id];
+                  let statusClass = "";
+                  let statusText = "";
 
-                    {/* Sample Table Rows start*/}
-                    <tr>
-                      <td className="border p-2">Project Alpha</td>
-                      <td className="border p-2">John Doe</td>
-                      <td className="border p-2">2023-12-01</td>
-                      <td className="border p-2">In Progress</td>
-                    </tr>
-                    <tr>
-                      <td className="border p-2">Project Beta</td>
-                      <td className="border p-2">Jane Smith</td>
-                      <td className="border p-2">2024-01-15</td>
-                      <td className="border p-2">Completed</td>
-                    </tr>
-                    <tr>
-                      <td className="border p-2">Project Gamma</td>
-                      <td className="border p-2">Alice Johnson</td>
-                      <td className="border p-2">2024-03-22</td>
-                      <td className="border p-2">In Progress</td>
-                    </tr>
-                    {/* Sample Table Rows end*/}
-                  </tbody>
-                </table>
+                  if (project.completed) {
+                    statusClass = "bg-green-200 text-green-800";
+                    statusText = "Completed";
+                  } else if (currentDate < finishDate) {
+                    statusClass = "bg-yellow-200 text-yellow-800";
+                    statusText = "In Progress";
+                  } else {
+                    statusClass = "bg-red-200 text-red-800";
+                    statusText = "Overdue";
+                  }
+
+                  return (
+                    <div
+                      key={project.project_id}
+                      className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
+                      onClick={() => console.log(`Navigating to ${project.project_name}`)} // change this to the routing - need db
+                    >
+                      <div>
+                        <h4 className="font-semibold text-lg">{project.project_name}</h4>
+                        <p className="text-gray-500">Manager: {tlDetails ? `${tlDetails.first_name} ${tlDetails.second_name}` : "Loading..."}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Due: {project.finish_date.toString()}</p>
+                        <span
+                          className={`px-3 py-1 text-sm font-medium rounded-full ${statusClass}
+                          }`}
+                        >
+                          {statusText}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </Card>
+
             <Card className="min-h-full p-4 flex flex-col">
               {/* Header */}
               <div className="mb-3 mt-1 flex justify-between items-center">
                 <h3 className="text-lg font-semibold">To-Do List</h3>
                 <div className="flex gap-2">
                   <button
-                    className={`p-2 rounded ${!showCompleted ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    onClick={() => setShowCompleted(false)}
+                    className={`p-2 rounded ${ToDo === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setToDo(1)}
                   >
                     To-Do
                   </button>
                   <button
-                    className={`p-2 rounded ${showCompleted ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    onClick={() => setShowCompleted(true)}
+                    className={`p-2 rounded ${ToDo === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setToDo(2)}
                   >
                     Completed
+                  </button>
+                  <button
+                    className={`p-2 rounded ${ToDo === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setToDo(3)}
+                  >
+                    Deleted
                   </button>
                 </div>
               </div>
@@ -175,7 +237,7 @@ export default function Dashboard() {
               <hr className="border-gray-300 my-2" />
 
               {/* To-Do Input */}
-              {!showCompleted && (
+              {ToDo === 1 && (
                 <div className="flex items-center gap-2 border p-2 rounded">
                   <input
                     type="text"
@@ -189,8 +251,27 @@ export default function Dashboard() {
               )}
 
               {/* To-Do List Container */}
+
               <ul className="mt-4 space-y-2">
-                {showCompleted ? (
+                {ToDo === 1 && (
+                  <>
+                    {/* To-Do tasks */}
+                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
+                      <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                      <div className="flex-1 ml-2">
+                        <div className="font-medium">To-Do Task 1</div>
+                      </div>
+                    </li>
+                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
+                      <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                      <div className="flex-1 ml-2">
+                        <div className="font-medium">To-Do Task 2</div>
+                      </div>
+                    </li>
+                  </>
+                )
+                }
+                {ToDo === 2 && (
                   <>
                     {/* Completed tasks */}
                     <li className="flex items-center justify-between border p-2 rounded shadow-sm">
@@ -206,19 +287,20 @@ export default function Dashboard() {
                       </div>
                     </li>
                   </>
-                ) : (
+                )}
+                {ToDo === 3 && (
                   <>
                     {/* To-Do tasks */}
                     <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-red-500 rounded-full"></span>
+                      <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
                       <div className="flex-1 ml-2">
-                        <div className="font-medium">To-Do Task 1</div>
+                        <div className="font-medium">Deleted Task 1</div>
                       </div>
                     </li>
                     <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-red-500 rounded-full"></span>
+                      <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
                       <div className="flex-1 ml-2">
-                        <div className="font-medium">To-Do Task 2</div>
+                        <div className="font-medium">Deleted Task 2</div>
                       </div>
                     </li>
                   </>
