@@ -2,7 +2,7 @@
 import Layout from '../layout/page';
 import React, { useEffect, useState } from 'react';
 import './dashboard.css';
-import TaskCompletionChart from '../(components)/Task-completion-chart';
+import TaskCompletionChart from '../(components)/TaskCompletionChart';
 import FullscreenModal from './fullscreen-modal';
 import Card from '../(components)/Card';
 import Link from 'next/link';
@@ -133,8 +133,8 @@ export default function Dashboard() {
             {/* Card 3: Project Summary + Table (2/3 Width, 2/3 Height) */}
             <Card className="col-span-2 min-h-full bg-white p-4">
               {/* Project Summary Section */}
+              <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Project Summary</h3>
                 <div className="flex gap-4">
                   <select className="border p-2 rounded">
                     <option value="0">Project</option>
