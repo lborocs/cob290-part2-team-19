@@ -14,6 +14,11 @@ CREATE TABLE IF NOT EXISTS UserTypes (
     type_name TEXT NOT NULL UNIQUE
 );
 
+INSERT OR IGNORE INTO UserTypes (type_id, type_name) VALUES
+                    (0, 'Manager'),
+                    (1, 'ProjectLead'),
+                    (2, 'Employee');
+
 CREATE TABLE IF NOT EXISTS Projects (
     project_id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_name TEXT NOT NULL,

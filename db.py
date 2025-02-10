@@ -7,26 +7,33 @@ from flask_cors import CORS
 DATABASE = 'database.db'
 PORT = 3300
 
-# To add commands, change the below function
-# To reset DB, delete 'database.db' file
-def init_db():  
-    with app.app_context():
-        db = get_db()
-        cursor = db.cursor()
+app = Flask(__name__)
+CORS(app)
 
-        with open('schema.sql', 'r') as f:
-            schema_sql = f.read()
-        cursor.executescript(schema_sql)
-        
-        
-        cursor.execute("""
-            INSERT OR IGNORE INTO UserTypes (type_id, type_name) VALUES
-                (0, 'Manager'),
-                (1, 'ProjectLead'),
-                (2, 'Employee')
-        """)
-        
-        db.commit()
+def get_db():
+    try:
+        db = getattr(g, '_database', None)
+        if db is None:
+            db = g._database = sqlite3.connect(DATABASE)
+            db.row_factory = sqlite3.Row  # Returns rows as dictionaries
+        return db
+    except sqlite3.DatabaseError as e:
+        print(f"Database connection error: {str(e)}")
+        return None
+
+def init_db():  
+    try:
+        with app.app_context():
+            db = get_db()
+            if db is None:
+                return
+            cursor = db.cursor()
+            with open('schema.sql', 'r') as f:
+                schema_sql = f.read()
+            cursor.executescript(schema_sql)
+            db.commit()
+    except sqlite3.DatabaseError as e:
+        print(f"Database error during initialization: {str(e)}")
 
 def add_user(email, password, first_name, second_name):
     try:
@@ -64,8 +71,7 @@ def login(email, entered_password):
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-app = Flask(__name__)
-CORS(app)
+
 @app.route('/create', methods=['POST'])
 def create_entry():
     data = request.get_json()
@@ -75,7 +81,6 @@ def create_entry():
     cursor = db.cursor()
     cursor.execute(query, values)
     db.commit()
-    req
     return jsonify({'id': cursor.lastrowid}), 201
 
 @app.route('/read/<int:id>', methods=['GET'])
@@ -112,13 +117,6 @@ def delete_entry(id):
     if cursor.rowcount == 0:
         return jsonify({'error': 'Entry not found'}), 404
     return jsonify({'success': True})
-
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row  # Returns rows as dictionaries
-    return db
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -190,8 +188,30 @@ generate_crud_routes('KnowledgeBase', 'post_id')
 generate_crud_routes('KnowledgeBaseCategories', 'category_id')
 generate_crud_routes('KnowledgeBaseEdits', 'post_id')
 
+# Function to find out if project is archived or active
+def is_project_archived(project_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT 1 FROM ArchivedProjects WHERE id = ?", (project_id,))
+    return cursor.fetchone() is not None
 
-# Search functions for tables
+# Function to find out if task is archived or active
+def is_task_archived(task_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
+    return cursor.fetchone() is not None
+
+# Function to find out if knowledge base page is archived or active
+def is_post_archived(post_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT 1 FROM ArchivedKnowledgeBasePages WHERE id = ?", (post_id,))
+    return cursor.fetchone() is not None
+
+
+### Search functions for tables
+
 # Search function for Employees
 @app.route('/employees/search', methods=['GET'])
 def search_employees():
@@ -234,8 +254,10 @@ def search_projects():
     authorised_by = request.args.get('authorised_by')
     completed = request.args.get('completed')
     archived = request.args.get('archived')
+
     query = "SELECT * FROM Projects WHERE 1=1"
     params = []
+    
     if project_name:
         query += " AND project_name LIKE ?"
         params.append(f"%{project_name}%")
@@ -244,7 +266,7 @@ def search_projects():
         params.append(team_leader_id)
     if completed is not None:
         query += " AND completed = ?"
-        params.append(completed)#
+        params.append(completed)
     if start_date:
         query += " AND start_date = ?"
         params.append(start_date)
@@ -254,15 +276,20 @@ def search_projects():
     if authorised_by:
         query += " AND authorised_by = ?"
         params.append(authorised_by)
-    ### TODO: Get archived status by looking up in ArchivedProjects
-    # if archived:
-    #     query += " AND archived = ?"
-    #     params.append(archived)
+
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
     projects = cursor.fetchall()
-    return jsonify([dict(proj) for proj in projects])
+    
+    project_list = []
+    #Appends boolean for archived status of each project
+    for proj in projects:
+        proj_dict = dict(proj)
+        proj_dict['archived'] = is_project_archived(proj['project_id'])
+        project_list.append(proj_dict)
+
+    return jsonify(project_list)
 
 # Search function for Tasks
 @app.route('/tasks/search', methods=['GET'])
@@ -290,15 +317,20 @@ def search_tasks():
     if finish_date:
         query += " AND finish_date = ?"
         params.append(finish_date)
-    ### TODO: Get archived status by looking up in ArchivedTasks
-    # if archived:
-    #     query += " AND archived = ?"
-    #     params.append(archived)
+  
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
     tasks = cursor.fetchall()
-    return jsonify([dict(task) for task in tasks])
+
+    task_list = []
+    #Appends boolean for archived status of each task
+    for task in tasks:
+        task_dict = dict(task)
+        task_dict['archived'] = is_task_archived(task['task_id'])
+        task_list.append(task_list)
+
+    return jsonify(task_list)
 
 # Search function for Knowledge Base
 @app.route('/knowledgebase/search', methods=['GET'])
@@ -314,15 +346,19 @@ def search_knowledgebase():
     if category_id:
         query += " AND category_id = ?"
         params.append(category_id)
-    ### TODO: Get archived status by looking up in ArchivedProjects
-    # if (archived):
-    #
-    #
     db = get_db()
     cursor = db.cursor()
     cursor.execute(query, params)
     posts = cursor.fetchall()
-    return jsonify([dict(post) for post in posts])
+
+    post_list = []
+    #Appends boolean for archived status of each post
+    for post in posts:
+        post_dict = dict(post)
+        post_dict['archived'] = is_task_archived(post['post_id'])
+        post_dict.append(post_dict)
+
+    return jsonify(post_list)
 
 # Search function for Employees assigned to Tasks
 @app.route('/employees/tasks', methods=['GET'])
@@ -400,7 +436,7 @@ def get_employee_details(employee_id):
         return jsonify({'error': 'Employee not found'}), 404
     return jsonify(dict(employee_details))
 
-
+# Function for executing SQL queries
 @app.route('/query', methods=['GET'])
 def execute_query():
     if app.debug:
