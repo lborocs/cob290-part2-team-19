@@ -45,7 +45,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
         <div className="flex flex-col items-start mt-[4em] gap-2">
             {navigation[userRole].map((item) => (
                 <div key={item.name} className="nav-link">
-                    <Link href={item.href} className="text-blue-50">
+                    <Link href={item.href} className="text-blue-50 text-lg">
                         <span className="mr-1">{item.icon}</span>{item.name}
                     </Link>
                 </div>
