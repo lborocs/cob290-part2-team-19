@@ -56,3 +56,20 @@ nav:hover:has(.nav-link:hover) {
 nav.sidebar {
   box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
 }
+
+.new-project-entry {
+    background-color: #e6f3f9;
+    width:20em;
+
+    display:flex;
+    flex-direction: column;
+    padding:1em;
+    border-radius:.5em;
+}
+.new-project-entry .text {
+    display:inline-block;
+    width:15em;
+    font-weight:500;
+    font-size:1.15em;
+    margin-bottom:.1em;
+}

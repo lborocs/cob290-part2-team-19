@@ -20,7 +20,7 @@ export const DropdownSelect = ({
     options,
     selected="",
     selectedCallback=(e)=>{console.log(e)},
-    width="15em",
+    width="100%",
     height="auto",
     style={},
     bindValue=()=>undefined,

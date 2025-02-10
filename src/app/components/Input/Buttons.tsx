@@ -47,12 +47,13 @@ export const TextButton = ({
     color="bg-gray-200",
     hoverColor="hover:bg-gray-300",
     icon=<i className="fa-regular fa-circle-dot mr-2"></i>,
+    style={},
     callback=()=>{}
 } : TextButtonProps) => {
     return (
-        <button className={textColor+" "+color+" "+hoverColor+" transition ease-in-out font-bold py-2 px-4 rounded"}
-                onClick={callback}>
-            {icon} {children}
+        <button className={textColor+" "+color+" "+hoverColor+" text-center transition ease-in-out font-bold py-2 px-4 rounded"}
+                onClick={callback} style={style}>
+            {icon}{children}
         </button>
     )
 }

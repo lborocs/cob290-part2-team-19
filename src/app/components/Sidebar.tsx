@@ -14,7 +14,7 @@ const LinkDefinition = {
     "proj" : {name:"Projects",       href:"/projects",       icon: <i className="fa-solid fa-project-diagram" />},
     "task" : {name:"Tasks",          href:"/tasks",          icon: <i className="fa-solid fa-tasks" />},
     "know" : {name:"Knowledge Base", href:"/knowledge-base", icon: <i className="fa-solid fa-book" />},
-    "pro+" : {name:"New Project",    href:"/projects/new",   icon: <i className="fa-solid fa-square-plus" />},
+    "pro+" : {name:"New Project",    href:"/projects/new",   icon: <i className="fa-regular fa-square-plus" />},
 }
 
 const navigation = {

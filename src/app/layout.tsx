@@ -15,11 +15,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <meta name="description" content="Make It All" />
                 <meta name="author" content="Loughborough Team Projects Group 19" />
 
-                <link rel="icon" href="/squarelogo.png" />
-
                 <title>Make It All</title>
 
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+                <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
             </Head>
             {children}
         </>
