@@ -58,7 +58,7 @@ export default function NewProjectPage() {
             <div className='new-project-entry'>
                 <div className='text'><i className="fa-solid fa-calendar-days"></i> Start Date</div>
                 <div>
-                    <input type="date" name="" id="" className='w-full h-[1em] py-[1em] px-[0.5em] rounded border mr-2' style={{border:"1px solid #ccc"}}/>
+                    <input type="date" name="" id="" className='w-full h-[1em] py-[1em] px-[0.5em] rounded border mr-2 text-black' style={{border:"1px solid #ccc"}}/>
                     <TextButton
                         icon={<i className="fa-regular fa-clock mr-2"/>}
                         color="bg-blue-100"
@@ -68,7 +68,7 @@ export default function NewProjectPage() {
                 </div>
                 <div className='text mt-4'><i className="fa-solid fa-calendar-day"></i> End Date</div>
                 <div>
-                    <input type="date" name="" id="" className='w-full h-[1em] py-[1em] px-[0.5em] rounded' style={{border:"1px solid #ccc"}}/>
+                    <input type="date" name="" id="" className='w-full h-[1em] py-[1em] px-[0.5em] rounded text-black' style={{border:"1px solid #ccc"}}/>
                 </div>
             </div>
 
