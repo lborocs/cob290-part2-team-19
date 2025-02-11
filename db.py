@@ -344,15 +344,19 @@ def search_employees():
     if second_name:
         query += " AND second_name LIKE ?"
         params.append(f"%{second_name}%")        
-    print(params)
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute(query, params)
         employees = cursor.fetchall()
-        employees_dict = {i: dict(employee) for i, employee in enumerate(employees)}
+        ret = [dict(employee) for employee in employees]
+        for employee in ret:
+            for key in employee:
+                employee[key] = str(employee[key])
+                
+        print(ret)
+        return jsonify(ret)
         
-        return jsonify(employees_dict)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
