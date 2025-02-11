@@ -45,7 +45,12 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const sortedTasks = tasks.sort((a, b) => new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime());
+  useEffect(() => {
+    if (tasks != null) {
+      const sortedTasks = tasks.sort((a, b) => new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime());
+      setTasks(sortedTasks);
+    }
+  }, [tasks]);
 
   return (
     <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
@@ -71,8 +76,8 @@ export default function Dashboard() {
 
               {/* Upcoming Task List */}
               <ul className="space-y-3 pe-2 overflow-clip overflow-y-auto">
-                {sortedTasks && sortedTasks.length > 0 ? (
-                  sortedTasks.map((task) => (
+                {tasks && tasks.length > 0 ? (
+                  tasks.map((task) => (
                     <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
                       <span className={`w-3 h-3 ${task.completed ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></span>
                       <div className="flex-1 ml-2">
