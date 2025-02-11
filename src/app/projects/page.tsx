@@ -10,11 +10,11 @@ export default function ProjectsPage() {
       icon={<i className="fa-solid fa-project-diagram"></i>}
     >
       {/* Grid Layout with 2/3 + 1/3 Column Split */}
-      <div className="grid grid-cols-3 gap-6 p-6 min-h-screen">
+      <div className="grid grid-cols-3 gap-6 p-6 h-full">
         {/* Left Column (2/3 width) */}
         <div className="col-span-2 flex flex-col gap-6">
           {/* Project Table */}
-          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[15em]">
+          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[17em]">
             <h2 className="text-xl font-bold mb-3">Project View</h2>
             <div className="h-[10em] overflow-x-hidden overflow-scroll">
                 <table className="min-w-full mt-4">
@@ -87,7 +87,7 @@ export default function ProjectsPage() {
           </div>
 
           {/* Task Notes */}
-          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[15em]">
+          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[17em]">
             <h2 className="text-xl font-bold mb-3">Task Notes</h2>
             <div className="border p-3 rounded-md bg-gray-100 text-gray-700">
               <p>Select a task to view its Notes</p>
@@ -98,7 +98,7 @@ export default function ProjectsPage() {
         {/* Right Column (1/3 width) */}
         <div className="col-span-1 flex flex-col gap-6">
           {/* Card 3 */}
-          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[15em]">
+          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[17em]">
             <h2 className="text-xl font-bold mb-0 flex items-center justify-center">
               Task Completion
             </h2>
@@ -171,7 +171,7 @@ export default function ProjectsPage() {
           </div>
 
           {/* Card 4 */}
-          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[15em]">
+          <div className="bg-[#f3f4f6] shadow-xl border rounded-xl p-5 w-full h-[17em]">
             <h2 className="text-xl font-bold mb-3">Manage Task</h2>
             <div className="flex flex-col gap-2 mt-2">
             <TextButton 
