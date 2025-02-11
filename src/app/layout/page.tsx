@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null })
         <body>
             <Header userRole={userRole} onRoleChange={setUserRole} tabName={tabName} icon={icon} />
             <Sidebar userRole={userRole} />
-            <div className="ml-[16em] mt-[.75em]">
+            <div className="ml-[16em] mt-[.75em] h-[calc(100vh-8rem)]">
                 {icon} <span className="text-xl font-bold">{tabName}</span> 
                 <hr />
                 {children}
