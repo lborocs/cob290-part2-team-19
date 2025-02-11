@@ -68,7 +68,7 @@ export default function NewProjectPage() {
                 </div>
             </div>
 
-            <div className='new-project-entry mb-[20em]'>
+            <div className='new-project-entry'>
                 <div className='text'><i className="fa-solid fa-tags"></i> Tags</div>
                 <div className='inline-block'>
                     <Select
@@ -79,6 +79,17 @@ export default function NewProjectPage() {
                         classNamePrefix="select"
                         placeholder="Select tags"
                     />
+                </div>
+            </div>
+            <div className="new-project-entry mb-[15em]">
+                {/* <div className="text"><i className="fa-solid fa-file-circle-plus"></i> Create Project</div> */}
+                <div className="w-full">
+                    <TextButton
+                        style={{width:"100%", fontSize:"1.5em"}}
+                        icon={<i className="fa-solid fa-file-circle-plus mr-2"></i>}
+                        color="bg-blue-500 text-[#e6f3f9]"
+                        hoverColor="hover:bg-blue-400 hover:text-white"
+                    >Create</TextButton>
                 </div>
             </div>
         </div>
