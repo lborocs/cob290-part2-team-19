@@ -399,13 +399,12 @@ def search_projects():
     if employee_id:
         query += " AND ep.employee_id = ?"
         params.append(employee_id)
-
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute(query, params)
         projects = cursor.fetchall()
-
+        print(projects)
         project_list = []
         # Appends boolean for archived status of each project
         for proj in projects:

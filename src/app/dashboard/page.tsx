@@ -96,37 +96,37 @@ export default function Dashboard() {
             {/* Card 3: Project Summary + Table (2/3 Width, 2/3 Height) */}
             <Card className="col-span-2 min-h-full bg-white p-4">
               {/* Project Summary Section */}
-
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
-                <div className="flex gap-4">
-                  <select className="border p-2 rounded">
-                    <option value="0">Project</option>
-                    <option value="Project 1">Project 1</option>
-                    <option value="Project 2">Project 2</option>
-                    <option value="Project 3">A very long name for Project 3</option>
-                  </select>
-                  <select className="border p-2 rounded">
-                    <option value="0">Manager</option>
-                    <option value="Mx. Lorem">Mx. Lorem</option>
-                    <option value="Dr. Ipsum">Dr. Ipsum</option>
-                    <option value="Mx. Long name for testing">Mx. Long name for testing</option>
-                  </select>
-                  <select className="border p-2 rounded">
-                    <option value="0">Status</option>
-                    <option value="Completed">Completed</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Overdue">Overdue</option>
-                    <option value="TBA">To Be Assigned</option>
-                  </select>
+              <div className="sticky top-0 z-10">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
+                  <div className="flex gap-4">
+                    <select className="border p-2 rounded">
+                      <option value="0">Project</option>
+                      <option value="Project 1">Project 1</option>
+                      <option value="Project 2">Project 2</option>
+                      <option value="Project 3">A very long name for Project 3</option>
+                    </select>
+                    <select className="border p-2 rounded">
+                      <option value="0">Manager</option>
+                      <option value="Mx. Lorem">Mx. Lorem</option>
+                      <option value="Dr. Ipsum">Dr. Ipsum</option>
+                      <option value="Mx. Long name for testing">Mx. Long name for testing</option>
+                    </select>
+                    <select className="border p-2 rounded">
+                      <option value="0">Status</option>
+                      <option value="Completed">Completed</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Overdue">Overdue</option>
+                      <option value="TBA">To Be Assigned</option>
+                    </select>
+                  </div>
                 </div>
+
+                {/* line */}
+                <hr className="border-gray-300 my-2" />
               </div>
-
-              {/* line */}
-              <hr className="border-gray-300 my-2" />
-
               {/* Card-style Table Section */}
-              <div className="w-full space-y-3">
+              <div className="w-full space-y-3 overflow-y-auto max-h-96">
                 {/* replace with db results */}
                 {projects && projects.length > 0 ? (
                   projects.map((project) => {
