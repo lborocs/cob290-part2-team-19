@@ -21,6 +21,71 @@ const Login = () => {
             const response = await fetch('/login.html');
             const text = await response.text();
             setHtmlContent(text);
+
+            const scriptContent = `
+            function validateUser() {
+                const emailElement = document.getElementById('email');
+                const email = emailElement ? emailElement.value : '';
+                const passwordElement = document.getElementById('password');
+                const password = passwordElement ? passwordElement.value : '';
+                fetch('http://localhost:3300/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({email: email, password: password})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.result) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        const toastContent = document.getElementById('toast-content');
+                        if (toastContent) {
+                            toastContent.innerText = 'Invalid email or password';
+                        }
+                        const alertToast = document.querySelector('.alert-toast');
+                        if (alertToast) {
+                            alertToast.style.opacity = '0';
+                            let opacity = 0;
+                            const fadeIn = setInterval(() => {
+                                if (opacity >= 1) {
+                                    clearInterval(fadeIn);
+                                }
+                                alertToast.style.opacity = opacity;
+                                opacity += 0.1;
+                            }, 10);
+                            alertToast.style.display = 'block';
+                        }
+                    }
+                });
+            }
+            function closeToast() {
+                const alertToast = document.querySelector('.alert-toast');
+                if (alertToast) {
+                let opacity = 1;
+                const fadeOut = setInterval(() => {
+                    if (opacity <= 0) {
+                        clearInterval(fadeOut);
+                    }
+                    alertToast.style.opacity = opacity;
+                    opacity -= 0.1;
+                }, 50);
+                    alertToast.style.display = 'none';
+                }
+            }
+
+            document.querySelector('.signInBtn')?.addEventListener('click', () => {
+                validateUser();
+            });
+            `;
+            const scriptElement = document.createElement('script');
+            scriptElement.innerHTML = scriptContent;
+            document.body.appendChild(scriptElement);
+
+            
+
+
         };
 
         fetchHtmlContent();
@@ -33,6 +98,7 @@ const Login = () => {
         </head>
         <body>
         <div>
+
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
             </div>
                 <div>

@@ -8,6 +8,8 @@ import Head from 'next/head';
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
+
+
 interface LayoutProps {
     tabName?: string;
     icon?: any;
@@ -17,6 +19,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
     const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
     let title = "Make It All";
+    
+
     
     return (
         <html lang="en">

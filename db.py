@@ -67,7 +67,7 @@ def add_user():
         if row[0] > 0:  
             return jsonify({"error": "There is already an account with this email." }), 409
         
-        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode('utf-8')
         cursor.execute("""
             INSERT INTO Employees (employee_email, first_name, second_name, hashed_password, user_type_id, current_employee)
             VALUES (?, ?, ?, ?, 2, TRUE)
@@ -319,6 +319,7 @@ def is_post_archived():
 ### Search functions for tables
 
 # Search function for Employees
+
 @app.route('/employees/search', methods=['GET'])
 def search_employees():
     employee_email = request.args.get('employee_email')
@@ -349,7 +350,9 @@ def search_employees():
         cursor = db.cursor()
         cursor.execute(query, params)
         employees = cursor.fetchall()
-        return jsonify([dict(emp) for emp in employees])
+        employees_dict = {i: dict(employee) for i, employee in enumerate(employees)}
+        
+        return jsonify(employees_dict)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:

@@ -12,10 +12,17 @@
     <!-- FontAwesome Icons -->
     <script defer src="https://kit.fontawesome.com/c8b5e2a200.js" crossorigin="anonymous"></script>
     <script>
-        function loginUser() {
-            const userData = {email: document.getElementById('email').value};
-            localStorage.setItem('loggedInUser', JSON.stringify(userData));        
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.alert-toast-close')?.addEventListener('click', () => {
+                const alertToast = document.querySelector('.alert-toast');
+                if (alertToast) {
+                    alertToast.style.display = 'none';
+                }
+            });
+            document.querySelector('.signInBtn')?.addEventListener('click', () => {
+                validateUser();
+            });
+        });
     </script>
 </head>
 
@@ -60,7 +67,7 @@
                         </div>
                     </div>
                     <div class="formGroup">
-                        <button type="submit" class="signInBtn" style="margin-top:5px;" onclick="loginUser()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</button>
+                        <button type="button" class="signInBtn" style="margin-top:5px;" onclick="validateUser()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</button>
                         <div class="signInSignUpSep">
                             <hr class="formPreHr">
                             <span class="formMidHrCont">or</span>
@@ -78,7 +85,34 @@
     </main>
     <aside>
         <img class="absLogo" src="./logo.png" alt="logo" aria-hidden="true">
+        <style>
+            .alert-toast {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                background-color: #f44336;
+                color: white;
+                padding: 16px;
+                margin: 16px;
+                border-radius: 5px;
+                display: none;
+                z-index: 1;
+            }
+            .alert-toast-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+        </style>
+        <div class="alert-toast">
+            <div class="alert-toast-header">
+                <h3>Error</h3>
+                <button class="alert-toast-close" onclick="closeToast()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="alert-toast-body">
+                <p id="toast-content"></p>
+            </div>
+        </div>
     </aside>
-
     <!-- <script>setTimeout(() => {hideSpinner();},1000)</script> -->
 </body>
