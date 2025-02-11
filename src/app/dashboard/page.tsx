@@ -45,7 +45,7 @@ export default function Dashboard() {
   })
 
   return (
-    <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
+    <Layout tabName={"Welcome"} icon={<i className="fa-solid fa-table-columns"></i>}>
       <div className={`h-full p-4 ps-0 ${isFullscreen ? 'hidden' : ''}`}>
         <div className="h-full">
           {/* Top Section */}
