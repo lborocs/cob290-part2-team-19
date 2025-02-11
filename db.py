@@ -259,25 +259,19 @@ def archive_task():
 
 # Function to find out if project is archived or active
 @app.route("/is_project_archived", methods=["GET"])
-def is_project_archived():
+def is_project_archived(project_id):
     try:
-        data = request.get_json()
-        project_id = data.get("project_id")
-        
-        if not project_id:
-            return jsonify({"error": "Project ID is required"}), 400
-        
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT 1 FROM ArchivedProjects WHERE id = ?", (project_id,))
-        
         archived = cursor.fetchone()
-        return jsonify({"archived": archived is not None}), 200
+        return archived is not None
     except sqlite3.DatabaseError as e:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+        print(f"Database error: {str(e)}")
+        return False
     except Exception as e:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-        
+        print(f"An unexpected error occurred: {str(e)}")
+        return False
 
 # Function to find out if task is archived or active
 @app.route("/is_task_archived", methods=["GET"])
@@ -406,7 +400,6 @@ def search_projects():
             proj_dict = dict(proj)
             proj_dict['archived'] = is_project_archived(proj['project_id'])
             project_list.append(proj_dict)
-
         return jsonify(project_list)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."
@@ -571,6 +564,7 @@ def get_tasks_employees_for_project(project_id):
         cursor = db.cursor()
         cursor.execute(query, (project_id,))
         tasks_employees = cursor.fetchall()
+        
         return jsonify([dict(task_employee) for task_employee in tasks_employees])
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."

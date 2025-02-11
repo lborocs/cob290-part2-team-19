@@ -7,6 +7,14 @@ import FullscreenModal from './fullscreen-modal';
 import Card from '../components/Card';
 import { fetchProjects } from '@/api/fetchProjects';
 
+interface EmployeeDetails {
+  employee_id: number;
+  employee_email: string;
+  first_name: string;
+  second_name: string;
+  user_type_id: number;
+  type_name: string;
+}
 interface Project {
   project_id: number;
   project_name: string;
@@ -18,6 +26,8 @@ interface Project {
   completed: boolean;
   status: string;
   dueDate: string;
+  archived: boolean;
+  employeeDetails: EmployeeDetails;
 }
 
 
@@ -25,7 +35,6 @@ export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ToDo, setToDo] = useState(1);
   const [projects, setProjects] = useState<Project[]>([])
-  const [employeeDetails, setEmployeeDetails] = useState<{ [key: number]: any }>({});
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -34,7 +43,15 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    fetchProjects();
+    const fetchData = async () => {
+      try {
+        const data = await fetchProjects();
+        setProjects(data);
+      } catch (error) {
+        console.log('Error fetching data:', error);
+      }
+    }
+    fetchData();
   }, []);
 
   return (
@@ -140,7 +157,7 @@ export default function Dashboard() {
                 {projects.map((project) => {
                   const currentDate = new Date();
                   const finishDate = new Date(project.finish_date);
-                  const tlDetails = employeeDetails[project.team_leader_id];
+                  const tlDetails = project.employeeDetails;
                   let statusClass = "";
                   let statusText = "";
 
