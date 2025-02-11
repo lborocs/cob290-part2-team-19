@@ -19,16 +19,11 @@ export default function Dashboard() {
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-
-<<<<<<< Updated upstream
-=======
-
   //getting projects
->>>>>>> Stashed changes
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchProjects();
+        const data = await fetchProjects(0);
         setProjects(data);
       } catch (error) {
         console.log('Error fetching data:', error);
@@ -41,7 +36,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchTasks();
+        const data = await fetchTasks(0);
         setTasks(data)
       } catch (error) {
         console.log('Error fetching data:', error)
@@ -50,7 +45,7 @@ export default function Dashboard() {
   })
 
   return (
-    <Layout tabName={"Welcome"} icon={<i className="fa-solid fa-table-columns"></i>}>
+    <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
       <div className={`h-full p-4 ps-0 ${isFullscreen ? 'hidden' : ''}`}>
         <div className="h-full">
           {/* Top Section */}
@@ -82,30 +77,6 @@ export default function Dashboard() {
                   <div className="flex items-center text-sm text-gray-600">
                     <i className="fa-solid fa-calendar-alt mr-1"></i>
                     <span>30/10/24</span>
-                  </div>
-                </li>
-
-                <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                  <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                  <div className="flex-1 ml-2">
-                    <div className="font-medium">Task 2</div>
-                    <div className="text-sm text-gray-500">Project 2</div>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <i className="fa-solid fa-calendar-alt mr-1"></i>
-                    <span>31/10/24</span>
-                  </div>
-                </li>
-
-                <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                  <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                  <div className="flex-1 ml-2">
-                    <div className="font-medium">Task 3</div>
-                    <div className="text-sm text-gray-500">Project 3</div>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <i className="fa-solid fa-calendar-alt mr-1"></i>
-                    <span>01/11/24</span>
                   </div>
                 </li>
               </ul>
