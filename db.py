@@ -365,37 +365,46 @@ def search_projects():
     authorised_by = request.args.get('authorised_by')
     completed = request.args.get('completed')
     archived = request.args.get('archived')
+    employee_id = request.args.get('employee_id')
 
-    query = "SELECT * FROM Projects WHERE 1=1"
+    query = """
+    SELECT p.*
+    FROM Projects p
+    JOIN EmployeeProjects ep ON p.project_id = ep.project_id
+    WHERE 1=1
+    """
     params = []
-    
+
     if project_name:
-        query += " AND project_name LIKE ?"
+        query += " AND p.project_name LIKE ?"
         params.append(f"%{project_name}%")
     if team_leader_id:
-        query += " AND team_leader_id = ?"
+        query += " AND p.team_leader_id = ?"
         params.append(team_leader_id)
     if completed is not None:
-        query += " AND completed = ?"
+        query += " AND p.completed = ?"
         params.append(completed)
     if start_date:
-        query += " AND start_date = ?"
+        query += " AND p.start_date = ?"
         params.append(start_date)
     if finish_date:
-        query += " AND finish_date = ?"
+        query += " AND p.finish_date = ?"
         params.append(finish_date)
     if authorised_by:
-        query += " AND authorised_by = ?"
+        query += " AND p.authorised_by = ?"
         params.append(authorised_by)
+    if employee_id:
+        query += " AND ep.employee_id = ?"
+        params.append(employee_id)
 
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute(query, params)
         projects = cursor.fetchall()
-        
+
         project_list = []
-        #Appends boolean for archived status of each project
+        # Appends boolean for archived status of each project
         for proj in projects:
             proj_dict = dict(proj)
             proj_dict['archived'] = is_project_archived(proj['project_id'])
@@ -414,24 +423,35 @@ def search_tasks():
     completed = request.args.get('completed')
     start_date = request.args.get('start_date')
     finish_date = request.args.get('finish_date')
-    query = "SELECT * FROM Tasks WHERE 1=1"
+    employee_id = request.args.get('employee_id')
+
+    query = """
+    SELECT t.*
+    FROM Tasks t
+    JOIN EmployeeTasks et ON t.task_id = et.task_id
+    WHERE 1=1
+    """
     params = []
+
     if task_name:
-        query += " AND task_name LIKE ?"
+        query += " AND t.task_name LIKE ?"
         params.append(f"%{task_name}%")
     if project_id:
-        query += " AND project_id = ?"
+        query += " AND t.project_id = ?"
         params.append(project_id)
     if completed is not None:
-        query += " AND completed = ?"
+        query += " AND t.completed = ?"
         params.append(completed)
     if start_date:
-        query += " AND start_date = ?"
+        query += " AND t.start_date = ?"
         params.append(start_date)
     if finish_date:
-        query += " AND finish_date = ?"
+        query += " AND t.finish_date = ?"
         params.append(finish_date)
-  
+    if employee_id:
+        query += " AND et.employee_id = ?"
+        params.append(employee_id)
+
     try:
         db = get_db()
         cursor = db.cursor()
@@ -439,11 +459,11 @@ def search_tasks():
         tasks = cursor.fetchall()
 
         task_list = []
-        #Appends boolean for archived status of each task
+        # Appends boolean for archived status of each task
         for task in tasks:
             task_dict = dict(task)
             task_dict['archived'] = is_task_archived(task['task_id'])
-            task_list.append(task_list)
+            task_list.append(task_dict)
 
         return jsonify(task_list)
     except sqlite3.DatabaseError as e:
@@ -592,6 +612,7 @@ def get_employee_details(employee_id):
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
+    
 
 # Function for executing SQL queries
 @app.route('/query', methods=['GET'])

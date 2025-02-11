@@ -6,40 +6,25 @@ import TaskCompletionChart from '../components/TaskCompletionChart';
 import FullscreenModal from './fullscreen-modal';
 import Card from '../components/Card';
 import { fetchProjects } from '@/api/fetchProjects';
-
-interface EmployeeDetails {
-  employee_id: number;
-  employee_email: string;
-  first_name: string;
-  second_name: string;
-  user_type_id: number;
-  type_name: string;
-}
-interface Project {
-  project_id: number;
-  project_name: string;
-  team_leader_id: number;
-  start_date: Date;
-  finish_date: Date;
-  authorised_by: string;
-  authorised: boolean;
-  completed: boolean;
-  status: string;
-  dueDate: string;
-  archived: boolean;
-  employeeDetails: EmployeeDetails;
-}
+import { fetchTasks } from '@/api/fetchTasks';
+import { Project, Task } from '@/interfaces/interfaces';
 
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ToDo, setToDo] = useState(1);
   const [projects, setProjects] = useState<Project[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
 
+<<<<<<< Updated upstream
+=======
+
+  //getting projects
+>>>>>>> Stashed changes
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,6 +36,18 @@ export default function Dashboard() {
     }
     fetchData();
   }, []);
+
+  //getting tasks
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchTasks();
+        setTasks(data)
+      } catch (error) {
+        console.log('Error fetching data:', error)
+      }
+    }
+  })
 
   return (
     <Layout tabName={"Welcome"} icon={<i className="fa-solid fa-table-columns"></i>}>

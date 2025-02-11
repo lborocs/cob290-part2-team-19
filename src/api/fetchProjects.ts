@@ -1,8 +1,8 @@
 import { fetchEmployeeDetails } from './fetchEmployeeDetails';
 
-export const fetchProjects = async () => {
+export const fetchProjects = async (employeeId: number) => {
     try {
-        const response = await fetch('http://localhost:3300/projects/search');
+        const response = await fetch(`http://localhost:3300/projects/search?employee_id=${employeeId}`);
         const projects = await response.json();
 
         // need the tl details for each project
@@ -12,7 +12,7 @@ export const fetchProjects = async () => {
                 return { ...project, employeeDetails };
             })
         );
-        console.log(projectsWithEmployeeDetails);
+        //console.log(projectsWithEmployeeDetails);
         return projectsWithEmployeeDetails;
     } catch (error) {
         console.log('Error fetching projects:', error);
