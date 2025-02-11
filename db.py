@@ -83,7 +83,7 @@ def add_user():
 @app.route("/login", methods=["POST"])
 def login():
     try:
-        data = request.json
+        data = request.get_json()
         email = data.get("email")
         entered_password = data.get("password")
         
@@ -141,17 +141,31 @@ def view_completed_projects():
 
 # Function to move projects to archive
 @app.route("/archive_project", methods=["POST"])
-def archive_project(project_id, archived_date, future_autodelete_date, manager_id):
+def archive_project():
     try:
+        data = request.get_json()
+        project_id = data.get("project_id")
+        archived_date = data.get("archived_date")
+        future_autodelete_date = data.get("future_autodelete_date")
+        manager_id = data.get("manager_id")
+        
+        if not all([project_id, archived_date, future_autodelete_date, manager_id]):
+            return jsonify({"error": "All fields (project_id, archived_date, future_autodelete_date, manager_id) are required."}), 400
+
+        
         db = get_db()
         cursor = db.cursor()
         
         # Move task to ArchivedTasks
-        insert_query = "INSERT INTO ArchivedProjects (?, ?, ?)"
-        cursor.execute(insert_query, (project_id, archived_date, future_autodelete_date,))
+        insert_query = """
+        INSERT INTO ArchivedProjects (project_id, archived_date, future_autodelete_date)
+        VALUES (?, ?, ?)
+        """
+        cursor.execute(insert_query, (project_id, archived_date, future_autodelete_date))
+
 
         # Update project in Projects
-        update_query = "UPDATE Projects SET authorised = 1, authorised_by = ? WHERE project_id = ?;"
+        update_query = "UPDATE Projects SET authorised = 1, authorised_by = ? WHERE project_id = ?"
         cursor.execute(update_query, (manager_id, project_id,))
         
         # Delete project from completedTasksBacklog
@@ -159,19 +173,27 @@ def archive_project(project_id, archived_date, future_autodelete_date, manager_i
         cursor.execute(delete_query, (project_id,))
 
         db.commit()
-        return jsonify({"success": True, "project_id": project_id})
+        return jsonify({"success": True, "message": "Project archived successfully."}), 200
     except sqlite3.DatabaseError as e:
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
 # Function to view tasks when they have been completed, to be used by team leaders to aid 'signing off'
 # Displays the task id, the completion date, the employee assigned to task's id
-def view_completed_tasks(team_leader_id):
+@app.route('/completed_tasks', methods=['GET'])
+def view_completed_tasks():
     try:
+        data = request.get_json()
+        team_leader_id = data.get('team_leader_id')
+
+        if not team_leader_id:
+            return jsonify({"error": "Team leader ID is required."}), 400
+
         db = get_db()
         cursor = db.cursor()
+
         query = """
         SELECT c.task_id, c.completed_date, t.employee_id 
         FROM completedTasksBacklog AS c
@@ -181,70 +203,123 @@ def view_completed_tasks(team_leader_id):
         """
         cursor.execute(query, (team_leader_id,))
         rows = cursor.fetchall()
-        return jsonify([{"task_id": row[0], "completed_date": row[1]} for row in rows])
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+        if not rows:
+            return jsonify({"message": "No completed tasks found for this team leader."}), 404
+
+        return jsonify([
+            {
+                "task_id": row["task_id"],
+                "completed_date": row["completed_date"],
+                "employee_id": row["employee_id"]
+            }
+            for row in rows
+        ]), 200
+
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
 
 # Function to add task to archive
-def archive_task(task_id, archived_date, future_autodelete_date):
+@app.route('/archive_task', methods=['POST'])
+def archive_task():
     try:
+        data = request.get_json()
+        task_id = data.get('task_id')
+        archived_date = data.get('archived_date')
+        future_autodelete_date = data.get('future_autodelete_date')
+
+        if not all([task_id, archived_date, future_autodelete_date]):
+            return jsonify({"error": "All fields (task_id, archived_date, future_autodelete_date) are required."}), 400
+
         db = get_db()
         cursor = db.cursor()
-        
+
         # Move task to ArchivedTasks
         insert_query = """
-        INSERT INTO ArchivedTasks (?, ?, ?)
+        INSERT INTO ArchivedTasks (task_id, archived_date, future_autodelete_date)
+        VALUES (?, ?, ?)
         """
-        cursor.execute(insert_query, (task_id, archived_date, future_autodelete_date, ))
-        
+        cursor.execute(insert_query, (task_id, archived_date, future_autodelete_date))
+
         # Delete task from completedTasksBacklog
-        delete_query = "DELETE FROM completedTasksBacklog WHERE task_id = ?;"
+        delete_query = "DELETE FROM completedTasksBacklog WHERE task_id = ?"
         cursor.execute(delete_query, (task_id,))
-        
+
         db.commit()
-        return jsonify({"success": True, "task_id": task_id})
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+        return jsonify({"success": True, "message": "Task archived successfully."}), 200
+
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
 
 # Function to find out if project is archived or active
-def is_project_archived(project_id):
+@app.route("/is_project_archived", methods=["GET"])
+def is_project_archived():
     try:
+        data = request.get_json()
+        project_id = data.get("project_id")
+        
+        if not project_id:
+            return jsonify({"error": "Project ID is required"}), 400
+        
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT 1 FROM ArchivedProjects WHERE id = ?", (project_id,))
-        return cursor.fetchone() is not None
+        
+        archived = cursor.fetchone()
+        return jsonify({"archived": archived is not None}), 200
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+        
 
 # Function to find out if task is archived or active
-def is_task_archived(task_id):
+@app.route("/is_task_archived", methods=["GET"])
+def is_task_archived():
     try:
+        data = request.get_json()
+        task_id = data.get("task_id")
+        
+        if not task_id:
+            return jsonify({"error": "Task ID is required"}), 400
+        
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
-        return cursor.fetchone() is not None
+        
+        archived = cursor.fetchone()
+        return jsonify({"archived": archived is not None}), 200
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 # Function to find out if knowledge base page is archived or active
-def is_post_archived(post_id):
+@app.route("/is_post_archived", methods=["GET"])
+def is_post_archived():
     try:
+        data = request.get_json()
+        post_id = data.get("post_id")
+        
+        if not post_id:
+            return jsonify({"error": "Post ID is required"}), 400
+        
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT 1 FROM ArchivedKnowledgeBasePages WHERE id = ?", (post_id,))
-        return cursor.fetchone() is not None
+        
+        archived = cursor.fetchone()
+        return jsonify({"archived": archived is not None}), 200
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
 ### Search functions for tables
