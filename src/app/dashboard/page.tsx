@@ -6,51 +6,46 @@ import TaskCompletionChart from '../components/TaskCompletionChart';
 import FullscreenModal from './fullscreen-modal';
 import Card from '../components/Card';
 import { fetchProjects } from '@/api/fetchProjects';
-
-interface EmployeeDetails {
-  employee_id: number;
-  employee_email: string;
-  first_name: string;
-  second_name: string;
-  user_type_id: number;
-  type_name: string;
-}
-interface Project {
-  project_id: number;
-  project_name: string;
-  team_leader_id: number;
-  start_date: Date;
-  finish_date: Date;
-  authorised_by: string;
-  authorised: boolean;
-  completed: boolean;
-  status: string;
-  dueDate: string;
-  archived: boolean;
-  employeeDetails: EmployeeDetails;
-}
+import { fetchTasks } from '@/api/fetchTasks';
+import { Project, Task } from '@/interfaces/interfaces';
 
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ToDo, setToDo] = useState(1);
   const [projects, setProjects] = useState<Project[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-
+  //getting projects
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchProjects();
+        const data = await fetchProjects(0);
         setProjects(data);
       } catch (error) {
         console.log('Error fetching data:', error);
       }
-    }
+    };
     fetchData();
   }, []);
+
+  //getting tasks
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchTasks(0);
+        setTasks(data)
+      } catch (error) {
+        console.log('Error fetching data:', error)
+      }
+    };
+    fetchData();
+  }, []);
+
+  const sortedTasks = tasks.sort((a, b) => new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime());
 
   return (
     <Layout tabName={"Welcome"} icon={<i className="fa-solid fa-table-columns"></i>}>
@@ -76,41 +71,22 @@ export default function Dashboard() {
 
               {/* Upcoming Task List */}
               <ul className="space-y-3 pe-2 overflow-clip overflow-y-auto">
-                <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                  <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                  <div className="flex-1 ml-2">
-                    <div className="font-medium">Task 1</div>
-                    <div className="text-sm text-gray-500">Project 1</div>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <i className="fa-solid fa-calendar-alt mr-1"></i>
-                    <span>30/10/24</span>
-                  </div>
-                </li>
-
-                <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                  <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                  <div className="flex-1 ml-2">
-                    <div className="font-medium">Task 2</div>
-                    <div className="text-sm text-gray-500">Project 2</div>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <i className="fa-solid fa-calendar-alt mr-1"></i>
-                    <span>31/10/24</span>
-                  </div>
-                </li>
-
-                <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                  <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                  <div className="flex-1 ml-2">
-                    <div className="font-medium">Task 3</div>
-                    <div className="text-sm text-gray-500">Project 3</div>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <i className="fa-solid fa-calendar-alt mr-1"></i>
-                    <span>01/11/24</span>
-                  </div>
-                </li>
+                {sortedTasks && sortedTasks.length > 0 ? (
+                  sortedTasks.map((task) => (
+                    <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
+                      <span className={`w-3 h-3 ${task.completed ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></span>
+                      <div className="flex-1 ml-2">
+                        <div className="font-medium">{task.task_name}</div>
+                        <div className="text-sm text-gray-500">Project {task.project_id}</div>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <i className="fa-solid fa-calendar-alt mr-1"></i>
+                        <span>{new Date(task.finish_date).toLocaleDateString()}</span>
+                      </div>
+                    </li>
+                  ))) : (
+                  <li className="text-center text-gray-500">No tasks available</li>
+                )}
               </ul>
             </Card>
           </div>
@@ -152,46 +128,49 @@ export default function Dashboard() {
               {/* Card-style Table Section */}
               <div className="w-full space-y-3">
                 {/* replace with db results */}
-                {projects.map((project) => {
-                  const currentDate = new Date();
-                  const finishDate = new Date(project.finish_date);
-                  const tlDetails = project.employeeDetails;
-                  let statusClass = "";
-                  let statusText = "";
+                {projects && projects.length > 0 ? (
+                  projects.map((project) => {
+                    const currentDate = new Date();
+                    const finishDate = new Date(project.finish_date);
+                    const tlDetails = project.employeeDetails;
+                    let statusClass = "";
+                    let statusText = "";
 
-                  if (project.completed) {
-                    statusClass = "bg-green-200 text-green-800";
-                    statusText = "Completed";
-                  } else if (currentDate < finishDate) {
-                    statusClass = "bg-yellow-200 text-yellow-800";
-                    statusText = "In Progress";
-                  } else {
-                    statusClass = "bg-red-200 text-red-800";
-                    statusText = "Overdue";
-                  }
+                    if (project.completed) {
+                      statusClass = "bg-green-200 text-green-800";
+                      statusText = "Completed";
+                    } else if (currentDate < finishDate) {
+                      statusClass = "bg-yellow-200 text-yellow-800";
+                      statusText = "In Progress";
+                    } else {
+                      statusClass = "bg-red-200 text-red-800";
+                      statusText = "Overdue";
+                    }
 
-                  return (
-                    <div
-                      key={project.project_id}
-                      className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
-                      onClick={() => console.log(`Navigating to ${project.project_name}`)} // change this to the routing - need db
-                    >
-                      <div>
-                        <h4 className="font-semibold text-lg">{project.project_name}</h4>
-                        <p className="text-gray-500">Manager: {tlDetails ? `${tlDetails.first_name} ${tlDetails.second_name}` : "Loading..."}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500">Due: {project.finish_date.toString()}</p>
-                        <span
-                          className={`px-3 py-1 text-sm font-medium rounded-full ${statusClass}
+                    return (
+                      <div
+                        key={project.project_id}
+                        className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
+                        onClick={() => console.log(`Navigating to ${project.project_name}`)} // change this to the routing - need db
+                      >
+                        <div>
+                          <h4 className="font-semibold text-lg">{project.project_name}</h4>
+                          <p className="text-gray-500">Manager: {tlDetails ? `${tlDetails.first_name} ${tlDetails.second_name}` : "Loading..."}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Due: {project.finish_date.toString()}</p>
+                          <span
+                            className={`px-3 py-1 text-sm font-medium rounded-full ${statusClass}
                           }`}
-                        >
-                          {statusText}
-                        </span>
+                          >
+                            {statusText}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })) : (
+                  <div className="text-center text-gray-500">Not assigned to any Projects</div>
+                )}
               </div>
             </Card>
 
