@@ -11,6 +11,12 @@
 
     <!-- FontAwesome Icons -->
     <script defer src="https://kit.fontawesome.com/c8b5e2a200.js" crossorigin="anonymous"></script>
+    <script>
+        function loginUser() {
+            const userData = {email: document.getElementById('email').value};
+            localStorage.setItem('loggedInUser', JSON.stringify(userData));        
+        }
+    </script>
 </head>
 
 <body onload="hideSpinner()">
@@ -54,7 +60,7 @@
                         </div>
                     </div>
                     <div class="formGroup">
-                        <button type="submit" class="signInBtn" style="margin-top:5px;" onclick="window.location='/dashboard'"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</button>
+                        <button type="submit" class="signInBtn" style="margin-top:5px;" onclick="loginUser()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</button>
                         <div class="signInSignUpSep">
                             <hr class="formPreHr">
                             <span class="formMidHrCont">or</span>
