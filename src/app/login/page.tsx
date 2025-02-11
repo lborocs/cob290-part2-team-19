@@ -37,12 +37,13 @@ const Login = () => {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.result) {
+                    if (data.success) {
                         window.location.href = '/dashboard';
                     } else {
                         const toastContent = document.getElementById('toast-content');
                         if (toastContent) {
-                            toastContent.innerText = 'Invalid email or password';
+                            toastContent.innerText = data.message;
+                            console.log(data)
                         }
                         const alertToast = document.querySelector('.alert-toast');
                         if (alertToast) {

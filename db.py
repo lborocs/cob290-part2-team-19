@@ -83,6 +83,7 @@ def add_user():
 @app.route("/login", methods=["POST"])
 def login():
     try:
+        
         data = request.get_json()
         email = data.get("email")
         entered_password = data.get("password")
@@ -94,14 +95,14 @@ def login():
         cursor = db.cursor()
         cursor.execute("SELECT hashed_password FROM Employees WHERE employee_email = ?", (email,))
         row = cursor.fetchone()
-        if row and bcrypt.checkpw(entered_password.encode(), row[0]):
+        if row and bcrypt.checkpw(entered_password.encode(), row[0].encode()):
             return jsonify({"success": True, "message":"Login successful"})
         else:
             return jsonify({"error": "Email or password is incorrect"}), 401
     except sqlite3.DatabaseError as e:
         return jsonify({"error":"Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return jsonify({"error":"An unexpected error occurred. Please try again later."}), 500
+        return jsonify({"error":f"An unexpected error occurred. {str(e)} Please try again later."}), 500
 
 # Function to view completed projects. Returns Project ID, date Completed, whether the project is authorised (to have finished, manager), 
 # who authorised the completion of the project, the team leader id and team leader name.
@@ -344,15 +345,17 @@ def search_employees():
     if second_name:
         query += " AND second_name LIKE ?"
         params.append(f"%{second_name}%")        
-    print(params)
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute(query, params)
         employees = cursor.fetchall()
-        employees_dict = {i: dict(employee) for i, employee in enumerate(employees)}
+        ret = [dict(employee) for employee in employees]
+        for employee in ret:
+            for key in employee:
+                employee[key] = str(employee[key])
+        return jsonify(ret)
         
-        return jsonify(employees_dict)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
