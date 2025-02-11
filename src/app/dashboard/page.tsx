@@ -5,7 +5,7 @@ import './dashboard.css';
 import TaskCompletionChart from '../components/TaskCompletionChart';
 import FullscreenModal from './fullscreen-modal';
 import Card from '../components/Card';
-import Link from 'next/link';
+import { fetchProjects } from '@/api/fetchProjects';
 
 interface Project {
   project_id: number;
@@ -32,35 +32,8 @@ export default function Dashboard() {
   };
 
 
-  const fetchEmployeeDetails = async (employeeId: number) => {
-    try {
-      const response = await fetch(`http://localhost:3300/employees/${employeeId}/details`);
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.log('error fetching employee details', error);
-      return null;
-    }
-  };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch('http://localhost:3300/projects/search');
-        const data = await response.json();
-        setProjects(data);
-        //once we have projects we need to get the manager foreach project based on the team leader number
-        const promise = data.map((project: Project) => fetchEmployeeDetails(project.team_leader_id))
-        const employeeDeetsArr = await Promise.all(promise);
-        const employeeDeetsMap = data.reduce((acc: any, project: Project, index: number) => {
-          acc[project.team_leader_id] = employeeDeetsArr[index]
-          return acc;
-        }, {});
-        setEmployeeDetails(employeeDeetsMap);
-      } catch (error) {
-        console.log('error fetching projects', error);
-      }
-    };
     fetchProjects();
   }, []);
 
@@ -78,7 +51,7 @@ export default function Dashboard() {
             {/* Card 2: Upcoming Tasks */}
             <Card className="min-h-full p-4 flex flex-col">
               <div className="pb-2 flex justify-between items-center title">
-                <h3 className="text-lg font-semibold pt-2">Upcoming Tasks</h3>
+                <h3 className="text-lg font-semibold">Upcoming Tasks</h3>
                 <button onClick={toggleFullscreen} className="pe-2 rounded">
                   <i className="fa-solid fa-expand hover:bg-gray-200 transition"></i>
                 </button>
@@ -132,8 +105,9 @@ export default function Dashboard() {
             {/* Card 3: Project Summary + Table (2/3 Width, 2/3 Height) */}
             <Card className="col-span-2 min-h-full bg-white p-4">
               {/* Project Summary Section */}
-              <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
+
               <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
                 <div className="flex gap-4">
                   <select className="border p-2 rounded">
                     <option value="0">Project</option>
