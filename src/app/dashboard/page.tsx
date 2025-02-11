@@ -94,7 +94,7 @@ export default function Dashboard() {
           {/* Bottom Row: Two Cards (2/3 & 1/3 Width, 2/3 Height) */}
           <div className="grid grid-cols-3 gap-4 h-3/5 mt-4">
             {/* Card 3: Project Summary + Table (2/3 Width, 2/3 Height) */}
-            <Card className="col-span-2 min-h-full bg-white p-4">
+            <Card className="col-span-2 min-h-full bg-white p-4 overflow-clip">
               {/* Project Summary Section */}
               <div className="sticky top-0 z-10">
                 <div className="flex justify-between items-center mb-4">
