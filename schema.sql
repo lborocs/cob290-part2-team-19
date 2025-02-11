@@ -44,6 +44,21 @@ CREATE TABLE IF NOT EXISTS Tasks (
     FOREIGN KEY (project_id) REFERENCES Projects(project_id)
 );
 
+CREATE TABLE IF NOT EXISTS PrerequesiteTasks (
+    task_id INTEGER PRIMARY KEY NOT NULL,
+    prerequesite_task_id INTEGER PRIMARY KEY NOT NULL.
+    FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
+    FOREIGN KEY (prerequesite_task_id) REFERENCES Tasks(task_id)
+)
+
+CREATE TABLE IF NOT EXISTS ToDo (
+    employee_id INTEGER PRIMARY KEY NOT NULL,
+    todo_id INTEGER PRIIMARY KEY NOT NULL AUTOINCREMENT,
+    description TEXT NOT NULL,
+    completed BOOLEAN DEFAULT 0,
+    deleted BOOLEAN DEFAULT 0
+)
+
 CREATE TABLE IF NOT EXISTS Tags (
     tag_name TEXT PRIMARY KEY
 );
