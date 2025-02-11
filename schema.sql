@@ -14,6 +14,11 @@ CREATE TABLE IF NOT EXISTS UserTypes (
     type_name TEXT NOT NULL UNIQUE
 );
 
+INSERT OR IGNORE INTO UserTypes (type_id, type_name) VALUES
+                    (0, 'Manager'),
+                    (1, 'ProjectLead'),
+                    (2, 'Employee');
+
 CREATE TABLE IF NOT EXISTS Projects (
     project_id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_name TEXT NOT NULL,
@@ -114,3 +119,23 @@ CREATE TABLE IF NOT EXISTS ArchivedKnowledgeBasePages (
     future_autodelete_date DATE NOT NULL,
     FOREIGN KEY (id) REFERENCES KnowledgeBase(post_id)
 );
+
+CREATE TABLE IF NOT EXISTS completedProjectBacklog (
+    project_id INTEGER PRIMARY KEY,
+    completed_date DATE NOT NULL,
+    authorised BOOL NOT NULL DEFAULT FALSE,
+    authorised_by INTEGER,
+    FOREIGN KEY (project_id) REFERENCES Projects(project_id),
+    FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id);
+);
+
+CREATE TABLE IF NOT EXISTS completedTasksBacklog (
+    task_id INTEGER PRIMARY KEY,
+    completed_date DATE NOT NULL,
+    authorised BOOL NOT NULL DEFAULT FALSE,
+    authorised_by INTEGER,
+    FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
+    FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id);
+);
+
+

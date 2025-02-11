@@ -1,36 +1,47 @@
 "use client";
 import React, { useState } from 'react';
 import "../globals.css"; // Ensure Tailwind is loaded
-import Header from '../Components/Header';
-import Sidebar from '../Components/Sidebar';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import Head from 'next/head';
 
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
 interface LayoutProps {
-  tabName?: string;
-  icon?: any;
-  children?: React.ReactNode;
+    tabName?: string;
+    icon?: any;
+    children?: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
-  const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
+    const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
+    let title = "Make It All";
+    
+    return (
+        <html lang="en">
+        <head>
+            <meta charSet="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta name="description" content="Make It All" />
+            <meta name="author" content="Loughborough Team Projects Group 19" />
 
-  return (
-    <html lang="en">
-      <head>
-        <title>Make It All</title>
-      </head>
-      <body>
-        <div className="min-h-screen flex flex-col">
-          <Header userRole={userRole} onRoleChange={setUserRole} tabName={tabName} icon={icon} />
-          <Sidebar userRole={userRole} />
-          <div className="flex flex-1 ml-[15em]">
-            <main className="flex-1 p-6 pt-1">{children}</main>
-          </div>
-        </div>
-      </body>
-    </html>
-  );
+            <link rel="icon" href="/squarelogo.png" />
+
+            <title>{title}</title>
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+        </head>
+        <body>
+            <Header userRole={userRole} onRoleChange={setUserRole} tabName={tabName} icon={icon} />
+            <Sidebar userRole={userRole} />
+            <div className="ml-[16em] mt-[.75em]">
+                {icon} <span className="text-xl font-bold">{tabName}</span> 
+                <hr />
+                {children}
+            </div>
+        </body>
+        </html>
+    );
 };
 export default Layout;

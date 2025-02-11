@@ -27,6 +27,11 @@ const Login = () => {
     }, []);
 
     return (
+        <html>
+        <head>
+            <title>Login - Make-It-All</title>
+        </head>
+        <body>
         <div>
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
             </div>
@@ -55,6 +60,8 @@ const Login = () => {
                     </div>
                 </div>
         </div>
+        </body>
+        </html>
     );
 
     // useEffect(() => {

@@ -36,8 +36,15 @@ const CreateAccount = () => {
     }, []);
 
     return (
-        <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
-        </div>
+        <html>
+        <head>
+            <title>Login - Make-It-All</title>
+        </head>
+        <body>
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
+            </div>
+        </body>
+        </html>
     );
 }
 export default CreateAccount;
