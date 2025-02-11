@@ -97,8 +97,8 @@ export default function Dashboard() {
             <Card className="col-span-2 min-h-full bg-white p-4 overflow-clip">
               {/* Project Summary Section */}
               <div className="sticky top-0 z-10">
+                <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold mb-2">Project Summary</h3>
                   <div className="flex gap-4">
                     <select className="border p-2 rounded">
                       <option value="0">Project</option>
