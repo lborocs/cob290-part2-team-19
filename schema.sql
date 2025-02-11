@@ -36,12 +36,14 @@ CREATE TABLE IF NOT EXISTS Projects (
 CREATE TABLE IF NOT EXISTS Tasks (
     task_id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_name TEXT NOT NULL,
+    assigned_employee INTEGER NOT NULL,
     project_id INTEGER NOT NULL,
     description TEXT NOT NULL,
     start_date DATE NOT NULL,
     finish_date DATE NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT 0,
-    FOREIGN KEY (project_id) REFERENCES Projects(project_id)
+    FOREIGN KEY (project_id) REFERENCES Projects(project_id),
+    FOREIGN KEY(assigned_employee) REFERENCES Employees(employee_id)
 );
 
 CREATE TABLE IF NOT EXISTS PrerequesiteTasks (

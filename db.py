@@ -45,6 +45,94 @@ def close_connection(exception):
 def index():
     return "SQLite instance is running!"
 
+def new_project():
+    try:
+        data = request.json
+        project_name = data.get("project_name")
+        team_leader_id = data.get("team_leader_id")
+        description = data.get("description")
+        start_date = data.get("start_date") 
+        finish_date = data.get("finish_date")
+
+        if not project_name or not team_leader_id or not description or not start_date or not finish_date:
+            return jsonify({"error": "All fields (project name, team leader, description, start date, finish date) are required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if team leader exists
+        cursor.execute("SELECT COUNT(*) FROM Employees WHERE user_type_id = 1 AND employee_id = ?", (team_leader_id,))
+        row = cursor.fetchone()
+        if row[0] > 0:  
+            return jsonify({"error": "This employee does not exist or is not a team leader." }), 409
+        
+        cursor.execute("""
+                       INSERT INTO Projects (project_name, team_leader_id, description, start_date, finish_date)
+                       VALUES (?,?,?,?,?)
+                       """, project_name, team_leader_id, description, start_date, finish_date,)
+        
+        db.commit()
+        return jsonify({"success": True, "message": "Project created successfully"}), 201 
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": "Database Error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+def new_task():
+    try:
+        data = request.json
+        task_name = data.get("task_name")
+        project_id = data.get("project_id")
+        assigned_employee = data.get("assigned_employee")
+        description = data.get("description")
+        start_date = data.get("start_date") 
+        finish_date = data.get("finish_date")
+        prerequesite_tasks = data.get("prerequesite_tasks")
+
+        if not task_name or not assigned_employee or not project_id or not description or not start_date or not finish_date:
+            return jsonify({"error": "All fields (task name, assigned employee, proejct id, description, start date, finish date) are required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if employee and project
+        cursor.execute("SELECT COUNT(*) FROM Employees WHERE employee_id = ?", (assigned_employee,))
+        row = cursor.fetchone()
+        if row[0] > 0:  
+            return jsonify({"error": "This employee does not exist or cannot be assigned to a task." }), 409
+        cursor.execute("SELECT COUNT(*) FROM Projects WHERE project_id = ?", (project_id,))
+        row = cursor.fetchone()
+        if row[0] > 0:  
+            return jsonify({"error": "This project does not exist." }), 409
+        cursor.execute("""
+                       INSERT INTO Tasks (task_name, assigned_employee, project_id, description, start_date, finish_date)
+                       VALUES (?,?,?,?,?)
+                       """, task_name, assigned_employee, project_id, description, start_date, finish_date,)
+        
+        db.commit()
+
+        cursor.execute("""SELECT task_id FROM Tasks WHERE task_name = ? AND assigned_employee = ? 
+                       AND project_id = ? AND description = ? AND start_date= ? AND finish_date = ?
+                       """, (task_name, assigned_employee, project_id, description, start_date, finish_date,))
+        row = cursor.fetchone()
+        if row[0] > 0: 
+            if prerequesite_tasks:
+                prerequesite_tasks.split(",")
+                for task in prerequesite_tasks:
+                    cursor.execute("""
+                                    INSERT INTO PrerequestieTasks (task_id, prerequesite_task_id) VALUES (?,?)
+                                """, row[0], task)
+
+    
+        db.commit()
+        return jsonify({"success": True, "message": "Project created successfully"}), 201 
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": "Database Error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+        
+
 @app.route("/add_user", methods=["POST"])
 def add_user():
     try:
