@@ -45,47 +45,69 @@ def close_connection(exception):
 def index():
     return "SQLite instance is running!"
 
-
-def add_user(email, password, first_name, second_name):
+@app.route("/add_user", methods=["POST"])
+def add_user():
     try:
+        data = request.json
+        email = data.get("email")
+        password = data.get("password")
+        first_name = data.get("first_name")
+        second_name = data.get("second_name") or "No Last Name"
+        
+        if not email or not password or not first_name or not second_name:
+            return jsonify({"error": "All fields (email, password, first_name) are required. (second_name) is optional"}), 400
+        
+        
         db = get_db()
         cursor = db.cursor()
+        
+        # Check if email exists
         cursor.execute("SELECT COUNT(*) FROM Employees WHERE employee_email = ?", (email,))
         row = cursor.fetchone()
         if row[0] > 0:  
-            return "There is already an account with this email." 
+            return jsonify({"error": "There is already an account with this email." }), 409
+        
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         cursor.execute("""
             INSERT INTO Employees (employee_email, first_name, second_name, hashed_password, user_type_id, current_employee)
             VALUES (?, ?, ?, ?, 2, TRUE)
         """, (email, first_name, second_name, hashed_password))
         db.commit()
-        return True  
+        return jsonify({"success": True, "message": "User created successfully"}), 201 
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error": "Database Error occurred. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 # Function to verify user login
-def login(email, entered_password):
+@app.route("/login", methods=["POST"])
+def login():
     try:
+        data = request.json
+        email = data.get("email")
+        entered_password = data.get("password")
+        
+        if not email or not entered_password:
+            return jsonify({"error": "Email and password are required"}), 400
+        
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT hashed_password FROM Employees WHERE employee_email = ?", (email,))
         row = cursor.fetchone()
         if row and bcrypt.checkpw(entered_password.encode(), row[0]):
-            return True
+            return jsonify({"success": True, "message":"Login successful"})
         else:
-            return "Email or password is incorrect. Please try again."
+            return jsonify({"error": "Email or password is incorrect"}), 401
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error":"Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error":"An unexpected error occurred. Please try again later."}), 500
 
 # Function to view completed projects. Returns Project ID, date Completed, whether the project is authorised (to have finished, manager), 
 # who authorised the completion of the project, the team leader id and team leader name.
 # To be used on manager page to view projects. 
 # When project is completed, manager can sign them off, when project completion is authorised, can be moved to archive.
+@app.route("/completed_projects", methods=["GET"])
 def view_completed_projects():
     try:
         db = get_db()
@@ -99,21 +121,26 @@ def view_completed_projects():
         """
         cursor.execute(query)
         rows = cursor.fetchall()
+        
+        if not rows:
+            return jsonify({"message": "No completed projects found"}), 404
+        
         return jsonify([
             {
-                "project_id": row[0],
-                "completed_date": row[1],
-                "team_leader_id": row[4],
-                "team_leader_name": row[5]
+                "project_id": row["project_id"],
+                "completed_date": row["completed_date"],
+                "team_leader_id": row["team_leader"],
+                "team_leader_name": row["team_leader_name"]
             } for row in rows
-        ])
+        ]), 200
     except sqlite3.DatabaseError as e:
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
 
 # Function to move projects to archive
+@app.route("/archive_project", methods=["POST"])
 def archive_project(project_id, archived_date, future_autodelete_date, manager_id):
     try:
         db = get_db()
