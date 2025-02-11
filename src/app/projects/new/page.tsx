@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import Select from 'react-select';
 import { DropdownSelect, SearchableDropdownSelect } from '@/app/components/Input/Dropdown';
 import { TextButton } from '@/app/components/Input/Buttons';
+import Link from 'next/link';
 
 export default function NewProjectPage() {
     const [selectedTeamLead, setTL] = useState("");
@@ -28,6 +29,9 @@ export default function NewProjectPage() {
 
     return (
         <Layout tabName={"Create New Project"} icon={<i className="fa-regular fa-square-plus"></i>}>
+        <Link href="/projects/"><div className='text-blue-500 underline underline-offset-2 hover:text-blue-400 transition ease-in-out'>
+            <i className="fa-solid fa-chevron-left mr-2"></i>Back
+        </div></Link>
         <h1 className='text-center mt-4 text-2xl font-semibold'><i className="fa-solid fa-hashtag"></i> Project Details</h1>
         <div className='flex flex-col items-center gap-6 mt-4'>
             <div className='new-project-entry'>
