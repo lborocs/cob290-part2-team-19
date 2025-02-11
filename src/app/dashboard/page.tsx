@@ -48,7 +48,7 @@ export default function Dashboard() {
   const sortedTasks = tasks.sort((a, b) => new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime());
 
   return (
-    <Layout tabName={"Welcome"} icon={<i className="fa-solid fa-table-columns"></i>}>
+    <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
       <div className={`h-full p-4 ps-0 ${isFullscreen ? 'hidden' : ''}`}>
         <div className="h-full">
           {/* Top Section */}
