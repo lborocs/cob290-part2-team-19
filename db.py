@@ -45,6 +45,13 @@ def close_connection(exception):
 def index():
     return "SQLite instance is running!"
 
+
+####### TODO: FUNCTIONS FOR ADDING, DELETING AND UPDATING POSTS TO KNOWLEDGE BASE
+
+
+### ToDo functions
+
+# New ToDo
 @app.route("/new_todo", methods=["POST"])
 def new_todo():
     try:
@@ -67,7 +74,52 @@ def new_todo():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+# Complete ToDo
+@app.route("/complete_todo", methods=["POST"])
+def complete_todo():
+    try:
+        data = request.json
+        to_do_id = data.get("to_do_id")
 
+        if not to_do_id:
+            return jsonify({"error": "No item given"}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute("UPDATE ToDo SET completed = 1 WHERE to_do_id = ?",(to_do_id))
+        db.commit()
+
+        return jsonify({"success": True, "message": "To-Do completed successfully"}), 201 
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+# Delete ToDo
+@app.route("/delete_todo", methods=["POST"])
+def delete_todo():
+    try:
+        data = request.json
+        to_do_id = data.get("to_do_id")
+
+        if not to_do_id:
+            return jsonify({"error": "No item given"}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute("UPDATE ToDo SET deleted = 1 WHERE to_do_id = ?",(to_do_id))
+        db.commit()
+
+        return jsonify({"success": True, "message": "To-Do deleted successfully"}), 201 
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    
+    
+# New Project
 @app.route("/new_project", methods=["POST"])
 def new_project():
     try:
@@ -103,6 +155,7 @@ def new_project():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
+# New Task
 @app.route("/new_task", methods=["POST"])
 def new_task():
     try:
@@ -139,20 +192,19 @@ def new_task():
             VALUES (?,?,?,?,?,?)
         """, (task_name, assigned_employee, project_id, description, start_date, finish_date)) 
 
-        db.commit()
+        # Insert prerequisite tasks if they exist
+        if prerequesite_tasks:
+            db.commit()
 
-        # Retrieve the task_id
-        cursor.execute("""
-            SELECT task_id FROM Tasks WHERE task_name = ? AND assigned_employee = ? 
-            AND project_id = ? AND description = ? AND start_date= ? AND finish_date = ?
-        """, (task_name, assigned_employee, project_id, description, start_date, finish_date))
-        row = cursor.fetchone()
+            # Retrieve the task_id
+            cursor.execute("""
+                SELECT task_id FROM Tasks WHERE task_name = ? AND assigned_employee = ? 
+                AND project_id = ? AND description = ? AND start_date= ? AND finish_date = ?
+            """, (task_name, assigned_employee, project_id, description, start_date, finish_date))
+            row = cursor.fetchone()
 
-        if row and row[0]: 
-            task_id = row[0]
-
-            # Insert prerequisite tasks if they exist
-            if prerequesite_tasks:
+            if row and row[0]: 
+                task_id = row[0]
                 prereq_list = prerequesite_tasks.split(",")  
                 for task in prereq_list:
                     cursor.execute("""
@@ -166,17 +218,8 @@ def new_task():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
-    
-        db.commit()
-        return jsonify({"success": True, "message": "Project created successfully"}), 201 
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": "Database Error occurred. Please try again later."}), 500
-    except Exception as e:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
         
-
+# Add user
 @app.route("/add_user", methods=["POST"])
 def add_user():
     try:
@@ -354,6 +397,7 @@ def view_completed_tasks():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+### Archive functions
 
 # Function to add task to archive
 @app.route('/archive_task', methods=['POST'])
@@ -452,7 +496,6 @@ def is_post_archived():
 ### Search functions for tables
 
 # Search function for Employees
-
 @app.route('/employees/search', methods=['GET'])
 def search_employees():
     employee_email = request.args.get('employee_email')
