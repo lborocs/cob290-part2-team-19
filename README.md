@@ -27,3 +27,7 @@ To build the project:
 ## How to start local DB (dev)?
 1. Open command line @ root of project
 2. Run `py db.py`
+
+
+##Editing of the REPORT
+https://docs.google.com/document/d/1S0CWwd04CGChiE7_OEDwTnWyili7bYc1DWZo_JoTCsc/edit?usp=sharing
