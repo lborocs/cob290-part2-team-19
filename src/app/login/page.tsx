@@ -42,8 +42,7 @@ const Login = () => {
                     } else {
                         const toastContent = document.getElementById('toast-content');
                         if (toastContent) {
-                            toastContent.innerText = data.message;
-                            console.log(data)
+                            toastContent.innerText = "Wrong email or password";
                         }
                         const alertToast = document.querySelector('.alert-toast');
                         if (alertToast) {

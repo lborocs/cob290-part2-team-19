@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Layout from '../layout/page';
+import Layout from "@/app/layout/page"
 
 interface Guide {
   id: string;
