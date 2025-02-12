@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS KnowledgeBase (
     authorised BOOLEAN NOT NULL DEFAULT 0,
     content TEXT NOT NULL,
     category_id INTEGER,
+    deleted BOOLEAN DEFAULT 0,
     FOREIGN KEY (author_id) REFERENCES Employees(employee_id),
     FOREIGN KEY (category_id) REFERENCES KnowledgeBaseCategories(category_id)
 );

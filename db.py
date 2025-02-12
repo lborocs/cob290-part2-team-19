@@ -3,6 +3,9 @@ import bcrypt
 from flask import Flask, g
 from flask import request, jsonify
 from flask_cors import CORS
+from datetime import datetime, timedelta
+
+
 
 DATABASE = 'database.db'
 PORT = 3300
@@ -46,7 +49,122 @@ def index():
     return "SQLite instance is running!"
 
 
-####### TODO: FUNCTIONS FOR ADDING, DELETING AND UPDATING POSTS TO KNOWLEDGE BASE
+### Knowledge Base functions
+
+# Add a new post to the knowledge base
+@app.route("/add_post", methods=["POST"])
+def add_post():
+    try:
+        data = request.json
+        author_id = data.get("author_id")
+        content = data.get("content")
+        category_name = data.get("category_name")
+
+        if not all([author_id, content, category_name]):
+            return jsonify({"error": "Author ID, content, and category name are required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if category exists
+        cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_name = ?", (category_name,))
+        category = cursor.fetchone()
+
+        if category:
+            category_id = category["category_id"]
+        else:
+            cursor.execute("INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)", (category_name,))
+            category_id = cursor.lastrowid
+
+        # Insert post
+        cursor.execute("""
+            INSERT INTO KnowledgeBase (author_id, content, category_id, deleted)
+            VALUES (?, ?, ?, 0)
+        """, (author_id, content, category_id))
+
+        db.commit()
+        return jsonify({"success": True, "message": "Post added successfully"}), 201
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+# Delete a post from the knowledge base (mark as deleted and archive it)
+@app.route("/delete_post/<int:post_id>", methods=["DELETE"])
+def delete_post(post_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Mark the post as deleted
+        cursor.execute("UPDATE KnowledgeBase SET deleted = 1 WHERE post_id = ?", (post_id,))
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Post not found."}), 404
+        
+        # Archive the post
+        archived_date = datetime.now().date()
+        future_autodelete_date = archived_date + timedelta(days=365)
+        cursor.execute("""
+            INSERT INTO ArchivedKnowledgeBasePages (id, archived_date, future_autodelete_date)
+            VALUES (?, ?, ?)
+        """, (post_id, archived_date, future_autodelete_date))
+        
+        db.commit()
+        return jsonify({"success": True, "message": "Post archived successfully"}), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+# Update a post in the knowledge base (log edits instead of modifying directly)
+@app.route("/update_post/<int:post_id>", methods=["PUT"])
+def update_post(post_id):
+    try:
+        data = request.json
+        editor_id = data.get("editor_id")
+        content = data.get("content")
+        category_name = data.get("category_name")
+
+        if not editor_id:
+            return jsonify({"error": "Editor ID is required."}), 400
+
+        if content is None and category_name is None:
+            return jsonify({"error": "At least one field (content or category) must be provided."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        # Retrieve the old content
+        cursor.execute("SELECT content FROM KnowledgeBase WHERE post_id = ?", (post_id,))
+        old_post = cursor.fetchone()
+        if not old_post:
+            return jsonify({"error": "Post not found."}), 404
+        old_content = old_post["content"]
+
+        # Check if category exists
+        category_id = None
+        if category_name:
+            cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_name = ?", (category_name,))
+            category = cursor.fetchone()
+            if category:
+                category_id = category["category_id"]
+            else:
+                cursor.execute("INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)", (category_name,))
+                category_id = cursor.lastrowid
+
+        # Log the edit in KnowledgeBaseEdits
+        edit_date = datetime.now().date()
+        cursor.execute("""
+            INSERT INTO KnowledgeBaseEdits (post_id, editor_id, edit_date, old_content, new_content, new_category_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (post_id, editor_id, edit_date, old_content, content, category_id))
+
+        db.commit()
+        return jsonify({"success": True, "message": "Edit request submitted for review."}), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
 ### ToDo functions
