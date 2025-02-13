@@ -3,18 +3,22 @@ import Layout from '../layout/page';
 import React, { useEffect, useState } from 'react';
 import './dashboard.css';
 import TaskCompletionChart from '../components/TaskCompletionChart';
-import FullscreenModal from './fullscreen-modal';
 import Card from '../components/Card';
 import { fetchProjects } from '@/api/fetchProjects';
 import { fetchTasks } from '@/api/fetchTasks';
 import { Project, Task } from '@/interfaces/interfaces';
-
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
+import FullCalendar from "@fullcalendar/react";
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ToDo, setToDo] = useState(1);
   const [projects, setProjects] = useState<Project[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
+  const [selectedDateTasks, setSelectedDateTasks] = useState<Task[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -52,6 +56,37 @@ export default function Dashboard() {
     }
   }, [tasks]);
 
+
+  const events = tasks.map((task) => {
+    const currentDate = new Date();
+    const finishDate = new Date(task.finish_date);
+    const isOverdue = currentDate > finishDate;
+    const completed = task.completed;
+    const taskColor = completed ? "green" : (isOverdue ? "red" : "orange");
+
+    return {
+      id: task.task_id.toString(),
+      title: task.task_name,
+      start: task.finish_date,
+      allDay: true,
+      backgroundColor: taskColor,
+    };
+  });
+
+  const handleDateClick = (info: DateClickArg) => {
+    const clickedDate = info.dateStr;
+    setSelectedDate(clickedDate);
+
+    // tasks for the selected date
+    const filteredTasks = tasks.filter((task) => {
+      const taskDate = new Date(task.finish_date).toISOString().split("T")[0];
+      return taskDate === clickedDate;
+    });
+
+    setSelectedDateTasks(filteredTasks);
+  };
+
+
   return (
     <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
       <div className={`h-full p-4 ps-0 ${isFullscreen ? 'hidden' : ''}`}>
@@ -74,22 +109,25 @@ export default function Dashboard() {
 
               <hr className="border-gray-300 my-2" />
 
-              {/* Upcoming Task List */}
+
               <ul className="space-y-3 pe-2 overflow-clip overflow-y-auto">
                 {tasks && tasks.length > 0 ? (
-                  tasks.filter(task => !task.completed)
+                  tasks
+                    .filter((task) => !task.completed)
                     .map((task) => {
                       const currentDate = new Date();
                       const finishDate = new Date(task.finish_date);
                       const isOverdue = currentDate > finishDate;
-                      const taskColor = isOverdue ? 'bg-red-500' : 'bg-orange-500';
+                      const taskColor = isOverdue ? "bg-red-500" : "bg-orange-500";
 
                       return (
                         <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
                           <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
                           <div className="flex-1 ml-2">
                             <div className="font-medium">{task.task_name}</div>
-                            <div className="text-sm text-gray-500">Project {task.project_id}</div>
+                            <div className="text-sm text-gray-500">
+                              Project {task.project_id}
+                            </div>
                           </div>
                           <div className="flex items-center text-sm text-gray-600">
                             <i className="fa-solid fa-calendar-alt mr-1"></i>
@@ -97,10 +135,12 @@ export default function Dashboard() {
                           </div>
                         </li>
                       );
-                    })) : (
+                    })
+                ) : (
                   <li className="text-center text-gray-500">No tasks available {tasks.length}</li>
                 )}
               </ul>
+
             </Card>
           </div>
 
@@ -292,10 +332,73 @@ export default function Dashboard() {
           </div>
         </div>
 
-      </div>        {isFullscreen && (
-        <FullscreenModal isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} />
+      </div>
+      {isFullscreen && <div className="h-full p-4 ps-0 pb-0">
+        <Card className="w-full h-full ">
+          <div className="flex justify-between items-center title">
+            <div></div>
+            <button onClick={toggleFullscreen} className="pe-2 rounded flex items-center">
+              <i className="fa-solid fa-arrow-left mr-2"></i>
+              <span>Back</span>
+            </button>
+          </div>
 
-      )}
+          <hr className="border-gray-300 my-2" />
+          <div className='grid grid-cols-2 gap-4 h-full'>
+
+            {
+              <>
+                <FullCalendar
+                  plugins={[dayGridPlugin, interactionPlugin]}
+                  initialView="dayGridMonth"
+                  events={events}
+                  dateClick={handleDateClick}
+                  height="auto"
+                />
+              </>
+            }
+            <div className=''>
+              {selectedDate && (
+                <div className="mt-4 p-4 border rounded shadow bg-white">
+                  <h3 className="text-lg font-semibold">
+                    Tasks Due on {selectedDate}
+                  </h3>
+                  {selectedDateTasks.length > 0 ? (
+                    <ul>
+                      {selectedDateTasks.map((task) => {
+                        const currentDate = new Date();
+                        const finishDate = new Date(task.finish_date);
+                        const isOverdue = currentDate > finishDate;
+                        const taskColor = isOverdue ? "bg-red-500" : "bg-orange-500";
+                        return (
+                          <li key={task.task_id} className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">
+                            <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
+                            <div className="flex-1 ml-2">
+                              <div className="font-medium">{task.task_name}</div>
+                              <div className="text-sm text-gray-500">
+                                Project {task.project_id}
+                              </div>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-600">
+                              <i className="fa-solid fa-calendar-alt mr-1"></i>
+                              <span>{new Date(task.finish_date).toLocaleDateString()}</span>
+                            </div>
+                          </li>
+                        )
+
+                      })}
+                    </ul>
+                  ) : (
+                    <p>No tasks due on this date.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+        </Card>
+      </div >
+      }
     </Layout>
   );
 }
