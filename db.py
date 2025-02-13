@@ -46,6 +46,56 @@ def close_connection(exception):
 def index():
     return "SQLite instance is running!"
 
+# Fetch User Types
+@app.route("/get_user_types", methods=["GET"])
+def get_user_types():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT type_id, type_name FROM UserTypes')
+        user_types = cursor.fetchall()
+        return [dict(user) for user in user_types]  # Convert to list of dictionaries
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+# Fetch Archive Settings
+@app.route("/get_archive_settings", methods=["GET"])
+def get_archive_settings():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT task, project, kb FROM ArchiveLimits LIMIT 1')
+        settings = cursor.fetchone()
+        db.close()
+        return dict(settings)
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+# Update Archive Settings
+@app.route("/update_archive_settings", methods=["PUT"])
+def update_archive_settings():
+    try:
+        data = request.json
+        task = data.get("task")
+        project = data.get("project")
+        kb = data.get("kb")
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('''
+            UPDATE archive_settings 
+            SET task = ?, project = ?, kb = ?
+        ''', (task, project, kb, ))
+        db.commit()
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+
 ### changing user permissions
 
 #Example request:
@@ -399,7 +449,6 @@ def new_project():
                 cursor.execute("INSERT INTO ProjectTags (tag_name) VALUES (?)", (tag,))
                 #add tags to tag table
                 cursor.execute("INSERT OR IGNORE INTO tags VALUES (?)",(tag,))
-        
         db.commit()
 
                 
@@ -675,6 +724,27 @@ def login():
     except Exception as e:
         return jsonify({"error":f"An unexpected error occurred. {str(e)} Please try again later."}), 500
 
+# Change User Type
+@app.route("/change_user_type", methods=["PUT"])
+def change_user_type():
+    try:
+        data = request.get_json()
+        new_user_type = data.get("new_user_type")
+        employee_id = data.get("employee_id")
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('''
+            UPDATE users 
+            SET employee_type = ? 
+            WHERE employee_id = ?
+        ''', (new_user_type, employee_id))
+        db.commit()
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    
+
 # Function to view completed projects. Returns Project ID, date Completed, whether the project is authorised (to have finished, manager), 
 # who authorised the completion of the project, the team leader id and team leader name.
 # To be used on manager page to view projects. 
@@ -883,13 +953,20 @@ def is_project_archived(project_id):
 #}
 
 @app.route("/is_task_archived", methods=["GET"])
-def is_task_archived(task_id):
-    try:   
+def is_task_archived():
+    try:
+        data = request.get_json()
+        task_id = data.get("task_id")
+        
+        if not task_id:
+            return jsonify({"error": "Task ID is required"}), 400
+        
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
+        
         archived = cursor.fetchone()
-        return archived is not None
+        return jsonify({"archived": archived is not None}), 200
     except sqlite3.DatabaseError as e:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
@@ -1036,8 +1113,7 @@ def search_tasks():
     start_date = request.args.get('start_date')
     finish_date = request.args.get('finish_date')
     employee_id = request.args.get('employee_id')
-    task_completed = request.args.get('task_completed')
-    
+
     query = """
     SELECT t.*
     FROM Tasks t
@@ -1064,10 +1140,7 @@ def search_tasks():
     if employee_id:
         query += " AND et.employee_id = ?"
         params.append(employee_id)
-    if task_completed:
-        query += " AND t.completed = ?"
-        params.append(task_completed)
-        
+
     try:
         db = get_db()
         cursor = db.cursor()
@@ -1080,6 +1153,7 @@ def search_tasks():
             task_dict = dict(task)
             task_dict['archived'] = is_task_archived(task['task_id'])
             task_list.append(task_dict)
+
         return jsonify(task_list)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."

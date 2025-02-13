@@ -167,6 +167,12 @@ CREATE TABLE IF NOT EXISTS ArchivedKnowledgeBasePages (
     FOREIGN KEY (id) REFERENCES KnowledgeBase(post_id)
 );
 
+CREATE TABLE IF NOT EXISTS ArchiveLimits (
+    taskDuration INTEGER,
+    projectDuration INTEGER,
+    kbDuration INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS completedProjectBacklog (
     project_id INTEGER PRIMARY KEY,
     completed_date DATE NOT NULL,
