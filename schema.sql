@@ -56,11 +56,13 @@ CREATE TABLE IF NOT EXISTS PrerequesiteTasks (
 )
 
 CREATE TABLE IF NOT EXISTS ToDo (
-    employee_id INTEGER PRIMARY KEY NOT NULL,
-    todo_id INTEGER PRIIMARY KEY NOT NULL AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    todo_id INTEGER NOT NULL AUTOINCREMENT,
     description TEXT NOT NULL,
     completed BOOLEAN DEFAULT 0,
-    deleted BOOLEAN DEFAULT 0
+    deleted BOOLEAN DEFAULT 0,
+    PRIMARY KEY(employee_id, todo_id),
+    FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
 )
 
 CREATE TABLE IF NOT EXISTS Tags (
@@ -109,7 +111,7 @@ CREATE TABLE IF NOT EXISTS KnowledgeBaseCategories (
 );
 
 CREATE TABLE IF NOT EXISTS Permissions (
-    user_type PRIMARY KEY,
+    user_type INTEGER PRIMARY KEY,
     new_project BOOLEAN,
     new_task BOOLEAN,
     edit_project BOOLEAN,
