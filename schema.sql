@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS Projects (
     start_date DATE NOT NULL,
     finish_date DATE NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT 0,
+    completed_date DATETIME,
     authorised BOOLEAN NOT NULL DEFAULT 0,
     authorised_by INTEGER,
     FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id),
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS Tasks (
     start_date DATE NOT NULL,
     finish_date DATE NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT 0,
+    completed_date DATETIME,
     FOREIGN KEY (project_id) REFERENCES Projects(project_id),
     FOREIGN KEY(assigned_employee) REFERENCES Employees(employee_id)
 );
