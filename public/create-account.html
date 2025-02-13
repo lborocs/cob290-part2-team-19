@@ -12,8 +12,6 @@
     <!-- FontAwesome Icons -->
     <script src="https://kit.fontawesome.com/c8b5e2a200.js" defer crossorigin="anonymous"></script>
 
-
-
 </head>
 
 <body onload="hideSpinner()">
@@ -21,7 +19,7 @@
         <div class="spinner"></div>
         <div class="spinner-text">Loading...</div>
     </div> -->
-    <main>
+    <main style="overflow-x:hidden;">
         <div class="panel">
             <div class="intro">
                 <div class="introText">
@@ -34,35 +32,36 @@
             </div>
             <div class="form">
                 <!-- TODO: Fix post/get to correct address -->
-                <form action="/create" method="post">
+                <form action="localhost:3300/add_user" method="POST">
                     <div class="formGroup" style="width:100qcw;">
-                        <div class="textInput" style="width:100%;">
+                        <div class="textInput" style="width:100%; margin-bottom:1em;">
                             <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
-                            <input type="email" id="email" name="email" required  placeholder="Your work-provided email">
+                            <input type="email" id="email" name="email" required  placeholder="Your work-provided email" style="width:100%;">
                         </div>
-                        <div class="textInput" style="transform:translateY(-10px)">
-                            <label for="password"> <i class="fa-solid fa-lock"></i> Password</label>
-                            <input type="password" id="password" name="password" required class="create-password " placeholder="Your password" onchange="passwordConfirm()">
+                        <div style="display:flex; gap:10px; ">
+                            <div class="textInput" style="transform:translateY(-10px)">
+                                <label for="password"> <i class="fa-solid fa-lock"></i> Password</label>
+                                <input type="password" id="password" name="password" required class="create-password " placeholder="Your password" onchange="passwordConfirm()">
+                            </div>
+                            <div class="textInput" style="transform:translateY(-10px)">
+                                <label for="confirm_password"><i class="fa-solid fa-unlock-keyhole"></i> Confirm</label>
+                                <input type="password" id="confirm_password" name="confirm_password" class="create-password"  required  placeholder="Confirm your password" onchange="passwordConfirm()">
+                                <span id="pass-tip" class="password-confirmation" aria-hidden="true">Passwords do not match...</span>
+                            </div>
                         </div>
-                        <div class="textInput" style="transform:translateY(-10px)">
-                            <label for="confirm_password"><i class="fa-solid fa-unlock-keyhole"></i> Confirm</label>
-                            <input type="password" id="confirm_password" name="confirm_password" class="create-password"  required  placeholder="Confirm your password" onchange="passwordConfirm()">
-                            <span id="pass-tip" class="password-confirmation" aria-hidden="true">Passwords do not match...</span>
+                        <div style="display:flex; gap:10px;">
+                            <div class="textInput" style="width:100%;">
+                                <label for="first_name"><i class="fa-solid fa-a"></i> First Name</label>
+                                <input type="text" id="first_name" name="first_name" required  placeholder="Your first name">
+                            </div>
+                            <div class="textInput" style="width:100%;">
+                                <label for="second_name"><i class="fa-solid fa-a"></i> Last Name</label>
+                                <input type="text" id="second_name" name="second_name"  placeholder="Your last name">
+                            </div>
                         </div>
                     </div>
-                    <!-- <div class="mobileRow rememberForgotGroup">
-                        <div class="rememberMeGroup">
-                            <div class="checkbox-wrapper-2">
-                                <input type="checkbox" id="remember" class="sc-gJwTLC ikxBAC" name="remember">
-                            </div>
-                            <label for="remember">Remember me</label>
-                        </div>
-                        <div class="forgotPass" style="text-decoration:underline;">
-                            <a href="#" class="forgotPass">Need help?</a>
-                        </div>
-                    </div> -->
                     <div class="formGroup">
-                        <button type="submit" class="signInBtn" style="margin-top:5px; margin-bottom:5px;"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+                        <button type="button" class="signInBtn" style="margin-top:5px; margin-bottom:5px;" onclick="alert('Account Created!');window.location='/login/'"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
                         <div class="signInSignUpSep">
                             <hr class="formPreHr">
                             <span class="formMidHrCont">or</span>
@@ -70,7 +69,6 @@
                         </div>
                         <div class="formGroupAlt">
                             Have an account? 
-                            <!-- <a href="./login" class="signUpLink" onclick="showSpinner()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</a> -->
                             <a href="./login" class="signUpLink" onclick=""><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</a>
                         </div>
                     </div>

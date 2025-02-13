@@ -82,10 +82,6 @@ const Login = () => {
             const scriptElement = document.createElement('script');
             scriptElement.innerHTML = scriptContent;
             document.body.appendChild(scriptElement);
-
-            
-
-
         };
 
         fetchHtmlContent();
