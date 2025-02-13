@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Employees (
-    employee_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER PRIMARY KEY,
     employee_email TEXT NOT NULL UNIQUE,
     first_name TEXT NOT NULL,
     second_name TEXT NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS Employees (
 );
 
 CREATE TABLE IF NOT EXISTS UserTypes (
-    type_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type_id INTEGER PRIMARY KEY ,
     type_name TEXT NOT NULL UNIQUE
 );
 
@@ -20,7 +20,7 @@ INSERT OR IGNORE INTO UserTypes (type_id, type_name) VALUES
                     (2, 'Employee');
 
 CREATE TABLE IF NOT EXISTS Projects (
-    project_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER PRIMARY KEY,
     project_name TEXT NOT NULL,
     team_leader_id INTEGER NOT NULL,
     description TEXT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS Projects (
 );
 
 CREATE TABLE IF NOT EXISTS Tasks (
-    task_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER PRIMARY KEY,
     task_name TEXT NOT NULL,
     assigned_employee INTEGER NOT NULL,
     project_id INTEGER NOT NULL,
@@ -49,21 +49,21 @@ CREATE TABLE IF NOT EXISTS Tasks (
 );
 
 CREATE TABLE IF NOT EXISTS PrerequesiteTasks (
-    task_id INTEGER PRIMARY KEY NOT NULL,
-    prerequesite_task_id INTEGER PRIMARY KEY NOT NULL.
+    task_id INTEGER KEY NOT NULL,
+    prerequesite_task_id INTEGER PRIMARY KEY NOT NULL,
     FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
     FOREIGN KEY (prerequesite_task_id) REFERENCES Tasks(task_id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS ToDo (
     employee_id INTEGER NOT NULL,
-    todo_id INTEGER NOT NULL AUTOINCREMENT,
+    todo_id INTEGER NOT NULL,
     description TEXT NOT NULL,
     completed BOOLEAN DEFAULT 0,
     deleted BOOLEAN DEFAULT 0,
     PRIMARY KEY(employee_id, todo_id),
     FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS Tags (
     tag_name TEXT PRIMARY KEY
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS EmployeeProjects (
 );
 
 CREATE TABLE IF NOT EXISTS KnowledgeBase (
-    post_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER PRIMARY KEY,
     author_id INTEGER NOT NULL,
     post_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     authorised BOOLEAN NOT NULL DEFAULT 0,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS KnowledgeBase (
 );
 
 CREATE TABLE IF NOT EXISTS KnowledgeBaseCategories (
-    category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER PRIMARY KEY,
     category_name TEXT UNIQUE NOT NULL
 );
 
@@ -125,12 +125,12 @@ CREATE TABLE IF NOT EXISTS Permissions (
     view_knowledgebase_archive BOOLEAN,
     authorise_completed BOOLEAN,
     
-    FOREIGN KEY (user_type) REFERENCES User_Types(type_id)
+    FOREIGN KEY (user_type) REFERENCES UserTypes(type_id)
 );
 
-INSERT INTO Permissions VALUES (0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-INSERT INTO Permissions VALUES (1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0);
-INSERT INTO Permissions VALUES (2, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0);
+INSERT OR IGNORE INTO Permissions VALUES (0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT OR IGNORE INTO Permissions VALUES (1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0);
+INSERT OR IGNORE INTO Permissions VALUES (2, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0);
 
 
 
@@ -172,8 +172,8 @@ CREATE TABLE IF NOT EXISTS completedProjectBacklog (
     completed_date DATE NOT NULL,
     authorised BOOL NOT NULL DEFAULT FALSE,
     authorised_by INTEGER,
-    FOREIGN KEY (project_id) REFERENCES Projects(project_id),
-    FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id);
+FOREIGN KEY (project_id) REFERENCES Projects(project_id),
+FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id)
 );
 
 CREATE TABLE IF NOT EXISTS completedTasksBacklog (
@@ -181,8 +181,8 @@ CREATE TABLE IF NOT EXISTS completedTasksBacklog (
     completed_date DATE NOT NULL,
     authorised BOOL NOT NULL DEFAULT FALSE,
     authorised_by INTEGER,
-    FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
-    FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id);
+FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
+FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id)
 );
 
 
