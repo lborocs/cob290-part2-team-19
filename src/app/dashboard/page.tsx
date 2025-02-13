@@ -41,7 +41,7 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const data = await fetchTasks(0);
-        setTasks(data)
+        setTasks(data || [])
       } catch (error) {
         console.log('Error fetching data:', error)
       }
@@ -72,6 +72,8 @@ export default function Dashboard() {
       backgroundColor: taskColor,
     };
   });
+
+
 
   // check for any tasks due for today
   useEffect(() => {
