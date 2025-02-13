@@ -5,8 +5,6 @@ from flask import request, jsonify
 from flask_cors import CORS
 from datetime import datetime, timedelta
 
-
-
 DATABASE = 'database.db'
 PORT = 3300
 
@@ -454,7 +452,56 @@ def new_task():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+# Fuction for completing task
+@app.route("/complete_task", methods=["POST"])
+def complete_task():
+    try:
+        data = request.json
+        task_id = data.get("task_id")
 
+        if not task_id:
+            return jsonify({"error": "Task ID is required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        # Mark the task as completed
+        completed_date = datetime.now().date()
+        cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (task_id, completed_date,))
+        cursor.execute("INSERT INTO completedTasksBacklog (task_id, completed_date) VALUES (?, ?)", (task_id, completed_date))
+
+        db.commit()
+        return jsonify({"success": True, "message": "Task marked as completed."}), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+#Function for completing project
+@app.route("/complete_project", methods=["POST"])
+def complete_project():
+    try:
+        data = request.json
+        project_id = data.get("project_id")
+
+        if not project_id:
+            return jsonify({"error": "Project ID is required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        # Mark the project as completed
+        completed_date = datetime.now().date()
+        cursor.execute("UPDATE Projects SET completed = 1 AND completed_date = ? WHERE project_id = ?", (project_id, completed_date,))
+        cursor.execute("INSERT INTO completedProjectsBacklog (project_id, completed_date) VALUES (?, ?)", (project_id, completed_date))
+
+        db.commit()
+        return jsonify({"success": True, "message": "Project marked as completed."}), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    
 ### USER ACCOUNT FUNCTIONALITY
 
 # Add user
