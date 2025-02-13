@@ -133,7 +133,7 @@ export default function Dashboard() {
                 <hr className="border-gray-300 my-2" />
               </div>
               {/* Card-style Table Section */}
-              <div className="w-full space-y-3 overflow-y-auto max-h-96">
+              <div className="w-full space-y-3 overflow-y-auto max-h-[90%]">
                 {/* replace with db results */}
                 {projects && projects.length > 0 ? (
                   projects.map((project) => {
