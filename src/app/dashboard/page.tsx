@@ -17,7 +17,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [selectedDateTasks, setSelectedDateTasks] = useState<Task[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
 
 
   const toggleFullscreen = () => {
@@ -41,7 +41,7 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const data = await fetchTasks(0);
-        setTasks(data)
+        setTasks(data || [])
       } catch (error) {
         console.log('Error fetching data:', error)
       }
@@ -72,6 +72,19 @@ export default function Dashboard() {
       backgroundColor: taskColor,
     };
   });
+
+
+
+  // check for any tasks due for today
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const filteredTasks = tasks.filter((task) => {
+      const taskDate = new Date(task.finish_date).toISOString().split("T")[0];
+      return taskDate === today;
+    });
+    setSelectedDateTasks(filteredTasks);
+  }, [tasks]);
+
 
   const handleDateClick = (info: DateClickArg) => {
     const clickedDate = info.dateStr;
@@ -121,6 +134,7 @@ export default function Dashboard() {
                       const taskColor = isOverdue ? "bg-red-500" : "bg-orange-500";
 
                       return (
+
                         <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
                           <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
                           <div className="flex-1 ml-2">
@@ -130,8 +144,7 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <div className="flex items-center text-sm text-gray-600">
-                            <i className="fa-solid fa-calendar-alt mr-1"></i>
-                            <span>{new Date(task.finish_date).toLocaleDateString()}</span>
+                            Due: {new Date(task.finish_date).toLocaleDateString()}
                           </div>
                         </li>
                       );
@@ -369,7 +382,9 @@ export default function Dashboard() {
                         const currentDate = new Date();
                         const finishDate = new Date(task.finish_date);
                         const isOverdue = currentDate > finishDate;
-                        const taskColor = isOverdue ? "bg-red-500" : "bg-orange-500";
+                        const completed = task.completed;
+                        const taskColor = completed ? "bg-green-500" : isOverdue ? "bg-red-500" : "bg-orange-500";
+
                         return (
                           <li key={task.task_id} className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">
                             <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
