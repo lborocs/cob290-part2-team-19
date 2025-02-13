@@ -77,19 +77,27 @@ export default function Dashboard() {
               {/* Upcoming Task List */}
               <ul className="space-y-3 pe-2 overflow-clip overflow-y-auto">
                 {tasks && tasks.length > 0 ? (
-                  tasks.map((task) => (
-                    <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className={`w-3 h-3 ${task.completed ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">{task.task_name}</div>
-                        <div className="text-sm text-gray-500">Project {task.project_id}</div>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fa-solid fa-calendar-alt mr-1"></i>
-                        <span>{new Date(task.finish_date).toLocaleDateString()}</span>
-                      </div>
-                    </li>
-                  ))) : (
+                  tasks.filter(task => !task.completed)
+                    .map((task) => {
+                      const currentDate = new Date();
+                      const finishDate = new Date(task.finish_date);
+                      const isOverdue = currentDate > finishDate;
+                      const taskColor = isOverdue ? 'bg-red-500' : 'bg-orange-500';
+
+                      return (
+                        <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
+                          <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
+                          <div className="flex-1 ml-2">
+                            <div className="font-medium">{task.task_name}</div>
+                            <div className="text-sm text-gray-500">Project {task.project_id}</div>
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <i className="fa-solid fa-calendar-alt mr-1"></i>
+                            <span>{new Date(task.finish_date).toLocaleDateString()}</span>
+                          </div>
+                        </li>
+                      );
+                    })) : (
                   <li className="text-center text-gray-500">No tasks available {tasks.length}</li>
                 )}
               </ul>
