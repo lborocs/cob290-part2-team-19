@@ -883,20 +883,13 @@ def is_project_archived(project_id):
 #}
 
 @app.route("/is_task_archived", methods=["GET"])
-def is_task_archived():
-    try:
-        data = request.get_json()
-        task_id = data.get("task_id")
-        
-        if not task_id:
-            return jsonify({"error": "Task ID is required"}), 400
-        
+def is_task_archived(task_id):
+    try:   
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
-        
         archived = cursor.fetchone()
-        return jsonify({"archived": archived is not None}), 200
+        return archived is not None
     except sqlite3.DatabaseError as e:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
@@ -1043,7 +1036,8 @@ def search_tasks():
     start_date = request.args.get('start_date')
     finish_date = request.args.get('finish_date')
     employee_id = request.args.get('employee_id')
-
+    task_completed = request.args.get('task_completed')
+    
     query = """
     SELECT t.*
     FROM Tasks t
@@ -1070,7 +1064,10 @@ def search_tasks():
     if employee_id:
         query += " AND et.employee_id = ?"
         params.append(employee_id)
-
+    if task_completed:
+        query += " AND t.completed = ?"
+        params.append(task_completed)
+        
     try:
         db = get_db()
         cursor = db.cursor()
@@ -1083,7 +1080,6 @@ def search_tasks():
             task_dict = dict(task)
             task_dict['archived'] = is_task_archived(task['task_id'])
             task_list.append(task_dict)
-
         return jsonify(task_list)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."

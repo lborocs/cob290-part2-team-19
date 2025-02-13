@@ -30,4 +30,5 @@ export interface Task {
     start_date: Date;
     finish_date: Date;
     completed: boolean;
+    completed_date: Date;
 }
