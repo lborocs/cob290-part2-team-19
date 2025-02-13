@@ -106,6 +106,31 @@ CREATE TABLE IF NOT EXISTS KnowledgeBaseCategories (
     category_name TEXT UNIQUE NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS Permissions (
+    user_type PRIMARY KEY,
+    new_project BOOLEAN,
+    new_task BOOLEAN,
+    edit_project BOOLEAN,
+    edit_task BOOLEAN,
+    create_knowledgebase_post BOOLEAN,
+    edit_knowledgebase_post BOOLEAN,
+    delete_knowledgebase_post BOOLEAN,
+    change_permissions BOOLEAN,
+    view_task_archive BOOLEAN,
+    view_project_archive BOOLEAN,
+    view_knowledgebase_archive BOOLEAN,
+    authorise_completed BOOLEAN,
+    
+    FOREIGN KEY (user_type) REFERENCES User_Types(type_id)
+);
+
+INSERT INTO Permissions VALUES (0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO Permissions VALUES (1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0);
+INSERT INTO Permissions VALUES (2, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0);
+
+
+
+
 CREATE TABLE IF NOT EXISTS KnowledgeBaseEdits (
     post_id INTEGER NOT NULL,
     employee_id INTEGER NOT NULL,
