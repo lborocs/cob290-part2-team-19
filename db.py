@@ -52,28 +52,73 @@ def get_user_types():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute('SELECT type_id, type_name FROM UserTypes')
+        cursor.execute('SELECT * FROM UserTypes')
         user_types = cursor.fetchall()
-        return [dict(user) for user in user_types]  # Convert to list of dictionaries
+        return jsonify([dict(user) for user in user_types])  # Convert to list of dictionaries
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-# Fetch Archive Settings
-@app.route("/get_archive_settings", methods=["GET"])
-def get_archive_settings():
+@app.route("/get_archive_limits", methods=["GET"])
+def get_archive_limits():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute('SELECT task, project, kb FROM ArchiveLimits LIMIT 1')
-        settings = cursor.fetchone()
+        cursor.execute("SELECT taskDuration, projectDuration, kbDuration FROM ArchiveLimits LIMIT 1")
+        limits = cursor.fetchone()  
+
         db.close()
-        return dict(settings)
+
+        # ✅ Ensure a valid JSON response with default values
+        return jsonify(dict(limits) if limits else {"taskDuration": 365, "projectDuration": 365, "kbDuration": 365})
+
+    except sqlite3.DatabaseError as e:
+        print("Database error:", e)  # ✅ Debugging
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception as e:
+        print("Unexpected error:", e)  # ✅ Debugging
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+
+
+@app.route("/get_permissions_by_user_type/<int:user_type>", methods=["GET"])
+def get_user_permissions_by_type(user_type):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            SELECT new_project, 
+                   new_task, 
+                   edit_project, 
+                   edit_task,
+                   create_knowledgebase_post,
+                   edit_knowledgebase_post,
+                   delete_knowledgebase_post,
+                   view_task_archive,
+                   view_project_archive,
+                   view_knowledgebase_archive,
+                   authorise_completed
+            FROM Permissions 
+            WHERE user_type = ?
+        """, (user_type,))
+        
+        permissions = cursor.fetchone()  # Get a single row instead of a list
+
+        if permissions is None:
+            return jsonify({"error": "User type not found"}), 404
+
+        # Convert row to dictionary & ensure values are boolean (0 → False, 1 → True)
+        permissions_dict = {key: bool(value) for key, value in dict(permissions).items()}
+
+        return jsonify(permissions_dict)
+    
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+
 
 # Update Archive Settings
 @app.route("/update_archive_settings", methods=["PUT"])
