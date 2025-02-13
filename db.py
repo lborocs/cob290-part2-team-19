@@ -367,6 +367,7 @@ def new_project():
         project_name = data.get("project_name")
         team_leader_id = data.get("team_leader_id")
         description = data.get("description")
+        tags = data.get("tags")
         start_date = data.get("start_date")
         finish_date = data.get("finish_date")
 
@@ -388,6 +389,20 @@ def new_project():
         """, (project_name, team_leader_id, description, start_date, finish_date)) 
 
         db.commit()
+        
+        if tags:
+            tags_list = tags.split(",")
+            for tag in tags_list:
+                db = get_db()
+                cursor = db.cursor()
+                #add tags
+                cursor.execute("INSERT INTO ProjectTags (tag_name) VALUES (?)", (tag,))
+                #add tags to tag table
+                cursor.execute("INSERT OR IGNORE INTO tags VALUES (?)",(tag,))
+        
+        db.commit()
+
+                
         return jsonify({"success": True, "message": "Project created successfully"}), 201 
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
