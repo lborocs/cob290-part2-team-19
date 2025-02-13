@@ -90,7 +90,7 @@ export default function Dashboard() {
                       </div>
                     </li>
                   ))) : (
-                  <li className="text-center text-gray-500">No tasks available</li>
+                  <li className="text-center text-gray-500">No tasks available {tasks.length}</li>
                 )}
               </ul>
             </Card>

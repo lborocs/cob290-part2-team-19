@@ -589,6 +589,22 @@ def is_task_archived():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+# function to be used by other functions to check if task archived
+def check_if_task_archived(task_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
+        
+        archived = cursor.fetchone()
+        return archived is not None
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        return False
+    
 # Function to find out if knowledge base page is archived or active
 @app.route("/is_post_archived", methods=["GET"])
 def is_post_archived():
@@ -700,7 +716,7 @@ def search_projects():
         cursor = db.cursor()
         cursor.execute(query, params)
         projects = cursor.fetchall()
-        print(projects)
+        #print(projects)
         project_list = []
         # Appends boolean for archived status of each project
         for proj in projects:
@@ -755,14 +771,13 @@ def search_tasks():
         cursor = db.cursor()
         cursor.execute(query, params)
         tasks = cursor.fetchall()
-
+        print(query)
         task_list = []
         # Appends boolean for archived status of each task
         for task in tasks:
             task_dict = dict(task)
-            task_dict['archived'] = is_task_archived(task['task_id'])
+            task_dict['archived'] = check_if_task_archived(task['task_id'])
             task_list.append(task_dict)
-
         return jsonify(task_list)
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."
@@ -794,7 +809,7 @@ def search_knowledgebase():
         #Appends boolean for archived status of each post
         for post in posts:
             post_dict = dict(post)
-            post_dict['archived'] = is_task_archived(post['post_id'])
+            post_dict['archived'] = check_if_task_archived(post['post_id'])
             post_dict.append(post_dict)
 
         return jsonify(post_list)
