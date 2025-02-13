@@ -95,7 +95,6 @@ def update_permissions(user_type):
 # Example request: 
 # POST /add_post
 # Content-Type: application/json
-
 #{
 #  "author_id": 5,
 #  "content": "This is a new knowledge base post.",
@@ -108,28 +107,24 @@ def add_post():
         data = request.json
         author_id = data.get("author_id")
         content = data.get("content")
-        category_name = data.get("category_name")
+        category_id = data.get("category_id")
 
-        if not all([author_id, content, category_name]):
-            return jsonify({"error": "Author ID, content, and category name are required."}), 400
+        if not all([author_id, content, category_id]):
+            return jsonify({"error": "Author ID, content, and category id are required."}), 400
 
         db = get_db()
         cursor = db.cursor()
         
         # Check if category exists
-        cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_name = ?", (category_name,))
-        category = cursor.fetchone()
-
-        if category:
-            category_id = category["category_id"]
-        else:
-            cursor.execute("INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)", (category_name,))
-            category_id = cursor.lastrowid
+        cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_id = ?", (category_id,))
+        category_id = cursor.fetchone()
+        if not category_id:
+            return jsonify({"error": "Category does not exist."}), 50
 
         # Insert post
         cursor.execute("""
-            INSERT INTO KnowledgeBase (author_id, content, category_id, deleted)
-            VALUES (?, ?, ?, 0)
+            INSERT INTO KnowledgeBase (author_id, content, category_id)
+            VALUES (?, ?, ?)
         """, (author_id, content, category_id))
 
         db.commit()
@@ -138,6 +133,31 @@ def add_post():
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+# Add Category
+@app.route("/add_category", methods=["POST"])
+def add_category():
+    try:
+        data = request.json
+        category = data.get("category_name")
+        if not category:
+            return jsonify({"error": "A category name is required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Insert category
+        cursor.execute("""
+            INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)
+        """, (category,))
+
+        db.commit()
+        return jsonify({"success": True, "message": "Category added successfully"}), 201
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
 
 # Delete a post from the knowledge base (mark as deleted and archive it)
 # Example request:
@@ -502,6 +522,62 @@ def complete_project():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
+    
+#Function for checking project status
+@app.route("/project_status/<int:project_id>", methods=["GET"])
+def project_status(project_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute("SELECT completed, authorised FROM Projects WHERE project_id = ?", (project_id,))
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"error": "Project not found."}), 404
+
+        if row["completed"] and row["authorised"]:
+            status = "Completed"
+        elif row["completed"]:
+            status = "Under Review"
+        else:
+            status = "In Progress"
+
+        return jsonify({"project_id": project_id, "status": status}), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+
+#Function for checking task status
+
+@app.route("/task_status/<int:task_id>", methods=["GET"])
+def task_status(task_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute("SELECT completed, authorised FROM Tasks WHERE task_id = ?", (task_id,))
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"error": "Task not found."}), 404
+
+        if row["completed"] and row["authorised"]:
+            status = "Completed"
+        elif row["completed"]:
+            status = "Under Review"
+        else:
+            status = "In Progress"
+
+        return jsonify({"task_id": task_id, "status": status}), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+
 ### USER ACCOUNT FUNCTIONALITY
 
 # Add user
