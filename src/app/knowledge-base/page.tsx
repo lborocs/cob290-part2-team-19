@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
+import { fetchCategories } from "@/api/fetchCategorey";
 
 
 interface Guide {
@@ -28,7 +29,7 @@ const KnowledgeBasePage = () => {
   const [isCreatingCategory, setIsCreatingCategory] = useState(false); // Toggle for create category modal
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  const [isCreatingGuide, setIsCreatingGuide] = useState(false); // Toggle for create guide modal
+  const [isCreatingGuide, setIsCreatingGuide] = useState(false); 
   const [newGuideName, setNewGuideName] = useState("");
   const [newGuideContent, setNewGuideContent] = useState("");
   const [newGuideAuthor, setNewGuideAuthor] = useState("Current User");
@@ -46,60 +47,20 @@ const KnowledgeBasePage = () => {
   const [editGuideAuthor, setEditGuideAuthor] = useState("Current User");
 
   useEffect(() => {
-    // Mock Data - Replace with a database fetch when ready
-    setCategories([
-      {
-        name: "General",
+    fetchCategories().then((data) => {
+      if (!Array.isArray(data)) {
+        console.error("Fetched categories are not an array:", data);
+        return;
+      }
+
+      const formattedCategories = data.map((cat: { category_id: number; category_name: string }) => ({
+        name: cat.category_name,
         color: "bg-gradient-to-r from-yellow-400 to-yellow-600",
-        author: "John Doe",
-        guides: [
-          {
-            id: "1",
-            title: "Project Setup Guide",
-            category: "General",
-            author: "Alice Johnson",
-            content:
-              "This guide explains how to set up a new project step by step.",
-          },
-          {
-            id: "2",
-            title: "Team Collaboration",
-            category: "General",
-            author: null,
-            content: "Learn how to collaborate effectively in a team.",
-          },
-        ],
-      },
-      {
-        name: "Admin",
-        color: "bg-gradient-to-r from-blue-400 to-blue-600",
-        author: "Jane Smith",
-        guides: [
-          {
-            id: "3",
-            title: "Permissions Overview",
-            category: "Admin",
-            author: "Robert Brown",
-            content: "Understand the roles and permissions in the system.",
-          },
-        ],
-      },
-      {
-        name: "Must Read",
-        color: "bg-gradient-to-r from-red-400 to-red-600",
-        author: "Sarah Green",
-        guides: [
-          {
-            id: "4",
-            title: "Security Protocols",
-            category: "Must Read",
-            author: "John Doe",
-            content:
-              "Essential security protocols to maintain system integrity.",
-          },
-        ],
-      },
-    ]);
+        author: "Unknown",
+        guides: [],
+      }));
+      setCategories(formattedCategories);
+    });
   }, []);
 
   // Filter categories based on search query

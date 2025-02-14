@@ -254,6 +254,20 @@ def add_category():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
+
+@app.route("/categories", methods=["GET"])
+def get_categories():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT category_id, category_name FROM KnowledgeBaseCategories")
+        categories = cursor.fetchall()
+        return jsonify([dict(category) for category in categories]), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
 # Delete a post from the knowledge base (mark as deleted and archive it)
 # Example request:
 #DELETE /delete_post/12
