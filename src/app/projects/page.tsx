@@ -19,6 +19,13 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
   useEffect(() => {
+    /* Need help with api fetch projects.
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('https://localhost:3300/projects/search?team_leader_id=${}')
+      }
+    }
+    */
     setProjects([
       {
         project_id: 1,
@@ -32,7 +39,7 @@ export default function ProjectsPage() {
         project_name: "Project 2",
         team_leader: "Team Lead B",
         due_date: "2023-02-01",
-        status: "Unfinished",
+        status: "Overdue",
       },
       {
         project_id: 3,
@@ -44,7 +51,7 @@ export default function ProjectsPage() {
     ]);
   }, []);
 
-  // Function to sort projects by due date
+  //sort projects by due date
   const sortProjectsByDueDate = () => {
     const sortedProjects = [...projects].sort((a, b) => {
       const dateA = new Date(a.due_date).getTime();
@@ -56,7 +63,7 @@ export default function ProjectsPage() {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  // Function to filter projects by search query
+  //filter projects by search query
   const filteredProjects = projects.filter(
     (project) =>
       project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -96,7 +103,7 @@ export default function ProjectsPage() {
               >
                 <option>Status ▼</option>
                 <option>Completed</option>
-                <option>Unfinished</option>
+                <option>Overdue</option>
                 <option>Not Started</option>
               </select>
             </div>
