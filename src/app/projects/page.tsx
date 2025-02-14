@@ -1,10 +1,69 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TextButton } from "../components/Input/Buttons";
 import Layout from "../layout/page";
 import React from "react";
 
+interface Project {
+  project_id: number;
+  project_name: string;
+  team_leader: string;
+  due_date: string; // Keep as string for sorting conversion
+  status: string;
+}
+
 export default function ProjectsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
+
+  // Dummy Data (Replace this with fetched data from API)
+  useEffect(() => {
+    setProjects([
+      {
+        project_id: 1,
+        project_name: "Project 1",
+        team_leader: "Team Lead A",
+        due_date: "2023-01-01",
+        status: "Completed",
+      },
+      {
+        project_id: 2,
+        project_name: "Project 2",
+        team_leader: "Team Lead B",
+        due_date: "2023-02-01",
+        status: "Unfinished",
+      },
+      {
+        project_id: 3,
+        project_name: "Project 3",
+        team_leader: "Team Lead C",
+        due_date: "2023-03-01",
+        status: "Not Started",
+      },
+    ]);
+  }, []);
+
+  // Function to sort projects by due date
+  const sortProjectsByDueDate = () => {
+    const sortedProjects = [...projects].sort((a, b) => {
+      const dateA = new Date(a.due_date).getTime();
+      const dateB = new Date(b.due_date).getTime();
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+
+    setProjects(sortedProjects);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  // Function to filter projects by search query
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.project_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (statusFilter === "All" || project.status === statusFilter)
+  );
+
   return (
     <Layout
       tabName="Projects"
@@ -22,15 +81,24 @@ export default function ProjectsPage() {
                 type="text"
                 placeholder="Search projects"
                 className="border rounded px-3 py-1 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300">
+              <button
+                className="bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300"
+                onClick={sortProjectsByDueDate}
+              >
                 Sort by Due Date
               </button>
-              <select className="border rounded px-3 py-1 text-sm">
+              <select
+                className="border rounded px-3 py-1 text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
                 <option>Status ▼</option>
                 <option>Completed</option>
-                <option>In Progress</option>
-                <option>Overdue</option>
+                <option>Unfinished</option>
+                <option>Not Started</option>
               </select>
             </div>
             <div className="h-[10em] overflow-x-hidden overflow-scroll">
@@ -58,48 +126,47 @@ export default function ProjectsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 text-sm">
-                  <tr className="hover:bg-blue-50">
-                    <td className="table-cell px-2 py-3 text-center">
-                      <input type="checkbox" className="w-6 h-6" />
-                    </td>
-                    <td className="table-cell px-2 py-3">Project 1</td>
-                    <td className="table-cell px-2 py-3">Team Lead A</td>
-                    <td className="table-cell px-2 py-3 text-gray-500">
-                      2023-01-01
-                    </td>
-                    <td className="table-cell px-2 py-3 text-green-600 text-center">
-                      Completed
-                    </td>
-                    <td className="table-cell px-2 py-3 text-center"></td>
-                  </tr>
-                  <tr className="bg-gray-50 hover:bg-blue-50">
-                    <td className="table-cell px-2 py-3 text-center">
-                      <input type="checkbox" className="w-6 h-6" />
-                    </td>
-                    <td className="table-cell px-2 py-3">Project 2</td>
-                    <td className="table-cell px-2 py-3">Team Lead B</td>
-                    <td className="table-cell px-2 py-3 text-gray-500">
-                      2023-02-01
-                    </td>
-                    <td className="table-cell px-2 py-3 text-yellow-600 text-center">
-                      Unfinished
-                    </td>
-                    <td className="table-cell px-2 py-3 text-center"></td>
-                  </tr>
-                  <tr className="hover:bg-blue-50">
-                    <td className="table-cell px-2 py-3 text-center">
-                      <input type="checkbox" className="w-6 h-6" />
-                    </td>
-                    <td className="table-cell px-2 py-3">Project 3</td>
-                    <td className="table-cell px-2 py-3">Team Lead C</td>
-                    <td className="table-cell px-2 py-3 text-gray-500">
-                      2023-03-01
-                    </td>
-                    <td className="table-cell px-2 py-3 text-gray-500 text-center">
-                      Not Started
-                    </td>
-                    <td className="table-cell px-2 py-3 text-center"></td>
-                  </tr>
+                  {filteredProjects.length > 0 ? (
+                    filteredProjects.map((project) => (
+                      <tr key={project.project_id} className="hover:bg-blue-50">
+                        <td className="table-cell px-2 py-3 text-center">
+                          <input type="checkbox" className="w-6 h-6" />
+                        </td>
+                        <td className="table-cell px-2 py-3">
+                          {project.project_name}
+                        </td>
+                        <td className="table-cell px-2 py-3">
+                          {project.team_leader}
+                        </td>
+                        <td className="table-cell px-2 py-3 text-gray-500">
+                          {project.due_date}
+                        </td>
+                        <td className="table-cell px-2 py-3 text-center">
+                          <span
+                            className={
+                              project.status === "Completed"
+                                ? "text-green-600"
+                                : project.status === "Overdue"
+                                ? "text-red-600"
+                                : "text-yellow-600"
+                            }
+                          >
+                            {project.status}
+                          </span>
+                        </td>
+                        <td className="table-cell px-2 py-3 text-center"></td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="text-center py-4 text-gray-500"
+                      >
+                        No projects found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
