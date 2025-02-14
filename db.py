@@ -1059,6 +1059,22 @@ def is_task_archived():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
+#for other functions so use so we can pass param
+def is_task_archived_local(task_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
+        archived = cursor.fetchone()
+        return archived is not None
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        return False
+    
+    
 # Function to find out if knowledge base page is archived or active
 
 #GET /is_post_archived
@@ -1237,7 +1253,7 @@ def search_tasks():
         # Appends boolean for archived status of each task
         for task in tasks:
             task_dict = dict(task)
-            task_dict['archived'] = is_task_archived(task['task_id'])
+            task_dict['archived'] = is_task_archived_local(task['task_id'])
             task_list.append(task_dict)
 
         return jsonify(task_list)
@@ -1271,7 +1287,7 @@ def search_knowledgebase():
         #Appends boolean for archived status of each post
         for post in posts:
             post_dict = dict(post)
-            post_dict['archived'] = is_task_archived(post['post_id'])
+            post_dict['archived'] = is_task_archived_local(post['post_id'])
             post_dict.append(post_dict)
 
         return jsonify(post_list)
