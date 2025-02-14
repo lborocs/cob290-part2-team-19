@@ -8,7 +8,7 @@ interface Project {
   project_id: number;
   project_name: string;
   team_leader: string;
-  due_date: string; // Keep as string for sorting conversion
+  due_date: string;
   status: string;
 }
 
@@ -18,7 +18,6 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
-  // Dummy Data (Replace this with fetched data from API)
   useEffect(() => {
     setProjects([
       {
