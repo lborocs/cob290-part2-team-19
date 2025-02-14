@@ -241,13 +241,30 @@ def add_category():
         db = get_db()
         cursor = db.cursor()
         
-        # Insert category
-        cursor.execute("""
-            INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)
-        """, (category,))
+        # Check if category already exists
+        cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_name = ?", (category,))
+        existing_category = cursor.fetchone()
+        if existing_category:
+            return jsonify({"error": "Category already exists."}), 409  # 409 Conflict if it exists
+
+        # Insert new category
+        cursor.execute("INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)", (category,))
+        category_id = cursor.lastrowid  # Get the newly inserted category ID
 
         db.commit()
-        return jsonify({"success": True, "message": "Category added successfully"}), 201
+
+        # Return the created category
+        return jsonify({
+            "success": True,
+            "message": "Category added successfully",
+            "category": {
+                "name": category,  
+                "guides": [],  
+                "author": "Unknown",
+                "color": "bg-gradient-to-r from-yellow-400 to-yellow-600"
+            }
+        }), 201
+
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
@@ -255,18 +272,28 @@ def add_category():
 
 
 
-@app.route("/categories", methods=["GET"])
+@app.route('/categories', methods=['GET'])
 def get_categories():
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT category_id, category_name FROM KnowledgeBaseCategories")
         categories = cursor.fetchall()
-        return jsonify([dict(category) for category in categories]), 200
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+      
+        formatted_categories = [
+            {
+                "name": cat["category_name"],  
+                "guides": [],  
+                "author": "Unknown",  
+                "color": "bg-gradient-to-r from-yellow-400 to-yellow-600"
+            }
+            for cat in categories
+        ]
+
+        return jsonify(formatted_categories), 200
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
 
 # Delete a post from the knowledge base (mark as deleted and archive it)
 # Example request:

@@ -47,20 +47,29 @@ const KnowledgeBasePage = () => {
   const [editGuideAuthor, setEditGuideAuthor] = useState("Current User");
 
   useEffect(() => {
-    fetchCategories().then((data) => {
-      if (!Array.isArray(data)) {
-        console.error("Fetched categories are not an array:", data);
-        return;
-      }
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        if (!Array.isArray(data)) {
+          console.error("Error: Fetched categories are not an array!", data);
+          return;
+        }
 
-      const formattedCategories = data.map((cat: { category_id: number; category_name: string }) => ({
-        name: cat.category_name,
-        color: "bg-gradient-to-r from-yellow-400 to-yellow-600",
-        author: "Unknown",
-        guides: [],
-      }));
-      setCategories(formattedCategories);
-    });
+        // Format categories to match UI structure
+        const formattedCategories = data.map((cat: { category_id: number; category_name: string }) => ({
+          name: cat.category_name,  // Ensure correct naming
+          guides: [],  // Guides will be fetched separately
+          author: "Unknown",
+          color: "bg-gradient-to-r from-yellow-400 to-yellow-600",
+        }));
+
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
+    };
+
+    loadCategories();
   }, []);
 
   // Filter categories based on search query
@@ -84,12 +93,13 @@ const KnowledgeBasePage = () => {
     : [];
 
   // Create Category
-  const addCategory = () => {
+  const addCategory = async () => {
     if (!newCategoryName.trim()) {
       alert("Category name cannot be empty.");
       return;
     }
-    // Ensure no duplicate category names
+
+    // Ensure no duplicate category names locally
     const isDuplicate = categories.some(
       (category) =>
         category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
@@ -99,18 +109,42 @@ const KnowledgeBasePage = () => {
       return;
     }
 
-    setCategories([
-      ...categories,
-      {
-        name: newCategoryName.trim(),
-        color: `bg-gradient-to-r from-${randomColor()}-400 to-${randomColor()}-600`,
-        author: "Current User",
-        guides: [],
-      },
-    ]);
+    // Prepare new category object for UI update
+    const newCategory = {
+      name: newCategoryName.trim(),
+      color: `bg-gradient-to-r from-${randomColor()}-400 to-${randomColor()}-600`,
+      author: "Current User",
+      guides: [],
+    };
 
-    setNewCategoryName("");
-    setIsCreatingCategory(false);
+    try {
+      console.log("🟡 Sending request to API...");
+
+      // Send API request to Flask backend
+      const response = await fetch("http://localhost:3300/add_category", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ category_name: newCategory.name }),
+      });
+
+      console.log("🟢 API response received", response);
+
+      if (!response.ok) {
+        throw new Error(`Failed to add category: ${response.statusText}`);
+      }
+
+      // Update UI after successful API call
+      setCategories([...categories, newCategory]);
+
+      alert("Category added successfully!");
+      setNewCategoryName("");
+      setIsCreatingCategory(false);
+    } catch (error) {
+      console.error("❌ Error adding category:", error);
+      alert("Failed to add category.");
+    }
   };
 
   // Function to generate a random color from a preset list
@@ -336,38 +370,37 @@ const KnowledgeBasePage = () => {
           {/* Categories View */}
           {!selectedCategory && !selectedGuide && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredCategories.map((category) => (
-                <div
-                  key={category.name}
-                  className={`p-6 rounded-lg shadow-md hover:shadow-lg cursor-pointer ${category.color}`}
-                  onClick={() => setSelectedCategory(category.name)}
-                >
-                  <h2 className="text-xl font-bold mb-2">
-                    {category.name}
-                  </h2>
-                  <p className="text-sm">
-                    Created by: {category.author || "No Author"}
-                  </p>
-                  <p className="text-sm mb-2">
-                    {category.guides.length} guides
-                  </p>
-                  {/* Edit and Delete Buttons for Category */}
-                  <div className="flex gap-2">
-                    <button
-                      className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
-                      onClick={(e) => openEditCategoryModal(category, e)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="px-2 py-1 bg-red-500 text-white rounded text-xs"
-                      onClick={(e) => deleteCategory(category.name, e)}
-                    >
-                      Delete
-                    </button>
+              {categories.length > 0 ? (
+                filteredCategories.map((category) => (
+                  <div
+                    key={category.name}
+                    className={`p-6 rounded-lg shadow-md hover:shadow-lg cursor-pointer ${category.color}`}
+                    onClick={() => setSelectedCategory(category.name)}
+                  >
+                    <h2 className="text-xl font-bold mb-2">{category.name}</h2>
+                    <p className="text-sm">Created by: {category.author || "Unknown"}</p>
+                    <p className="text-sm mb-2">0 guides (To be updated)</p>
+
+                    {/* Edit and Delete Buttons for Category */}
+                    <div className="flex gap-2">
+                      <button
+                        className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                        onClick={(e) => openEditCategoryModal(category, e)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="px-2 py-1 bg-red-500 text-white rounded text-xs"
+                        onClick={(e) => deleteCategory(category.name, e)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-gray-500">No categories found.</p>
+              )}
             </div>
           )}
 
