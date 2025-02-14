@@ -194,7 +194,6 @@ export default function Dashboard() {
     <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
       <div className={`h-full p-4 ps-0 ${isFullscreen ? 'hidden' : ''}`}>
         <div className="h-full">
-          {/* Top Section */}
           <div className="grid grid-cols-2 gap-4 h-2/5">
             {/* Card 1: Tasks chart */}
             <Card className="min-h-full">
@@ -247,11 +246,9 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Bottom Row: Two Cards (2/3 & 1/3 Width, 2/3 Height) */}
           <div className="grid grid-cols-3 gap-4 h-3/5 mt-4">
-            {/* Card 3: Project Summary + Table (2/3 Width, 2/3 Height) */}
+            {/* Card 3: Project Summar */}
             <Card className="col-span-2 min-h-full bg-white p-4 overflow-clip">
-              {/* Project Summary Section */}
               <div className="sticky top-0 z-10">
                 <div className="flex justify-between items-center gap-2 w-[100%]">
                   <div className="whitespace-nowrap flex items-center justify-center">
