@@ -1,10 +1,20 @@
-
 "use client";
 import React, { useEffect, useRef } from "react";
+import { Task } from '@/interfaces/interfaces';
 
-const TaskCompletionChart = () => {
+interface TaskCompletionChartProps {
+    tasks: Task[];
+}
+
+const TaskCompletionChart: React.FC<TaskCompletionChartProps> = ({ tasks }) => {
     const chartRef = useRef<HTMLCanvasElement | null>(null);
     const chartInstanceRef = useRef<any>(null);
+
+    // Calculate labels for the past week ending on today
+    const today = new Date();
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const endDay = today.getDay();
+    const labels = [...daysOfWeek.slice(endDay + 1), ...daysOfWeek.slice(0, endDay + 1)];
 
     useEffect(() => {
         const loadChart = () => {
@@ -12,15 +22,32 @@ const TaskCompletionChart = () => {
                 const Chart = window.Chart;
 
                 if (chartRef.current && !chartInstanceRef.current) {
+                    // Filter tasks completed in the past week
+                    const pastWeekTasks = tasks.filter(task => {
+                        const completedDate = new Date(task.completed_date);
+                        const diffTime = Math.abs(today.getTime() - completedDate.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        return diffDays <= 7 && task.completed;
+                    });
+
+                    // Count tasks completed each day
+                    const taskCounts = Array(7).fill(0);
+                    pastWeekTasks.forEach(task => {
+                        const completedDate = new Date(task.completed_date);
+                        const dayOfWeek = (completedDate.getDay() - endDay + 6) % 7; // Adjust dayOfWeek to match labels
+                        taskCounts[dayOfWeek]++;
+                        console.log(dayOfWeek);
+                    });
+
                     chartInstanceRef.current = new Chart(chartRef.current, {
                         type: "bar",
                         data: {
-                            labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                            labels: labels, // Use the calculated labels
                             datasets: [
                                 {
                                     label: "Tasks Completed",
-                                    data: [5, 8, 6, 7, 9],
-                                    backgroundColor: (ctx : any) => {
+                                    data: taskCounts,
+                                    backgroundColor: (ctx: any) => {
                                         const canvas = ctx.chart.ctx;
                                         const gradient = canvas.createLinearGradient(0, 0, 0, 400);
                                         gradient.addColorStop(0, "#4CAF50");
@@ -38,12 +65,12 @@ const TaskCompletionChart = () => {
                             responsive: true,
                             maintainAspectRatio: false,
                             font: {
-                                size: 18,      
-                                weight: "bold", 
+                                size: 18,
+                                weight: "bold",
                                 family: "Inter, sans-serif"
                             },
                             color: "#333",
-                            padding: 20,                
+                            padding: 20,
                             plugins: {
                                 legend: {
                                     display: false,
@@ -57,11 +84,11 @@ const TaskCompletionChart = () => {
                                     display: true,
                                     text: "Tasks Completed Over the Week",
                                     font: {
-                                        size: 15,      
-                                        weight: "bold", 
-                                        family: "Inter, sans-serif" 
+                                        size: 15,
+                                        weight: "bold",
+                                        family: "Inter, sans-serif"
                                     },
-                                    color: "#333", 
+                                    color: "#333",
                                     padding: 20
                                 },
                                 tooltip: {
@@ -72,9 +99,9 @@ const TaskCompletionChart = () => {
                                     padding: 10,
                                     cornerRadius: 5,
                                     displayColors: false,
-                                    callbacks : {
-                                        title: (ctx: any)=>'',
-                                        label: (ctx: any)=>ctx.raw,
+                                    callbacks: {
+                                        title: (ctx: any) => '',
+                                        label: (ctx: any) => ctx.raw,
                                     }
                                 },
                             },
@@ -85,7 +112,14 @@ const TaskCompletionChart = () => {
                                 },
                                 y: {
                                     grid: { color: "#e0e0e0", borderDash: [5, 5] },
-                                    ticks: { color: "#555", font: { size: 13 } },
+                                    ticks: {
+                                        color: "#555",
+                                        font: { size: 13 },
+                                        stepSize: 1, // Ensure step size is 1
+                                        callback: function (value: number) {
+                                            return Number.isInteger(value) ? value : null; // Show only integers
+                                        }
+                                    },
                                 },
                             },
                         },
@@ -109,7 +143,7 @@ const TaskCompletionChart = () => {
                 chartInstanceRef.current = null;
             }
         };
-    }, []);
+    }, [tasks]);
 
     return (
         <canvas ref={chartRef}></canvas>

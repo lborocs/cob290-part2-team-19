@@ -6,19 +6,25 @@ import TaskCompletionChart from '../components/TaskCompletionChart';
 import Card from '../components/Card';
 import { fetchProjects } from '@/api/fetchProjects';
 import { fetchTasks } from '@/api/fetchTasks';
-import { Project, Task } from '@/interfaces/interfaces';
+import { fetchToDo } from '@/api/fetchToDo';
+import { addToDo } from '@/api/addToDo';
+import { Project, Task, ToDo } from '@/interfaces/interfaces';
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [ToDo, setToDo] = useState(1);
+  const [ToDoState, setToDoState] = useState(1);
+  const [ToDos, setToDos] = useState<ToDo[]>([]);
   const [projects, setProjects] = useState<Project[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [selectedDateTasks, setSelectedDateTasks] = useState<Task[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
-
+  const [newToDoDescription, setNewToDoDescription] = useState<string>('');
+  const [selectedProject, setSelectedProject] = useState<string>('0');
+  const [selectedManager, setSelectedManager] = useState<string>('0');
+  const [selectedStatus, setSelectedStatus] = useState<string>('0');
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -44,6 +50,19 @@ export default function Dashboard() {
         setTasks(data || [])
       } catch (error) {
         console.log('Error fetching data:', error)
+      }
+    };
+    fetchData();
+  }, []);
+
+  //getting todo
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchToDo(0);
+        setToDos(data || [])
+      } catch (error) {
+        console.log('Error fetcfhing data: ',)
       }
     };
     fetchData();
@@ -99,6 +118,77 @@ export default function Dashboard() {
     setSelectedDateTasks(filteredTasks);
   };
 
+  const handleAddToDo = async () => {
+    if (!newToDoDescription.trim()) {
+      alert('To-Do description cannot be empty.');
+      return;
+    }
+
+    const result = await addToDo(0, newToDoDescription.trim());
+    alert(result.message);
+    if (result.success) {
+      setNewToDoDescription('');
+      //update the todos
+      const data = await fetchToDo(0);
+      setToDos(data);
+    }
+  };
+
+  const handleCompleteToDo = async (todo_id: number) => {
+    const updatedToDos = ToDos.map(todo =>
+      todo.todo_id === todo_id ? { ...todo, completed: true } : todo
+    );
+    setToDos(updatedToDos);
+  };
+
+  const handleDeleteToDo = async (todo_id: number) => {
+    const updatedToDos = ToDos.map(todo =>
+      todo.todo_id === todo_id ? { ...todo, deleted: true } : todo
+    );
+    setToDos(updatedToDos);
+  };
+
+  const handleUncompleteToDo = async (todo_id: number) => {
+    const updatedToDos = ToDos.map(todo =>
+      todo.todo_id === todo_id ? { ...todo, completed: false } : todo
+    );
+    setToDos(updatedToDos);
+  };
+
+  const handleRestoreToDo = async (todo_id: number) => {
+    const updatedToDos = ToDos.map(todo =>
+      todo.todo_id === todo_id ? { ...todo, deleted: false } : todo
+    );
+    setToDos(updatedToDos);
+  };
+
+  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedProject(e.target.value);
+  };
+
+  const handleManagerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedManager(e.target.value);
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedProject('0');
+    setSelectedManager('0');
+    setSelectedStatus('0');
+  }
+  // filter the project based on the selectors
+  const filteredProjects = projects.filter(project => {
+    const matchesProject = selectedProject === '0' || project.project_name === selectedProject;
+    const matchesManager = selectedManager === '0' || (project.employeeDetails && `${project.employeeDetails.first_name} ${project.employeeDetails.second_name}` === selectedManager);
+    const matchesStatus = selectedStatus === '0' ||
+      (selectedStatus === 'Completed' && project.completed) ||
+      (selectedStatus === 'In Progress' && !project.completed && new Date() < new Date(project.finish_date)) ||
+      (selectedStatus === 'Overdue' && !project.completed && new Date() > new Date(project.finish_date));
+    return matchesProject && matchesManager && matchesStatus;
+  });
 
   return (
     <Layout tabName={"Dashboard"} icon={<i className="fa-solid fa-table-columns"></i>}>
@@ -108,7 +198,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-4 h-2/5">
             {/* Card 1: Tasks chart */}
             <Card className="min-h-full">
-              <TaskCompletionChart />
+              <TaskCompletionChart tasks={tasks} />
             </Card>
 
             {/* Card 2: Upcoming Tasks */}
@@ -150,7 +240,7 @@ export default function Dashboard() {
                       );
                     })
                 ) : (
-                  <li className="text-center text-gray-500">No tasks available {tasks.length}</li>
+                  <li className="text-center text-gray-500">No tasks available</li>
                 )}
               </ul>
 
@@ -168,25 +258,31 @@ export default function Dashboard() {
                     <h3 className="text-normal font-semibold">Project Summary</h3>
                   </div>
                   <div className="flex gap-4">
-                    <select className="border p-2 rounded w-[25%]">
+                    <select className="border p-2 rounded w-[25%] ml-auto" value={selectedProject} onChange={handleProjectChange}>
                       <option value="0">Project</option>
-                      <option value="Project 1">Project 1</option>
-                      <option value="Project 2">Project 2</option>
-                      <option value="Project 3">A very long name for Project 3</option>
+                      {projects.map(project => (
+                        <option key={project.project_id} value={project.project_name}>{project.project_name}</option>
+                      ))}
                     </select>
-                    <select className="border p-2 rounded w-[25%]">
+                    <select className="border p-2 rounded w-[25%] ml-auto" value={selectedManager} onChange={handleManagerChange}>
                       <option value="0">Manager</option>
-                      <option value="Mx. Lorem">Mx. Lorem</option>
-                      <option value="Dr. Ipsum">Dr. Ipsum</option>
-                      <option value="Mx. Long name for testing">Mx. Long name for testing</option>
+                      {projects.map(project => (
+                        project.employeeDetails && (
+                          <option key={project.project_id} value={`${project.employeeDetails.first_name} ${project.employeeDetails.second_name}`}>
+                            {`${project.employeeDetails.first_name} ${project.employeeDetails.second_name}`}
+                          </option>
+                        )
+                      ))}
                     </select>
-                    <select className="border p-2 rounded w-[25%]">
+                    <select className="border p-2 rounded w-[25%] ml-auto" value={selectedStatus} onChange={handleStatusChange}>
                       <option value="0">Status</option>
                       <option value="Completed">Completed</option>
                       <option value="In Progress">In Progress</option>
                       <option value="Overdue">Overdue</option>
-                      <option value="TBA">To Be Assigned</option>
                     </select>
+                    <button onClick={handleResetFilters} className="bg-gray-200 p-2 rounded ml-auto">
+                      Reset
+                    </button>
                   </div>
                 </div>
 
@@ -195,9 +291,8 @@ export default function Dashboard() {
               </div>
               {/* Card-style Table Section */}
               <div className="w-full space-y-3 overflow-y-auto max-h-[90%]">
-                {/* replace with db results */}
-                {projects && projects.length > 0 ? (
-                  projects.map((project) => {
+                {filteredProjects.length > 0 ? (
+                  filteredProjects.map((project) => {
                     const currentDate = new Date();
                     const finishDate = new Date(project.finish_date);
                     const tlDetails = project.employeeDetails;
@@ -229,7 +324,7 @@ export default function Dashboard() {
                           <p className="text-gray-500">Due: {project.finish_date.toString()}</p>
                           <span
                             className={`px-3 py-1 text-sm font-medium rounded-full ${statusClass}
-                          }`}
+          }`}
                           >
                             {statusText}
                           </span>
@@ -237,7 +332,7 @@ export default function Dashboard() {
                       </div>
                     )
                   })) : (
-                  <div className="text-center text-gray-500">Not assigned to any Projects</div>
+                  <div className="text-center text-gray-500">No matching Projects</div>
                 )}
               </div>
             </Card>
@@ -248,20 +343,20 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold">To-Do List</h3>
                 <div className="flex gap-2">
                   <button
-                    className={`p-2 rounded ${ToDo === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    onClick={() => setToDo(1)}
+                    className={`p-2 rounded ${ToDoState === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setToDoState(1)}
                   >
                     To-Do
                   </button>
                   <button
-                    className={`p-2 rounded ${ToDo === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    onClick={() => setToDo(2)}
+                    className={`p-2 rounded ${ToDoState === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setToDoState(2)}
                   >
                     Completed
                   </button>
                   <button
-                    className={`p-2 rounded ${ToDo === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    onClick={() => setToDo(3)}
+                    className={`p-2 rounded ${ToDoState === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setToDoState(3)}
                   >
                     Deleted
                   </button>
@@ -272,14 +367,16 @@ export default function Dashboard() {
               <hr className="border-gray-300 my-2" />
 
               {/* To-Do Input */}
-              {ToDo === 1 && (
+              {ToDoState === 1 && (
                 <div className="flex items-center gap-2 border p-2 rounded">
                   <input
                     type="text"
                     className="flex-1 p-2 border rounded"
                     placeholder="Add a new todo..."
+                    value={newToDoDescription}
+                    onChange={(e) => setNewToDoDescription(e.target.value)}
                   />
-                  <button className="bg-blue-500 text-white p-2 rounded">
+                  <button className="bg-blue-500 text-white p-2 rounded" onClick={handleAddToDo}>
                     <i className="fa-solid fa-plus"></i>
                   </button>
                 </div>
@@ -288,56 +385,73 @@ export default function Dashboard() {
               {/* To-Do List Container */}
 
               <ul className="mt-4 space-y-2">
-                {ToDo === 1 && (
+                {ToDoState === 1 && (
                   <>
-                    {/* To-Do tasks */}
-                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">To-Do Task 1</div>
-                      </div>
-                    </li>
-                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">To-Do Task 2</div>
-                      </div>
-                    </li>
-                  </>
-                )
-                }
-                {ToDo === 2 && (
-                  <>
-                    {/* Completed tasks */}
-                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">Completed Task 1</div>
-                      </div>
-                    </li>
-                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">Completed Task 2</div>
-                      </div>
-                    </li>
+                    {ToDos.filter(todo => !todo.completed && !todo.deleted).length > 0 ? (
+                      ToDos.filter(todo => !todo.completed && !todo.deleted).map(todo => (
+                        <li key={todo.todo_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
+                          <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                          <div className="flex-1 ml-2">
+                            <div className="font-medium">{todo.description}</div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleCompleteToDo(todo.todo_id)} className="text-green-500">
+                              <i className="fa-solid fa-check"></i>
+                            </button>
+                            <button onClick={() => handleDeleteToDo(todo.todo_id)} className="text-red-500">
+                              <i className="fa-solid fa-times"></i>
+                            </button>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-center text-gray-500">No To-Dos available</li>
+                    )}
                   </>
                 )}
-                {ToDo === 3 && (
+                {ToDoState === 2 && (
                   <>
-                    {/* To-Do tasks */}
-                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">Deleted Task 1</div>
-                      </div>
-                    </li>
-                    <li className="flex items-center justify-between border p-2 rounded shadow-sm">
-                      <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
-                      <div className="flex-1 ml-2">
-                        <div className="font-medium">Deleted Task 2</div>
-                      </div>
-                    </li>
+                    {ToDos.filter(todo => todo.completed && !todo.deleted).length > 0 ? (
+                      ToDos.filter(todo => todo.completed && !todo.deleted).map(todo => (
+                        <li key={todo.todo_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
+                          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                          <div className="flex-1 ml-2">
+                            <div className="font-medium">{todo.description}</div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleUncompleteToDo(todo.todo_id)} className="text-yellow-500">
+                              <i className="fa-solid fa-undo"></i>
+                            </button>
+                            <button onClick={() => handleDeleteToDo(todo.todo_id)} className="text-red-500">
+                              <i className="fa-solid fa-times"></i>
+                            </button>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-center text-gray-500">No Completed To-Dos available</li>
+                    )}
+                  </>
+                )}
+                {ToDoState === 3 && (
+                  <>
+                    {ToDos.filter(todo => todo.deleted).length > 0 ? (
+                      ToDos.filter(todo => todo.deleted).map(todo => (
+                        <li key={todo.todo_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
+                          <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
+                          <div className="flex-1 ml-2">
+                            <div className="font-medium">{todo.description}</div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleRestoreToDo(todo.todo_id)} className="text-blue-500">
+                              <i className="fa-solid fa-redo"></i>
+                            </button>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-center text-gray-500">No Deleted To-Dos available</li>
+                    )}
                   </>
                 )}
               </ul>
@@ -383,7 +497,7 @@ export default function Dashboard() {
                         const finishDate = new Date(task.finish_date);
                         const isOverdue = currentDate > finishDate;
                         const completed = task.completed;
-                        const taskColor = completed ? "bg-green-500" : isOverdue ? "bg-red-500" : "bg-orange-500";
+                        const taskColor = completed ? "bg-green-500" : isOverdue ? "bg-red-500" : "bg-yellow-500";
 
                         return (
                           <li key={task.task_id} className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">

@@ -32,3 +32,11 @@ export interface Task {
     completed: boolean;
     completed_date: Date;
 }
+
+export interface ToDo {
+    todo_id: number;
+    employee_id: number;
+    description: string;
+    completed: boolean;
+    deleted: boolean;
+}

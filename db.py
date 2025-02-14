@@ -400,25 +400,33 @@ def update_post(post_id):
 
 @app.route("/new_todo", methods=["POST"])
 def new_todo():
+    """API Route to add a new ToDo record."""
     try:
-        data = request.json
+        data = request.get_json()
+        print(data)
+        # Validate request data
         employee_id = data.get("employee_id")
         description = data.get("description")
-
-        if not employee_id or not description:
-            return jsonify({"error": "Both employee_id and description are required."}), 400
+        
+        if employee_id is None or not description:
+            return jsonify({"error": "Missing employee_id or description"}), 400
 
         db = get_db()
         cursor = db.cursor()
-
-        cursor.execute("INSERT INTO ToDo (employee_id, description) VALUES (?,?)", (employee_id, description))
+        query = """
+        INSERT INTO ToDo (employee_id,todo_id, description, completed, deleted)
+        VALUES (?, 0, ?, 0, 0)
+        """
+        cursor.execute(query, (employee_id, description))
         db.commit()
 
-        return jsonify({"success": True, "message": "To-Do created successfully"}), 201 
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+        return jsonify({"success": True, "todo_id": cursor.lastrowid}), 201
+
+    except sqlite3.DatabaseError as e:
+        db.rollback()
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 # Complete ToDo
 
@@ -479,8 +487,43 @@ def delete_todo():
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+
+# Get ToDos
+@app.route("/get_todos", methods=["GET"])
+def get_to_dos():
+    try:
+        employee_id = request.args.get("employee_id")
+        completed = request.args.get("completed")
+        deleted = request.args.get("deleted")
+        
+        if employee_id is None:
+            return jsonify({"error": "Employee ID is required."}), 400
+        
+        db = get_db()
+        cursor = db.cursor()
+        params = [employee_id]
+        query = """
+        SELECT todo_id, description, completed, deleted
+        FROM ToDo
+        WHERE employee_id = ?
+        """
+        if completed is not None:
+            query += " AND completed = ?"
+            params.append(completed)
+        if deleted is not None:
+            query += " AND deleted = ?"
+            params.append(deleted)
+        cursor.execute(query, params)
+        to_dos = cursor.fetchall()
+        return jsonify([dict(to_do) for to_do in to_dos])
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
     
-    
+
 ### PROJECT FUNCTIONS
 
 # New Project
