@@ -49,20 +49,30 @@ const KnowledgeBasePage = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
+        console.log("Fetching categories...");
         const data = await fetchCategories();
+        console.log("Raw category data received:", data);
+
         if (!Array.isArray(data)) {
           console.error("Error: Fetched categories are not an array!", data);
           return;
         }
 
-        // Format categories to match UI structure
-        const formattedCategories = data.map((cat: { category_id: number; category_name: string }) => ({
-          name: cat.category_name,  // Ensure correct naming
-          guides: [],  // Guides will be fetched separately
-          author: "Unknown",
-          color: "bg-gradient-to-r from-yellow-400 to-yellow-600",
-        }));
+        // Ensure correct naming and prevent `undefined` values
+        const formattedCategories = data
+          .map((cat) =>
+            cat?.name
+              ? {
+                name: cat.name,
+                guides: cat.guides || [], // Ensure guides exist
+                author: cat.author || "Unknown",
+                color: cat.color || "bg-gradient-to-r from-yellow-400 to-yellow-600",
+              }
+              : null
+          )
+          .filter((cat): cat is Category => cat !== null); // <-- Ensure type correctness
 
+        console.log("Formatted categories for UI:", formattedCategories);
         setCategories(formattedCategories);
       } catch (error) {
         console.error("Failed to load categories:", error);
