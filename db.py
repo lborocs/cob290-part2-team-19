@@ -116,7 +116,6 @@ def get_users():
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
 @app.route("/get_archive_limits", methods=["GET"])
 def get_archive_limits():
     try:
@@ -127,14 +126,12 @@ def get_archive_limits():
 
         db.close()
 
-        # ✅ Ensure a valid JSON response with default values
+
         return jsonify(dict(limits) if limits else {"taskDuration": 365, "projectDuration": 365, "kbDuration": 365})
 
     except sqlite3.DatabaseError as e:
-        print("Database error:", e)  # ✅ Debugging
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        print("Unexpected error:", e)  # ✅ Debugging
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
@@ -338,15 +335,21 @@ def get_categories():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT category_id, category_name FROM KnowledgeBaseCategories")
+        
+        cursor.execute("""
+            SELECT c.category_id, c.category_name, COUNT(kb.post_id) as guide_count
+            FROM KnowledgeBaseCategories c
+            LEFT JOIN KnowledgeBase kb ON c.category_id = kb.category_id
+            GROUP BY c.category_id
+        """)
+        
         categories = cursor.fetchall()
 
-      
         formatted_categories = [
             {
-                "name": cat["category_name"],  
-                "guides": [],  
-                "author": "Unknown",  
+                "name": cat["category_name"],
+                "guides_count": cat["guide_count"],  # Number of guides
+                "author": "Unknown",
                 "color": "bg-gradient-to-r from-yellow-400 to-yellow-600"
             }
             for cat in categories
@@ -355,6 +358,7 @@ def get_categories():
         return jsonify(formatted_categories), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
+        
 
 # Delete a post from the knowledge base (mark as deleted and archive it)
 # Example request:
@@ -568,11 +572,9 @@ def update_todo():
     try:
         data = request.json
         to_do_id = data.get("to_do_id")
-        print(to_do_id)
         employee_id = data.get("employee_id")
         completed = data.get("completed")
         deleted = data.get("deleted")
-        print(data)
         if to_do_id is None or employee_id is None or (completed is None and deleted is None):
             return jsonify({"error": "No item given"}), 400
 
@@ -589,7 +591,6 @@ def update_todo():
         query += " WHERE todo_id = ? AND employee_id = ?"
         params.append(to_do_id)
         params.append(employee_id)
-        print("query:", query)
         cursor.execute(query, params)
         db.commit()
         
@@ -1361,6 +1362,19 @@ def search_projects():
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
+# get all projects
+@app.route('/projects', methods=['GET'])
+def get_projects():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM Projects")
+        projects = cursor.fetchall()
+        return jsonify([dict(project) for project in projects])
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
 
 # Search function for Tasks
 @app.route('/tasks/search', methods=['GET'])
@@ -1417,7 +1431,77 @@ def search_tasks():
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
+#get tasks for tl
+@app.route('/tasks/team_leader', methods=['GET'])
+def get_tasks_by_team_leader():
+    try:
+        team_leader_id = request.args.get('team_leader_id')
+        if not team_leader_id:
+            return jsonify({"error": "Team leader ID is required."}), 400
+        
+        db = get_db()
+        cursor = db.cursor()
+        query = """
+        SELECT t.*
+        FROM Tasks t
+        JOIN Projects p ON t.project_id = p.project_id
+        WHERE p.team_leader_id = ?
+        """
+        cursor.execute(query, (team_leader_id,))
+        tasks = cursor.fetchall()
+        if not tasks:
+            return jsonify({"message": "No tasks found for this team leader."}), 404
 
+        task_list = [dict(task) for task in tasks]
+        return jsonify(task_list), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
+
+# get all tasks
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM Tasks")
+        tasks = cursor.fetchall()
+        return jsonify([dict(task) for task in tasks])
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
+    
+
+# search function for projects by team leader  
+@app.route('/projects/team_leader', methods=['GET'])
+def get_projects_by_team_leader():
+    try:
+        team_leader_id = request.args.get('team_leader_id')
+        if not team_leader_id:
+            return jsonify({"error": "Team leader ID is required."}), 400
+        
+        db = get_db()
+        cursor = db.cursor()
+        query = """
+        SELECT p.*
+        FROM Projects p
+        WHERE p.team_leader_id = ?
+        """
+        cursor.execute(query, (team_leader_id,))
+        projects = cursor.fetchall()
+        if not projects:
+            return jsonify({"message": "No projects found for this team leader."}), 404
+
+        project_list = [dict(project) for project in projects]
+        return jsonify(project_list), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
+    
+    
 # Search function for Knowledge Base
 @app.route('/knowledgebase/search', methods=['GET'])
 def search_knowledgebase():

@@ -13,6 +13,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
 import { updateToDoStatus } from '@/api/updateToDo';
+import { fetchUserType } from '@/api/fetchUserType';
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -28,7 +29,7 @@ export default function Dashboard() {
   const [selectedStatus, setSelectedStatus] = useState<string>('0');
   const [sillyToDoID, setSillyToDo] = useState<number>(1);
   const [loggedInUser, setLoggedInUser] = useState<number>(0)
-
+  const [userType, setUserType] = useState<number>(2)
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -37,8 +38,16 @@ export default function Dashboard() {
   useEffect(() => {
     const user = localStorage.getItem('loggedInUser');
     if (user) {
-      setLoggedInUser(JSON.parse(user));
-      console.log("user", loggedInUser);
+      const parsedUser = JSON.parse(user);
+      setLoggedInUser(parsedUser ?? 0);
+      fetchUserType(parsedUser ?? 0).then(result => {
+        if (result.success) {
+          setUserType(result.userType ?? 2);
+          console.log("user type", userType);
+        } else {
+          console.error(result.message);
+        }
+      });
     }
   }, []);
 
@@ -47,7 +56,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchProjects(loggedInUser);
+        const data = await fetchProjects(loggedInUser, userType);
         setProjects(data);
       } catch (error) {
         console.log('Error fetching data:', error);
@@ -60,7 +69,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchTasks(loggedInUser);
+        const data = await fetchTasks(loggedInUser, userType);
         setTasks(data || [])
       } catch (error) {
         console.log('Error fetching data:', error)
@@ -144,8 +153,7 @@ export default function Dashboard() {
       return;
     }
 
-    const result = await addToDo(0, newToDoDescription.trim(), sillyToDoID);
-    alert(result.message);
+    const result = await addToDo(loggedInUser, newToDoDescription.trim(), sillyToDoID);
     if (result.success) {
       setNewToDoDescription('');
       //update the todos
@@ -264,7 +272,7 @@ export default function Dashboard() {
 
                       return (
 
-                        <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm">
+                        <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm hover:bg-gray-200 transition">
                           <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
                           <div className="flex-1 ml-2">
                             <div className="font-medium">{task.task_name}</div>
@@ -290,7 +298,7 @@ export default function Dashboard() {
             {/* Card 3: Project Summar */}
             <Card className="col-span-2 min-h-full bg-white p-4 overflow-clip">
               <div className="sticky top-0 z-10">
-                <div className="flex justify-between items-center gap-2 w-[100%]">
+                <div className="flex justify-between items-center gap-2 w-[100%] ">
                   <div className="whitespace-nowrap flex items-center justify-center">
                     <h3 className="text-normal font-semibold">Project Summary</h3>
                   </div>
@@ -327,7 +335,7 @@ export default function Dashboard() {
                 <hr className="border-gray-300 my-2" />
               </div>
               {/* Card-style Table Section */}
-              <div className="w-full space-y-3 overflow-y-auto max-h-[90%]">
+              <div className="w-full space-y-3 overflow-y-auto max-h-[90%] ">
                 {filteredProjects.length > 0 ? (
                   filteredProjects.map((project) => {
                     const currentDate = new Date();
@@ -350,7 +358,7 @@ export default function Dashboard() {
                     return (
                       <div
                         key={project.project_id}
-                        className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
+                        className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer hover:bg-gray-200 transition"
                         onClick={() => console.log(`Navigating to ${project.project_name}`)} // change this to the routing - need db
                       >
                         <div>
