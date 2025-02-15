@@ -31,6 +31,7 @@ export interface Task {
     finish_date: Date;
     completed: boolean;
     completed_date: Date;
+    employeeDetails: EmployeeDetails;
 }
 
 export interface ToDo {

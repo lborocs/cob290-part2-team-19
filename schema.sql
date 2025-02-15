@@ -139,7 +139,8 @@ CREATE TABLE IF NOT EXISTS Permissions (
     view_task_archive BOOLEAN,
     view_project_archive BOOLEAN,
     view_knowledgebase_archive BOOLEAN,
-    authorise_completed BOOLEAN,
+    authorise_completed_tasks BOOLEAN,
+    authorise_completed_projects BOOLEAN
     FOREIGN KEY (user_type) REFERENCES UserTypes(type_id)
 );
 

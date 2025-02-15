@@ -1423,6 +1423,7 @@ def search_tasks():
     start_date = request.args.get('start_date')
     finish_date = request.args.get('finish_date')
     employee_id = request.args.get('employee_id')
+    authorised = request.args.get('authorised')
 
     query = """
     SELECT t.*
@@ -1450,6 +1451,9 @@ def search_tasks():
     if employee_id:
         query += " AND et.employee_id = ?"
         params.append(employee_id)
+    if authorised:
+        query += " AND t.authorised = ?"
+        params.append(authorised)
 
     try:
         db = get_db()
@@ -1574,21 +1578,29 @@ def search_knowledgebase():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-# Search function for Employees assigned to Tasks
 @app.route('/employees/tasks', methods=['GET'])
 def search_employees_tasks():
     task_id = request.args.get('task_id')
-    query = "SELECT employee_id FROM EmployeeTasks WHERE task_id = ?"
+    query = """
+        SELECT e.employee_id, e.first_name, e.last_name
+        FROM EmployeeTasks et
+        JOIN Employees e ON et.employee_id = e.employee_id
+        WHERE et.task_id = ?
+    """
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute(query, (task_id,))
         employees = cursor.fetchall()
-        return jsonify([row['employee_id'] for row in employees])
+        return jsonify([
+            {"employee_id": row["employee_id"], "employee_name": f"{row['first_name']} {row['last_name']}"}
+            for row in employees
+        ])
     except sqlite3.DatabaseError as e:
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
+
 
 # Search function for Employees assigned to Projects
 @app.route('/employees/projects', methods=['GET'])

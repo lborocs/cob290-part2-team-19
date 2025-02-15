@@ -64,3 +64,30 @@ export const fetchProjects = async (employeeId: number, userType: number) => {
         return [];
     }
 };
+
+export const fetchProjectsForCompletion = async (employeeId: number, userType: number) => {
+    try {
+       
+        const response = await fetch(`http://localhost:3300/projects/search?completed=True?authorised=False`);
+        const projects = await response.json();
+
+        if (!projects || projects.length === 0) {
+            return [];
+        }
+
+        // Fetch employee details for each task asynchronously
+        const projectsWithEmployees = await Promise.all(
+            projects.map(async (project: any) => {
+                const employeeDetails = await fetchEmployeeDetails(project.manager_id);
+                return { ...project, employeeDetails };
+            })
+        );
+
+        console.log('Projects with Employee Details:', projectsWithEmployees);
+        return projectsWithEmployees;
+
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        return null;
+    }
+};
