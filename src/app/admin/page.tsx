@@ -5,7 +5,7 @@ import Card from "../components/Card"
 import {
   get_user_types,
   update_permissions,
-  update_archive_duration,
+  update_archive_durations,
   update_user_type,
   get_archive_limits,
   get_permissions_by_user_type,
@@ -26,7 +26,7 @@ export default function AdminDashboard() {
   const [permissions, setPermissions] = useState<PermissionType>({})
   const [initialPermissions, setInitialPermissions] = useState<PermissionType>(
     {}
-  ) // Stores initial empty state
+  ) 
   const [archiveSettings, setArchiveSettings] = useState<ArchiveDurations>({
     task: 365,
     project: 365,
@@ -35,9 +35,20 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<number | null>(null)
   const [newUserType, setNewUserType] = useState<number | null>(null)
+  const [taskDays, setTaskDays] = useState(archiveSettings.task);
+  const [projectDays, setProjectDays] = useState(archiveSettings.project);
+  const [kbDays, setKbDays] = useState(archiveSettings.kb);
+
+  const applyChanges = () => {
+    setArchiveSettings({
+      task: taskDays,
+      project: projectDays,
+      kb: kbDays,
+    });
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserTypes = async () => {
       try {
         const data = await get_user_types()
         setUserTypes(data || [])
@@ -45,20 +56,28 @@ export default function AdminDashboard() {
         console.error("Error fetching user types:", error)
       }
     }
-    fetchData()
+    fetchUserTypes()
   }, [])
 
   useEffect(() => {
-    const fetchArchiveSettings = async () => {
+    const fetchArchiveLimits = async () => {
       try {
-        const data = await get_archive_limits()
-        setArchiveSettings(data || [])
+        const response = await get_archive_limits();  // Assuming this function fetches the data
+        if (response && response.task && response.project && response.kb) {
+          setArchiveSettings({
+            task: response.task,
+            project: response.project,
+            kb: response.kb,
+          });
+        }
       } catch (error) {
-        console.error("Error fetching archive settings:", error)
+        console.error('Error fetching archive limits:', error);
+        // Optionally, you can handle the error by setting a fallback state
       }
-    }
-    fetchArchiveSettings()
-  }, [])
+    };
+  
+    fetchArchiveLimits();
+  }, []);  // Empty dependency array ensures this runs only once on mount
 
   useEffect(() => {
     if (selectedUserType !== null) { 
@@ -95,7 +114,7 @@ export default function AdminDashboard() {
   }
 
   const handleUpdateArchive = async () => {
-    await update_archive_duration(archiveSettings)
+    await update_archive_durations(archiveSettings)
     alert("Archive settings updated!")
   }
 
@@ -172,13 +191,8 @@ export default function AdminDashboard() {
             <label>Task Archive Days</label>
             <input
               type='number'
-              value={archiveSettings.task}
-              onChange={(e) =>
-                setArchiveSettings({
-                  ...archiveSettings,
-                  task: Number(e.target.value),
-                })
-              }
+              value={taskDays}
+              onChange={(e) => setTaskDays(Number(e.target.value))}
               className='border p-2 w-full'
             />
           </div>
@@ -186,13 +200,8 @@ export default function AdminDashboard() {
             <label>Project Archive Days</label>
             <input
               type='number'
-              value={archiveSettings.project}
-              onChange={(e) =>
-                setArchiveSettings({
-                  ...archiveSettings,
-                  project: Number(e.target.value),
-                })
-              }
+              value={projectDays}
+              onChange={(e) => setProjectDays(Number(e.target.value))}
               className='border p-2 w-full'
             />
           </div>
@@ -200,13 +209,8 @@ export default function AdminDashboard() {
             <label>Knowledge Base Archive Days</label>
             <input
               type='number'
-              value={archiveSettings.kb}
-              onChange={(e) =>
-                setArchiveSettings({
-                  ...archiveSettings,
-                  kb: Number(e.target.value),
-                })
-              }
+              value={kbDays}
+              onChange={(e) => setKbDays(Number(e.target.value))}
               className='border p-2 w-full'
             />
           </div>

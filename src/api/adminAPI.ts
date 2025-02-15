@@ -58,18 +58,30 @@ export const get_archive_limits = async (): Promise<ArchiveDurations> => {
   return await response.json();
 };
 
-export const update_archive_duration = async (settings: ArchiveDurations): Promise<void> => {
-  const response = await fetch(`${BASE_URL}/update_archive_duration`, { // 
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(settings),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to update archive durations");
+export const update_archive_durations = async (durations: { task: number, project: number, kb: number }) => {
+  try {
+    const response = await fetch(`${BASE_URL}/update_archive_durations`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(durations),
+    });
+    console.log("1");
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      // Include durations in the error message
+      throw new Error(`Failed to update archive durations. Task: ${durations.task}, Project: ${durations.project}, KB: ${durations.kb}. Error: ${errorData.error || "Unknown error"}`);
+    }
+
+    console.log("Archive durations updated successfully");
+  } catch (error) {
+    console.error("Error:", error);
+    throw new Error(`Failed to update archive durations. Task: ${durations.task}, Project: ${durations.project}, KB: ${durations.kb}.`);
   }
 };
+
 
 export const update_user_type = async (userId: number, newUserType: number): Promise<void> => {
   const response = await fetch(`${BASE_URL}/change_user_type`, {

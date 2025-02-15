@@ -191,8 +191,6 @@ CREATE TABLE IF NOT EXISTS ArchiveLimits (
     kbDuration INTEGER NOT NULL
 );
 
-INSERT OR IGNORE INTO ArchiveLimits VALUES (1, 365, 365, 365);
-
 -- CompletedProjectBacklog Table (Fixed)
 CREATE TABLE IF NOT EXISTS CompletedProjectBacklog (
     project_id INTEGER PRIMARY KEY,

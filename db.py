@@ -1,3 +1,4 @@
+import json
 import sqlite3
 import bcrypt
 from flask import Flask, g
@@ -120,23 +121,27 @@ def get_user_permissions_by_type(user_type):
 
 
 
-# Update Archive Settings
-@app.route("/update_archive_settings", methods=["PUT"])
-def update_archive_settings():
+# Update Archive Durations
+@app.route("/update_archive_durations", methods=["PUT"])
+def update_archive_durations():
     try:
         data = request.json
         task = data.get("task")
         project = data.get("project")
         kb = data.get("kb")
+         # Validate that task, project, and kb are all numbers
+        if not isinstance(task, (int, float)) or not isinstance(project, (int, float)) or not isinstance(kb, (int, float)):
+            return jsonify({"error": f"Invalid task duration: {task}, project duration: {project}, knowledge base duration: {kb}"}), 400
         db = get_db()
         cursor = db.cursor()
         cursor.execute('''
-            UPDATE ArchiveLimits 
-            SET task = ?, project = ?, kb = ?
+            UPDATE ArchiveLimits SET taskDuration = ?, projectDuration = ?, kbDuration = ? WHERE id = 1;
         ''', (task, project, kb, ))
         db.commit()
+        return jsonify({"success": True, "message": "Durations updated successfully."}), 200
+
     except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500, data
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
