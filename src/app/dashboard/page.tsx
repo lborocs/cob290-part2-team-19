@@ -13,6 +13,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
 import { updateToDoStatus } from '@/api/updateToDo';
+import { fetchUserType } from '@/api/fetchUserType';
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -28,7 +29,7 @@ export default function Dashboard() {
   const [selectedStatus, setSelectedStatus] = useState<string>('0');
   const [sillyToDoID, setSillyToDo] = useState<number>(1);
   const [loggedInUser, setLoggedInUser] = useState<number>(0)
-
+  const [userType, setUserType] = useState<number>(2)
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -37,8 +38,16 @@ export default function Dashboard() {
   useEffect(() => {
     const user = localStorage.getItem('loggedInUser');
     if (user) {
-      setLoggedInUser(JSON.parse(user));
-      console.log("user", loggedInUser);
+      const parsedUser = JSON.parse(user);
+      setLoggedInUser(parsedUser ?? 0);
+      fetchUserType(parsedUser ?? 0).then(result => {
+        if (result.success) {
+          setUserType(result.userType ?? 0);
+          console.log("user type", userType);
+        } else {
+          console.error(result.message);
+        }
+      });
     }
   }, []);
 
@@ -47,7 +56,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchProjects(loggedInUser);
+        const data = await fetchProjects(loggedInUser, userType);
         setProjects(data);
       } catch (error) {
         console.log('Error fetching data:', error);
@@ -60,7 +69,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchTasks(loggedInUser);
+        const data = await fetchTasks(loggedInUser, userType);
         setTasks(data || [])
       } catch (error) {
         console.log('Error fetching data:', error)
