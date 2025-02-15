@@ -1,5 +1,5 @@
 
-export async function addToDo(employee_id: number, description: string): Promise<{ success: boolean; message: string }> {
+export async function addToDo(employee_id: number, description: string, task_id: number): Promise<{ success: boolean; message: string }> {
     try {
         const response = await fetch('http://localhost:3300/new_todo', {
             method: 'POST',
@@ -9,6 +9,7 @@ export async function addToDo(employee_id: number, description: string): Promise
             body: JSON.stringify({
                 employee_id,
                 description,
+                task_id,
             }),
         });
 

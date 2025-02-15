@@ -12,6 +12,7 @@ import { Project, Task, ToDo } from '@/interfaces/interfaces';
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
+import { updateToDoStatus } from '@/api/updateToDo';
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -25,15 +26,28 @@ export default function Dashboard() {
   const [selectedProject, setSelectedProject] = useState<string>('0');
   const [selectedManager, setSelectedManager] = useState<string>('0');
   const [selectedStatus, setSelectedStatus] = useState<string>('0');
+  const [sillyToDoID, setSillyToDo] = useState<number>(1);
+  const [loggedInUser, setLoggedInUser] = useState<number>(0)
+
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
+
+  useEffect(() => {
+    const user = localStorage.getItem('loggedInUser');
+    if (user) {
+      setLoggedInUser(JSON.parse(user));
+      console.log("user", loggedInUser);
+    }
+  }, []);
+
+
   //getting projects
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchProjects(0);
+        const data = await fetchProjects(loggedInUser);
         setProjects(data);
       } catch (error) {
         console.log('Error fetching data:', error);
@@ -46,7 +60,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchTasks(0);
+        const data = await fetchTasks(loggedInUser);
         setTasks(data || [])
       } catch (error) {
         console.log('Error fetching data:', error)
@@ -59,15 +73,21 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchToDo(0);
-        setToDos(data || [])
+        const data = await fetchToDo(loggedInUser);
+        setToDos(data || []);
       } catch (error) {
-        console.log('Error fetcfhing data: ',)
+        console.log('Error fetching data: ', error);
       }
     };
     fetchData();
   }, []);
 
+  //we want to get the sillyid
+  useEffect(() => {
+    setSillyToDo(ToDos.length > 0 ? ToDos[ToDos.length - 1].todo_id + 1 : 1);
+  }, [ToDos])
+
+  //sort tasks
   useEffect(() => {
     if (tasks != null) {
       const sortedTasks = tasks.sort((a, b) => new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime());
@@ -124,42 +144,62 @@ export default function Dashboard() {
       return;
     }
 
-    const result = await addToDo(0, newToDoDescription.trim());
+    const result = await addToDo(0, newToDoDescription.trim(), sillyToDoID);
     alert(result.message);
     if (result.success) {
       setNewToDoDescription('');
       //update the todos
-      const data = await fetchToDo(0);
+      const data = await fetchToDo(loggedInUser);
       setToDos(data);
     }
   };
 
   const handleCompleteToDo = async (todo_id: number) => {
-    const updatedToDos = ToDos.map(todo =>
-      todo.todo_id === todo_id ? { ...todo, completed: true } : todo
-    );
-    setToDos(updatedToDos);
+    const result = await updateToDoStatus(todo_id, loggedInUser, 1, null);
+    if (result.success) {
+      const updatedToDos = ToDos.map(todo =>
+        todo.todo_id === todo_id ? { ...todo, completed: true } : todo
+      );
+      setToDos(updatedToDos);
+    } else {
+      alert(result.message);
+    }
   };
-
   const handleDeleteToDo = async (todo_id: number) => {
-    const updatedToDos = ToDos.map(todo =>
-      todo.todo_id === todo_id ? { ...todo, deleted: true } : todo
-    );
-    setToDos(updatedToDos);
+    const result = await updateToDoStatus(todo_id, loggedInUser, null, 1);
+    if (result.success) {
+      const updatedToDos = ToDos.map(todo =>
+        todo.todo_id === todo_id ? { ...todo, deleted: true } : todo
+      );
+      setToDos(updatedToDos);
+    } else {
+      alert(result.message);
+    }
   };
 
   const handleUncompleteToDo = async (todo_id: number) => {
-    const updatedToDos = ToDos.map(todo =>
-      todo.todo_id === todo_id ? { ...todo, completed: false } : todo
-    );
-    setToDos(updatedToDos);
+    const result = await updateToDoStatus(todo_id, loggedInUser, 0, null);
+    if (result.success) {
+      const updatedToDos = ToDos.map(todo =>
+        todo.todo_id === todo_id ? { ...todo, completed: false } : todo
+      );
+      setToDos(updatedToDos);
+    } else {
+      alert(result.message);
+    }
   };
 
   const handleRestoreToDo = async (todo_id: number) => {
-    const updatedToDos = ToDos.map(todo =>
-      todo.todo_id === todo_id ? { ...todo, deleted: false } : todo
-    );
-    setToDos(updatedToDos);
+    const result = await updateToDoStatus(todo_id, loggedInUser, null, 0);
+    if (result.success) {
+      const updatedToDos = ToDos.map(todo =>
+        todo.todo_id === todo_id ? { ...todo, deleted: false } : todo
+      );
+      setToDos(updatedToDos);
+    } else {
+      alert(result.message);
+    }
+
   };
 
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
