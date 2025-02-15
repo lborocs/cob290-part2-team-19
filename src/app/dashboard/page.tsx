@@ -153,8 +153,7 @@ export default function Dashboard() {
       return;
     }
 
-    const result = await addToDo(0, newToDoDescription.trim(), sillyToDoID);
-    alert(result.message);
+    const result = await addToDo(loggedInUser, newToDoDescription.trim(), sillyToDoID);
     if (result.success) {
       setNewToDoDescription('');
       //update the todos
