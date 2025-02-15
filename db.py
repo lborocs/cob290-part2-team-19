@@ -1163,6 +1163,44 @@ def archive_project():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
+# Function to move knowledge base posts to archive
+
+@app.route('/archive_kb_post', methods=['POST'])
+def archive_kb_post():
+    try:
+        # Fetch the data from the request
+        data = request.get_json()
+        post_id = data.get('post_id')  # Post ID
+        archived_date = data.get('archived_date')  # Date the post is archived
+        
+        # Get the archive duration (for knowledge base posts)
+        delete_date = (datetime.now() + timedelta(days=get_kb_archive_duration())).strftime('%Y-%m-%d')
+        
+        # Ensure both post_id and archived_date are provided
+        if not all([post_id, archived_date]):
+            return jsonify({"error": "All fields (post_id, archived_date) are required."}), 400
+        
+        # Connect to the database
+        db = get_db()
+        cursor = db.cursor()
+
+        # Move post to ArchivedKnowledgeBasePosts
+        cursor.execute("""
+        INSERT INTO ArchivedKnowledgeBasePages (id, archived_date, future_autodelete_date)
+        VALUES (?, ?, ?)
+        """, (post_id, archived_date, delete_date))
+
+        # Commit the changes to the database
+        db.commit()
+
+        return jsonify({"success": True, "message": "Knowledge base post archived successfully."}), 200
+
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+
 # Function to find out if project is archived or active
 
 #Example request:
