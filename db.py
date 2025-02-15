@@ -12,6 +12,9 @@ PORT = 3300
 app = Flask(__name__)
 CORS(app)
 
+
+""""" DB Initialisation Functionality """
+
 def get_db():
     try:
         db = getattr(g, '_database', None)
@@ -47,42 +50,25 @@ def close_connection(exception):
 def index():
     return "SQLite instance is running!"
 
-def get_task_archive_duration():
+#Function for executing SQL queries
+@app.route('/query', methods=['GET'])
+def execute_query():
+    if app.debug:
+        print('Running in debug mode')
+    sql_query = request.args.get('sql')
+    if not sql_query:
+        return jsonify({'error': 'No SQL query provided'}), 400
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT taskDuration FROM ArchiveLimits WHERE id = 1;")
-        duration = cursor.fetchone()
-        return duration[0]
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500     
+        cursor.execute(sql_query)
+        results = cursor.fetchall()
+        return jsonify([dict(row) for row in results])
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 400
 
-def get_project_archive_duration():
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT projectDuration FROM ArchiveLimits WHERE id = 1;")
-        duration = cursor.fetchone()
-        return duration[0]
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
 
-def get_kb_archive_duration():
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT kbDuration FROM ArchiveLimits WHERE id = 1;")
-        duration = cursor.fetchone()
-        return duration[0]
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
-   
+""" User functions """
 
 # Fetch User Types
 @app.route("/get_user_types", methods=["GET"])
@@ -98,6 +84,7 @@ def get_user_types():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
+# Fetch list of users
 @app.route("/get_users", methods=["GET"])
 def get_users():
     try:
@@ -116,26 +103,9 @@ def get_users():
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-@app.route("/get_archive_limits", methods=["GET"])
-def get_archive_limits():
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT taskDuration, projectDuration, kbDuration FROM ArchiveLimits LIMIT 1")
-        limits = cursor.fetchone()  
-
-        db.close()
 
 
-        return jsonify(dict(limits) if limits else {"taskDuration": 365, "projectDuration": 365, "kbDuration": 365})
-
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception as e:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
-
-
+# Fetch permissions for given user type
 @app.route("/get_permissions_by_user_type/<int:user_type>", methods=["GET"])
 def get_user_permissions_by_type(user_type):
     try:
@@ -172,42 +142,7 @@ def get_user_permissions_by_type(user_type):
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
-
-# Update Archive Durations
-@app.route("/update_archive_durations", methods=["PUT"])
-def update_archive_durations():
-    try:
-        data = request.json
-        task = data.get("task")
-        project = data.get("project")
-        kb = data.get("kb")
-         # Validate that task, project, and kb are all numbers
-        if not isinstance(task, (int, float)) or not isinstance(project, (int, float)) or not isinstance(kb, (int, float)):
-            return jsonify({"error": f"Invalid task duration: {task}, project duration: {project}, knowledge base duration: {kb}"}), 400
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute('''
-            UPDATE ArchiveLimits SET taskDuration = ?, projectDuration = ?, kbDuration = ? WHERE id = 1;
-        ''', (task, project, kb, ))
-        db.commit()
-        return jsonify({"success": True, "message": "Durations updated successfully."}), 200
-
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500, data
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
-
-### changing user permissions
-
-#Example request:
-#PUT /update_permissions/2
-#Content-Type: application/json
-#{
-#  "new_task": 1,
-#  "edit_project": 1
-#}
+#Chang user permissions
 @app.route("/update_permissions/<int:user_type>", methods=["PUT"])
 def update_permissions(user_type):
     try:
@@ -242,18 +177,11 @@ def update_permissions(user_type):
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
-### Knowledge Base functions
-# Add a new post to the knowledge base
 
-# Example request: 
-# POST /add_post
-# Content-Type: application/json
-#{
-#  "author_id": 5,
-#  "content": "This is a new knowledge base post.",
-#  "category_name": "Technical Guides"
-#}
 
+""" Knowledge Base functions """
+
+#Add a new post to the knowledge base
 @app.route("/add_post", methods=["POST"])
 def add_post():
     try:
@@ -287,7 +215,7 @@ def add_post():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-# Add Category
+#Add Category to knowledge base
 @app.route("/add_category", methods=["POST"])
 def add_category():
     try:
@@ -328,8 +256,7 @@ def add_category():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
-
+#Get knowledge base categories
 @app.route('/categories', methods=['GET'])
 def get_categories():
     try:
@@ -359,11 +286,7 @@ def get_categories():
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
         
-
-# Delete a post from the knowledge base (mark as deleted and archive it)
-# Example request:
-#DELETE /delete_post/12
-
+#Delete a post from the knowledge base (mark as deleted and archive it)
 @app.route("/delete_post/<int:post_id>", methods=["DELETE"])
 def delete_post(post_id):
     try:
@@ -391,16 +314,6 @@ def delete_post(post_id):
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 # Update a post in the knowledge base (log edits instead of modifying directly)
-
-# Example request:
-#PUT /update_post/12
-#Content-Type: application/json
-#{
-#  "editor_id": 7,
-#  "content": "Updated content for this post.",
-#  "category_name": "Software Development"
-#}
-
 @app.route("/update_post/<int:post_id>", methods=["PUT"])
 def update_post(post_id):
     try:
@@ -451,18 +364,10 @@ def update_post(post_id):
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
-### ToDo functions
 
-# New ToDo
+""" ToDo functions """
 
-# Example request:
-# POST /new_todo
-#Content-Type: application/json
-#{
-#  "employee_id": 3,
-#  "description": "Prepare a project report"
-#}
-
+#New ToDo
 @app.route("/new_todo", methods=["POST"])
 def new_todo():
     try:
@@ -492,15 +397,7 @@ def new_todo():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-# Complete ToDo
-
-#Example request:
-#POST /complete_todo
-#Content-Type: application/json
-#{
-#  "to_do_id": 8
-#}
-
+#Complete ToDo
 @app.route("/complete_todo", methods=["POST"])
 def complete_todo():
     try:
@@ -521,15 +418,7 @@ def complete_todo():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-# Delete ToDo
-
-#Example request:
-#POST /delete_todo
-#Content-Type: application/json
-#{
-#  "to_do_id": 8
-#}
-
+#Delete ToDo
 @app.route("/delete_todo", methods=["POST"])
 def delete_todo():
     try:
@@ -555,18 +444,7 @@ def delete_todo():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-# Update ToDo
-
-#Example request:
-#PUT /update_todo
-#Content-Type: application/json
-#{
-#  "to_do_id": 8,
-#  "employee_id": 3,
-#  "completed": 1,
-#  "deleted": 0,
-#}
-
+#Update ToDo
 @app.route("/update_todo_status", methods=["PUT"])
 def update_todo():
     try:
@@ -600,7 +478,7 @@ def update_todo():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500    
     
-# Get ToDos
+#Get ToDos
 @app.route("/get_todos", methods=["GET"])
 def get_to_dos():
     try:
@@ -633,23 +511,11 @@ def get_to_dos():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+
     
+""" PROJECT/TASK FUNCTIONS """
 
-### PROJECT/TASK FUNCTIONS
-
-# New Project
-
-#Example request: 
-#POST /new_project
-#Content-Type: application/json
-#{
-#  "project_name": "New Website Development",
-#  "team_leader_id": 2,
-#  "description": "Developing a new e-commerce website.",
-#  "start_date": "2024-03-01",
-#  "finish_date": "2024-09-30"
-#}
-
+#New Project
 @app.route("/new_project", methods=["POST"])
 def new_project():
     try:
@@ -698,22 +564,7 @@ def new_project():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
-# New Task
-
-#Example request: 
-# POST /new_task
-#Content-Type: application/json
-#{
-#  "task_name": "Design Homepage",
-#  "project_id": 4,
-#  "assigned_employee": 6,
-#  "description": "Create a wireframe and design homepage UI.",
-#  "start_date": "2024-03-10",
-#  "finish_date": "2024-04-15",
-#  "prerequesite_tasks": "2,3"
-#}
-
+#New Task
 @app.route("/new_task", methods=["POST"])
 def new_task():
     try:
@@ -776,7 +627,7 @@ def new_task():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-# Fuction for completing task
+#Fuction for completing task
 @app.route("/complete_task", methods=["POST"])
 def complete_task():
     try:
@@ -826,7 +677,6 @@ def complete_project():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
-    
 #Function for checking project status
 @app.route("/project_status/<int:project_id>", methods=["GET"])
 def project_status(project_id):
@@ -853,9 +703,7 @@ def project_status(project_id):
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
 #Function for checking task status
-
 @app.route("/task_status/<int:task_id>", methods=["GET"])
 def task_status(task_id):
     try:
@@ -882,20 +730,10 @@ def task_status(task_id):
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 
-### USER ACCOUNT FUNCTIONALITY
 
-# Add user
+""" USER ACCOUNT FUNCTIONALITY """
 
-#Example request:
-#POST /add_user
-#Content-Type: application/json
-#{
-#  "email": "john.doe@example.com",
-#  "password": "securepassword123",
-#  "first_name": "John",
-#  "second_name": "Doe"
-#}
-
+#Add user
 @app.route("/add_user", methods=["POST"])
 def add_user():
     try:
@@ -930,16 +768,7 @@ def add_user():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-# Function to verify user login
-
-#Example request:
-#POST /login
-#Content-Type: application/json
-#{
-#  "email": "john.doe@example.com",
-#  "password": "securepassword123"
-#}
-
+#Function to verify user login
 @app.route("/login", methods=["POST"])
 def login():
     try:
@@ -964,7 +793,7 @@ def login():
     except Exception as e:
         return jsonify({"error":f"An unexpected error occurred. {str(e)} Please try again later."}), 500
 
-# Change User Type
+#Change User Type
 @app.route("/change_user_type", methods=["PUT"])
 def change_user_type():
     try:
@@ -985,97 +814,74 @@ def change_user_type():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
-
-# Function to view completed projects. Returns Project ID, date Completed, whether the project is authorised (to have finished, manager), 
-# who authorised the completion of the project, the team leader id and team leader name.
-# To be used on manager page to view projects. 
-# When project is completed, manager can sign them off, when project completion is authorised, can be moved to archive.
-@app.route("/completed_projects", methods=["GET"])
-def view_completed_projects():
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        query = """
-        SELECT c.project_id, c.completed_date,p.team_leader, e.name AS team_leader_name
-        FROM completedProjectBacklog AS c
-        JOIN Projects AS p ON c.project_id = p.project_id
-        JOIN Employees AS e ON p.team_leader = e.employee_id
-        WHERE p.authorised = 0 AND p.completed = 1;
-        """
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        
-        if not rows:
-            return jsonify({"message": "No completed projects found"}), 404
-        
-        return jsonify([
-            {
-                "project_id": row["project_id"],
-                "completed_date": row["completed_date"],
-                "team_leader_id": row["team_leader"],
-                "team_leader_name": row["team_leader_name"]
-            } for row in rows
-        ]), 200
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception as e:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
+    
+""" ARCHIVE FUNCTIONS """
 
-# Function to view tasks when they have been completed, to be used by team leaders to aid 'signing off'
-# Displays the task id, the completion date, the employee assigned to task's id
-@app.route('/completed_tasks', methods=['GET'])
-def view_completed_tasks():
+#Update Archive Durations
+@app.route("/update_archive_durations", methods=["PUT"])
+def update_archive_durations():
     try:
-        data = request.get_json()
-        team_leader_id = data.get('team_leader_id')
-
-        if not team_leader_id:
-            return jsonify({"error": "Team leader ID is required."}), 400
-
+        data = request.json
+        task = data.get("task")
+        project = data.get("project")
+        kb = data.get("kb")
+         # Validate that task, project, and kb are all numbers
+        if not isinstance(task, (int, float)) or not isinstance(project, (int, float)) or not isinstance(kb, (int, float)):
+            return jsonify({"error": f"Invalid task duration: {task}, project duration: {project}, knowledge base duration: {kb}"}), 400
         db = get_db()
         cursor = db.cursor()
-
-        query = """
-        SELECT c.task_id, c.completed_date, t.employee_id 
-        FROM completedTasksBacklog AS c
-        JOIN Tasks AS t ON c.task_id = t.task_id
-        JOIN Projects AS p ON t.project_id = p.project_id
-        WHERE p.team_leader = ?;
-        """
-        cursor.execute(query, (team_leader_id,))
-        rows = cursor.fetchall()
-
-        if not rows:
-            return jsonify({"message": "No completed tasks found for this team leader."}), 404
-
-        return jsonify([
-            {
-                "task_id": row["task_id"],
-                "completed_date": row["completed_date"],
-                "employee_id": row["employee_id"]
-            }
-            for row in rows
-        ]), 200
+        cursor.execute('''
+            UPDATE ArchiveLimits SET taskDuration = ?, projectDuration = ?, kbDuration = ? WHERE id = 1;
+        ''', (task, project, kb, ))
+        db.commit()
+        return jsonify({"success": True, "message": "Durations updated successfully."}), 200
 
     except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500, data
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-### Archive functions
+#Get time tasks are kept in archive
+def get_task_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT taskDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return duration[0]
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500     
 
-# Function to add task to archive
+#Get time projects are kept in archive
+def get_project_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT projectDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return duration[0]
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
 
-#Example request:
-#POST /archive_task
-#Content-Type: application/json
-#{
-#  "task_id": 10,
-#  "archived_date": "2024-02-15",
-#  "future_autodelete_date": "2025-02-15"
-#}
-
+#Get time kb posts are kept in archive
+def get_kb_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT kbDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return duration[0]
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
+   
+#Function to add task to archive
 @app.route('/archive_task', methods=['POST'])
 def archive_task():
     try:
@@ -1110,18 +916,7 @@ def archive_task():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
     
-# Function to move projects to archive
-
-#Example request:
-#POST /archive_project
-#Content-Type: application/json
-#{
-#  "project_id": 5,
-#  "archived_date": "2024-02-20",
-#  "future_autodelete_date": "2025-02-20",
-#  "manager_id": 1
-#}
-
+# Function to add projects to archive
 @app.route("/archive_project", methods=["POST"])
 def archive_project():
     try:
@@ -1162,9 +957,7 @@ def archive_project():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
-# Function to move knowledge base posts to archive
-
+#Function to add knowledge base posts to archive
 @app.route('/archive_kb_post', methods=['POST'])
 def archive_kb_post():
     try:
@@ -1201,15 +994,7 @@ def archive_kb_post():
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 
-# Function to find out if project is archived or active
-
-#Example request:
-#GET /is_project_archived
-#Content-Type: application/json
-#{
-#  "project_id": 7
-#}
-
+#Function to find out if project is archived or active
 @app.route("/is_project_archived", methods=["GET"])
 def is_project_archived(project_id):
     try:
@@ -1225,14 +1010,7 @@ def is_project_archived(project_id):
         print(f"An unexpected error occurred: {str(e)}")
         return False
 
-# Function to find out if task is archived or active
-
-#GET /is_task_archived
-#Content-Type: application/json
-#{
-#  "task_id": 12
-#}
-
+#Function to find out if task is archived or active
 @app.route("/is_task_archived", methods=["GET"])
 def is_task_archived():
     try:
@@ -1253,31 +1031,7 @@ def is_task_archived():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-
-#for other functions so use so we can pass param
-def is_task_archived_local(task_id):
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
-        archived = cursor.fetchone()
-        return archived is not None
-    except sqlite3.DatabaseError as e:
-        print(f"Database error: {str(e)}")
-        return False
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
-        return False
-    
-    
-# Function to find out if knowledge base page is archived or active
-
-#GET /is_post_archived
-#Content-Type: application/json
-#{
-#  "post_id": 12
-#}
-
+#Function to find out if knowledge base page is archived or active
 @app.route("/is_post_archived", methods=["GET"])
 def is_post_archived():
     try:
@@ -1298,10 +1052,25 @@ def is_post_archived():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+#for other functions so use so we can pass param
+def is_task_archived_local(task_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT 1 FROM ArchivedTasks WHERE id = ?", (task_id,))
+        archived = cursor.fetchone()
+        return archived is not None
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        return False
+    
+    
+""" SEARCH FUNCTIONS """
 
-### Search functions for tables
-
-# Search function for Employees
+#Search function for Employees
 @app.route('/employees/search', methods=['GET'])
 def search_employees():
     employee_email = request.args.get('employee_email')
@@ -1342,7 +1111,7 @@ def search_employees():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-# Search function for Projects
+#Search function for Projects
 @app.route('/projects/search', methods=['GET'])
 def search_projects():
     project_name = request.args.get('project_name')
@@ -1400,7 +1169,8 @@ def search_projects():
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
-# get all projects
+
+#Get all projects
 @app.route('/projects', methods=['GET'])
 def get_projects():
     try:
@@ -1414,7 +1184,7 @@ def get_projects():
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
 
-# Search function for Tasks
+#Search function for Tasks
 @app.route('/tasks/search', methods=['GET'])
 def search_tasks():
     task_name = request.args.get('task_name')
@@ -1473,7 +1243,8 @@ def search_tasks():
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
-#get tasks for tl
+
+#Get tasks for team leader
 @app.route('/tasks/team_leader', methods=['GET'])
 def get_tasks_by_team_leader():
     try:
@@ -1501,7 +1272,7 @@ def get_tasks_by_team_leader():
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
 
-# get all tasks
+#Get all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     try:
@@ -1515,8 +1286,7 @@ def get_tasks():
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
     
-
-# search function for projects by team leader  
+#Search function for projects by team leader  
 @app.route('/projects/team_leader', methods=['GET'])
 def get_projects_by_team_leader():
     try:
@@ -1542,9 +1312,8 @@ def get_projects_by_team_leader():
         return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
-    
-    
-# Search function for Knowledge Base
+      
+#Search function for Knowledge Base
 @app.route('/knowledgebase/search', methods=['GET'])
 def search_knowledgebase():
     author_id = request.args.get('author_id')
@@ -1578,6 +1347,7 @@ def search_knowledgebase():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
+#Search for employee assigned to task
 @app.route('/employees/tasks', methods=['GET'])
 def search_employees_tasks():
     task_id = request.args.get('task_id')
@@ -1601,8 +1371,7 @@ def search_employees_tasks():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-
-# Search function for Employees assigned to Projects
+#Search function for Employees assigned to Projects
 @app.route('/employees/projects', methods=['GET'])
 def search_employees_projects():
     project_id = request.args.get('project_id')
@@ -1619,7 +1388,7 @@ def search_employees_projects():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-# Search function for Projects associated with Tags
+#Search function for Projects associated with Tags
 @app.route('/projects/tags', methods=['GET'])
 def search_projects_tags():
     tag_name = request.args.get('tag_name')
@@ -1635,7 +1404,7 @@ def search_projects_tags():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-# Search function for Tasks associated with Tags
+#Search function for Tasks associated with Tags
 @app.route('/tasks/tags', methods=['GET'])
 def search_tasks_tags():
     tag_name = request.args.get('tag_name')
@@ -1651,7 +1420,7 @@ def search_tasks_tags():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
     
-# Search function for Tasks that employees are assigned to for a given project
+#Search function for Tasks that employees are assigned to for a given project
 @app.route('/projects/<int:project_id>/tasks/employees', methods=['GET'])
 def get_tasks_employees_for_project(project_id):
     query = """
@@ -1672,7 +1441,7 @@ def get_tasks_employees_for_project(project_id):
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-# Search function for User Type and Employee data by Employee ID
+#Search function for User Type and Employee data by Employee ID
 @app.route('/employees/<int:employee_id>/details', methods=['GET'])
 def get_employee_details(employee_id):
     query = """
@@ -1694,25 +1463,6 @@ def get_employee_details(employee_id):
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
     
-
-# Function for executing SQL queries
-@app.route('/query', methods=['GET'])
-def execute_query():
-    if app.debug:
-        print('Running in debug mode')
-    sql_query = request.args.get('sql')
-    if not sql_query:
-        return jsonify({'error': 'No SQL query provided'}), 400
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute(sql_query)
-        results = cursor.fetchall()
-        return jsonify([dict(row) for row in results])
-    except sqlite3.Error as e:
-        return jsonify({'error': str(e)}), 400
-
-
         
 if __name__ == '__main__':
     app.run(port=PORT)

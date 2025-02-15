@@ -212,3 +212,4 @@ CREATE TABLE IF NOT EXISTS CompletedTasksBacklog (
     FOREIGN KEY (task_id) REFERENCES Tasks(task_id),
     FOREIGN KEY (authorised_by) REFERENCES Employees(employee_id)
 );
+
