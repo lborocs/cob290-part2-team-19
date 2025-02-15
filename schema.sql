@@ -185,11 +185,10 @@ CREATE TABLE IF NOT EXISTS ArchivedKnowledgeBasePages (
 
 -- ArchiveLimits Table 
 CREATE TABLE IF NOT EXISTS ArchiveLimits (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY NOT NULL,
     taskDuration INTEGER NOT NULL,
     projectDuration INTEGER NOT NULL,
-    kbDuration INTEGER NOT NULL,
-    PRIMARY KEY (taskDuration, projectDuration, kbDuration)
+    kbDuration INTEGER NOT NULL
 );
 
 INSERT OR IGNORE INTO ArchiveLimits VALUES (1, 365, 365, 365);
