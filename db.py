@@ -299,15 +299,21 @@ def get_categories():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT category_id, category_name FROM KnowledgeBaseCategories")
+        
+        cursor.execute("""
+            SELECT c.category_id, c.category_name, COUNT(kb.post_id) as guide_count
+            FROM KnowledgeBaseCategories c
+            LEFT JOIN KnowledgeBase kb ON c.category_id = kb.category_id
+            GROUP BY c.category_id
+        """)
+        
         categories = cursor.fetchall()
 
-      
         formatted_categories = [
             {
-                "name": cat["category_name"],  
-                "guides": [],  
-                "author": "Unknown",  
+                "name": cat["category_name"],
+                "guides_count": cat["guide_count"],  # Number of guides
+                "author": "Unknown",
                 "color": "bg-gradient-to-r from-yellow-400 to-yellow-600"
             }
             for cat in categories
@@ -316,6 +322,7 @@ def get_categories():
         return jsonify(formatted_categories), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
+        
 
 # Delete a post from the knowledge base (mark as deleted and archive it)
 # Example request:
