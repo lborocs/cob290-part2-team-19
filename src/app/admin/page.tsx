@@ -61,7 +61,7 @@ export default function AdminDashboard() {
   }, [])
 
   useEffect(() => {
-    if (selectedUserType !== null) { // ✅ This now allows `0`
+    if (selectedUserType !== null) { 
       const fetchPermissions = async () => {
         try {
           const perms = await get_permissions_by_user_type(selectedUserType);
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
       fetchPermissions();
     } else {
       console.log("Resetting permissions to initial state");
-      setPermissions(initialPermissions); // ✅ Reset when no type is selected
+      setPermissions(initialPermissions); 
     }
   }, [selectedUserType]);
   

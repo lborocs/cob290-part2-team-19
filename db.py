@@ -131,7 +131,7 @@ def update_archive_settings():
         db = get_db()
         cursor = db.cursor()
         cursor.execute('''
-            UPDATE archive_settings 
+            UPDATE ArchiveLimits 
             SET task = ?, project = ?, kb = ?
         ''', (task, project, kb, ))
         db.commit()
