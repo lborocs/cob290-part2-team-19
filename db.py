@@ -635,7 +635,7 @@ def get_to_dos():
 
     
 
-### PROJECT FUNCTIONS
+### PROJECT/TASK FUNCTIONS
 
 # New Project
 
@@ -1081,7 +1081,7 @@ def archive_task():
     try:
         data = request.get_json()
         task_id = data.get('task_id')
-        archived_date = data.get('archived_date')
+        archived_date = datetime.now()
         delete_date = (datetime.now() + timedelta(days=get_task_archive_duration())).strftime('%Y-%m-%d')
 
 
@@ -1127,7 +1127,7 @@ def archive_project():
     try:
         data = request.get_json()
         project_id = data.get("project_id")
-        archived_date = data.get("archived_date")
+        archived_date = datetime.now()
         manager_id = data.get("manager_id")
         delete_date = (datetime.now() + timedelta(days=get_project_archive_duration())).strftime('%Y-%m-%d')
 
@@ -1171,7 +1171,7 @@ def archive_kb_post():
         # Fetch the data from the request
         data = request.get_json()
         post_id = data.get('post_id')  # Post ID
-        archived_date = data.get('archived_date')  # Date the post is archived
+        archived_date = datetime.now()  # Date the post is archived
         
         # Get the archive duration (for knowledge base posts)
         delete_date = (datetime.now() + timedelta(days=get_kb_archive_duration())).strftime('%Y-%m-%d')
