@@ -1,6 +1,7 @@
 // Assuming the shape of data for user types and permissions
 export type PermissionType = { [key: string]: boolean };
 export type ArchiveDurations = { task: number; project: number; kb: number };
+export type User = { id: number; name: string; };
 
 // Base API URL (adjust if needed)
 const BASE_URL = "http://localhost:3300"; // Change if hosted elsewhere
@@ -67,7 +68,6 @@ export const update_archive_durations = async (durations: { task: number, projec
       },
       body: JSON.stringify(durations),
     });
-    console.log("1");
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -83,15 +83,37 @@ export const update_archive_durations = async (durations: { task: number, projec
 };
 
 
-export const update_user_type = async (userId: number, newUserType: number): Promise<void> => {
-  const response = await fetch(`${BASE_URL}/change_user_type`, {
+export const update_user_type = async (selectedUser: number, newUserType: number): Promise<void> => {
+  try {
+    const response = await fetch(`${BASE_URL}/change_user_type`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ user_id: userId, new_user_type: newUserType }),
+    body: JSON.stringify({ user_id: selectedUser, new_user_type: newUserType }),
   });
   if (!response.ok) {
     throw new Error("Failed to change user type");
   }
+  console.log("Employee type updated successfully");
+ } catch (error) {
+  console.error("Error:", error);
+  throw new Error(`Failed to update employee type`);
+}
 };
+
+// In your api/adminAPI.ts
+export const get_users = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/get_users`); // Adjust the endpoint as needed
+    if (!response.ok) {
+      throw new Error("Failed to fetch users");
+    }
+    const data = await response.json();
+    return data; // Assuming the data is an array of users
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+};
+

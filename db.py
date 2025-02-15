@@ -47,6 +47,43 @@ def close_connection(exception):
 def index():
     return "SQLite instance is running!"
 
+def get_task_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT taskDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return duration[0]
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500     
+
+def get_project_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT projectDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return duration[0]
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
+
+def get_kb_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT kbDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return duration[0]
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
+   
+
 # Fetch User Types
 @app.route("/get_user_types", methods=["GET"])
 def get_user_types():
@@ -56,6 +93,25 @@ def get_user_types():
         cursor.execute('SELECT * FROM UserTypes')
         user_types = cursor.fetchall()
         return jsonify([dict(user) for user in user_types])  # Convert to list of dictionaries
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    
+@app.route("/get_users", methods=["GET"])
+def get_users():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT employee_id, first_name, second_name FROM Employees')
+        
+        users = cursor.fetchall()
+        
+        users_list = [
+            {"id": user[0], "name": user[1] + " " + user[2]} for user in users
+        ]
+        
+        return jsonify(users_list)  # Return the list of users as JSON
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
@@ -480,9 +536,12 @@ def delete_todo():
         if not to_do_id:
             return jsonify({"error": "No item given"}), 400
 
+        delete_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+
+
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("UPDATE ToDo SET deleted = 1 WHERE to_do_id = ? AND employee_id = ?", (to_do_id, employee_id))
+        cursor.execute("UPDATE ToDo SET deleted = 1 AND future_autodelete_date = ? WHERE to_do_id = ? AND employee_id = ?", (delete_date, to_do_id, employee_id))
         db.commit()
         
 
@@ -914,11 +973,12 @@ def change_user_type():
         db = get_db()
         cursor = db.cursor()
         cursor.execute('''
-            UPDATE users 
-            SET employee_type = ? 
+            UPDATE Employees 
+            SET user_type_id = ? 
             WHERE employee_id = ?
         ''', (new_user_type, employee_id))
         db.commit()
+        return jsonify({"success": True, "message":"User Type changed!"})
     except sqlite3.DatabaseError as e:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
@@ -1021,10 +1081,11 @@ def archive_task():
         data = request.get_json()
         task_id = data.get('task_id')
         archived_date = data.get('archived_date')
-        future_autodelete_date = data.get('future_autodelete_date')
+        delete_date = (datetime.now() + timedelta(days=get_task_archive_duration())).strftime('%Y-%m-%d')
 
-        if not all([task_id, archived_date, future_autodelete_date]):
-            return jsonify({"error": "All fields (task_id, archived_date, future_autodelete_date) are required."}), 400
+
+        if not all([task_id, archived_date]):
+            return jsonify({"error": "All fields (task_id, archived_date) are required."}), 400
 
         db = get_db()
         cursor = db.cursor()
@@ -1034,7 +1095,7 @@ def archive_task():
         INSERT INTO ArchivedTasks (task_id, archived_date, future_autodelete_date)
         VALUES (?, ?, ?)
         """
-        cursor.execute(insert_query, (task_id, archived_date, future_autodelete_date))
+        cursor.execute(insert_query, (task_id, archived_date, delete_date))
 
         # Delete task from completedTasksBacklog
         delete_query = "DELETE FROM completedTasksBacklog WHERE task_id = ?"
@@ -1066,11 +1127,12 @@ def archive_project():
         data = request.get_json()
         project_id = data.get("project_id")
         archived_date = data.get("archived_date")
-        future_autodelete_date = data.get("future_autodelete_date")
         manager_id = data.get("manager_id")
+        delete_date = (datetime.now() + timedelta(days=get_project_archive_duration())).strftime('%Y-%m-%d')
+
         
-        if not all([project_id, archived_date, future_autodelete_date, manager_id]):
-            return jsonify({"error": "All fields (project_id, archived_date, future_autodelete_date, manager_id) are required."}), 400
+        if not all([project_id, archived_date, manager_id]):
+            return jsonify({"error": "All fields (project_id, archived_date, manager_id) are required."}), 400
 
         
         db = get_db()
@@ -1081,7 +1143,7 @@ def archive_project():
         INSERT INTO ArchivedProjects (project_id, archived_date, future_autodelete_date)
         VALUES (?, ?, ?)
         """
-        cursor.execute(insert_query, (project_id, archived_date, future_autodelete_date))
+        cursor.execute(insert_query, (project_id, archived_date, delete_date))
 
 
         # Update project in Projects

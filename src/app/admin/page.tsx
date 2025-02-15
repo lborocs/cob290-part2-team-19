@@ -9,14 +9,13 @@ import {
   update_user_type,
   get_archive_limits,
   get_permissions_by_user_type,
+  get_users,
   ArchiveDurations,
   PermissionType,
+  User
 } from "@/api/adminAPI"
 
-type User = {
-  id: number
-  name: string
-}
+
 
 export default function AdminDashboard() {
   const [userTypes, setUserTypes] = useState<
@@ -58,6 +57,19 @@ export default function AdminDashboard() {
     }
     fetchUserTypes()
   }, [])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const userList = await get_users();
+        setUsers(userList); // Set the fetched users into state
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   useEffect(() => {
     const fetchArchiveLimits = async () => {
@@ -222,16 +234,16 @@ export default function AdminDashboard() {
           </button>
         </Card>
 
-        {/* Change User Type */}
-        <Card className='p-4 col-span-2'>
-          <h2 className='text-lg font-semibold'>Change User Role</h2>
-          <div className='mt-2'>
+        {/* Change User Type Section */}
+        <Card className="p-4 col-span-2">
+          <h2 className="text-lg font-semibold">Change User Role</h2>
+          <div className="mt-2">
             <label>Select User</label>
             <select
               onChange={(e) => setSelectedUser(Number(e.target.value))}
-              className='border p-2 w-full'
+              className="border p-2 w-full"
             >
-              <option value=''>Select User</option>
+              <option value="">Select User</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
@@ -239,13 +251,13 @@ export default function AdminDashboard() {
               ))}
             </select>
           </div>
-          <div className='mt-2'>
+          <div className="mt-2">
             <label>New User Type</label>
             <select
               onChange={(e) => setNewUserType(Number(e.target.value))}
-              className='border p-2 w-full'
+              className="border p-2 w-full"
             >
-              <option value=''>Select User Type</option>
+              <option value="">Select User Type</option>
               {userTypes.map((type) => (
                 <option key={type.type_id} value={type.type_id}>
                   {type.type_name}
@@ -254,8 +266,9 @@ export default function AdminDashboard() {
             </select>
           </div>
           <button
-            className='mt-4 bg-blue-500 text-white p-2 rounded'
+            className="mt-4 bg-blue-500 text-white p-2 rounded"
             onClick={handleChangeUserType}
+            disabled={selectedUser === null || newUserType === null}
           >
             Update User Type
           </button>

@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS ToDo (
     description TEXT NOT NULL,
     completed BOOLEAN DEFAULT 0,
     deleted BOOLEAN DEFAULT 0,
+    future_autodelete_date DATETIME,
     PRIMARY KEY (employee_id, todo_id),
     FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
 );
