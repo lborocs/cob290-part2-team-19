@@ -400,14 +400,13 @@ def update_post(post_id):
 
 @app.route("/new_todo", methods=["POST"])
 def new_todo():
-    """API Route to add a new ToDo record."""
     try:
         data = request.get_json()
         print(data)
         # Validate request data
         employee_id = data.get("employee_id")
         description = data.get("description")
-        
+        task_id = data.get("task_id")
         if employee_id is None or not description:
             return jsonify({"error": "Missing employee_id or description"}), 400
 
@@ -415,9 +414,9 @@ def new_todo():
         cursor = db.cursor()
         query = """
         INSERT INTO ToDo (employee_id,todo_id, description, completed, deleted)
-        VALUES (?, 0, ?, 0, 0)
+        VALUES (?, ?, ?, 0, 0)
         """
-        cursor.execute(query, (employee_id, description))
+        cursor.execute(query, (employee_id, task_id, description))
         db.commit()
 
         return jsonify({"success": True, "todo_id": cursor.lastrowid}), 201
@@ -442,16 +441,15 @@ def complete_todo():
     try:
         data = request.json
         to_do_id = data.get("to_do_id")
-
-        if not to_do_id:
-            return jsonify({"error": "No item given"}), 400
-
+        employee_id = data.get("employee_id")
+        if to_do_id is None or employee_id is None:
+            return jsonify({"error": "Not enough items given"}), 400
+        
         db = get_db()
         cursor = db.cursor()
-
-        cursor.execute("UPDATE ToDo SET completed = 1 WHERE to_do_id = ?",(to_do_id))
+        cursor.execute("UPDATE ToDo SET completed = 1 WHERE to_do_id = ? AND employee_id = ?", (to_do_id, employee_id))
         db.commit()
-
+        
         return jsonify({"success": True, "message": "To-Do completed successfully"}), 201 
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -472,15 +470,16 @@ def delete_todo():
     try:
         data = request.json
         to_do_id = data.get("to_do_id")
-
+        employee_id = data.get("employee_id")
+        
         if not to_do_id:
             return jsonify({"error": "No item given"}), 400
 
         db = get_db()
         cursor = db.cursor()
-
-        cursor.execute("UPDATE ToDo SET deleted = 1 WHERE to_do_id = ?",(to_do_id))
+        cursor.execute("UPDATE ToDo SET deleted = 1 WHERE to_do_id = ? AND employee_id = ?", (to_do_id, employee_id))
         db.commit()
+        
 
         return jsonify({"success": True, "message": "To-Do deleted successfully"}), 201 
     except sqlite3.DatabaseError:
@@ -488,7 +487,54 @@ def delete_todo():
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+# Update ToDo
 
+#Example request:
+#PUT /update_todo
+#Content-Type: application/json
+#{
+#  "to_do_id": 8,
+#  "employee_id": 3,
+#  "completed": 1,
+#  "deleted": 0,
+#}
+
+@app.route("/update_todo_status", methods=["PUT"])
+def update_todo():
+    try:
+        data = request.json
+        to_do_id = data.get("to_do_id")
+        print(to_do_id)
+        employee_id = data.get("employee_id")
+        completed = data.get("completed")
+        deleted = data.get("deleted")
+        print(data)
+        if to_do_id is None or employee_id is None or (completed is None and deleted is None):
+            return jsonify({"error": "No item given"}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+        params = []
+        query = "UPDATE ToDo SET "
+        if completed is not None:
+            query += "completed = ?"
+            params.append(completed)
+        if deleted is not None:
+            query += "deleted = ?"
+            params.append(deleted)
+        query += " WHERE todo_id = ? AND employee_id = ?"
+        params.append(to_do_id)
+        params.append(employee_id)
+        print("query:", query)
+        cursor.execute(query, params)
+        db.commit()
+        
+        return jsonify({"success": True, "message": "To-Do updated successfully"}), 201 
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500    
+    
 # Get ToDos
 @app.route("/get_todos", methods=["GET"])
 def get_to_dos():
