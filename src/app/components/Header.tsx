@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
 interface HeaderProps {
@@ -12,7 +11,7 @@ interface HeaderProps {
 
 const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => {
     const [role, setUserRole] = useState<UserRole>("Employee"); // Default role
-
+    const [name, setName] = useState("");
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
         if (userData && userData.user_type_id) {
@@ -24,12 +23,15 @@ const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => 
             };
             setUserRole(roleMap[userData.user_type_id] || "Employee"); // Default to "Employee" if user_type_id is invalid
         }
+        if (userData && userData.first_name) {
+            setName(userData.first_name);
+        }
     }, []); // This effect runs only once, on component mount
 
-    const handleRoleChange = (role: UserRole) => {
-        setUserRole(role);
-        onRoleChange(role);
-    };
+    // const handleRoleChange = (role: UserRole) => {
+    //     setUserRole(role);
+    //     onRoleChange(role);
+    // };
 
     return (
         <header className="sticky top-0 left-0 z-[1] bg-gray-800 text-white py-4 px-6 flex justify-between items-center">
@@ -40,17 +42,22 @@ const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => 
             <div className="text-lg font-semibold">
                 {icon} {tabName}
             </div>
-            <select
-                className="bg-gray-700 text-white py-2 px-4 rounded"
-                value={role}
-                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-            >
-                <option value="Manager">Manager</option>
-                <option value="Team Leader">Team Leader</option>
-                <option value="Employee">Employee</option>
-            </select>
+            <div className='mr-[7em]'>
+                {name}  {role}
+            </div>
+            <div className='absolute right-[1em]'>  
+                <button className='bg-slate-600 p-2 rounded-xl font-semibold' onClick={LogOut}>
+                    <i className="fa-solid fa-right-from-bracket mr-2"></i>
+                    Log Out
+                </button>
+            </div>
         </header>
     );
 };
+
+function LogOut() {
+    localStorage.removeItem('userData');
+    window.location.href = '/login';
+}
 
 export default Header;
