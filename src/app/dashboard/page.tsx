@@ -13,10 +13,9 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
 import { updateToDoStatus } from '@/api/updateToDo';
-import { fetchUserType } from '@/api/fetchUserType';
 import Select from 'react-select'
 import { deleteToDo } from '@/api/deleteToDo';
-
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -33,6 +32,7 @@ export default function Dashboard() {
   const [sillyToDoID, setSillyToDo] = useState<number>(1);
   const [loggedInUser, setLoggedInUser] = useState<number | null>(null);
   const [userType, setUserType] = useState<number | null>(null);
+  const router = useRouter()
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -264,7 +264,9 @@ export default function Dashboard() {
 
                       return (
 
-                        <li key={task.task_id} className="flex items-center justify-between border p-2 rounded shadow-sm hover:bg-gray-200 transition">
+                        <li key={task.task_id}
+                          onClick={() => (router.push('/tasks'))}
+                          className="flex items-center justify-between border p-2 rounded shadow-sm hover:bg-gray-200 transition">
                           <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
                           <div className="flex-1 ml-2">
                             <div className="font-medium">{task.task_name}</div>
@@ -368,9 +370,11 @@ export default function Dashboard() {
 
                     return (
                       <div
+
                         key={project.project_id}
+                        onClick={() => (router.push('/projects'))}
                         className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
-                        onClick={() => console.log(`Navigating to ${project.project_name}`)} // change this to the routing - need db
+
                       >
                         <div>
                           <h4 className="font-semibold text-lg">{project.project_name}</h4>
@@ -379,8 +383,7 @@ export default function Dashboard() {
                         <div>
                           <p className="text-gray-500">Due: {project.finish_date.toString()}</p>
                           <span
-                            className={`px-3 py-1 text-sm font-medium rounded-full ${statusClass}
-          }`}
+                            className={`px-3 py-1 text-sm font-medium rounded-full ${statusClass}}`}
                           >
                             {statusText}
                           </span>

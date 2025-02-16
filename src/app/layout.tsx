@@ -17,7 +17,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
                 <title>Make It All</title>
 
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
                 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
             </Head>
             {children}

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
 import { fetchCategories } from "@/api/fetchCategorey";
+import { fetchGuidesByCategory } from "@/api/fetchGuides"
 
 
 interface Guide {
@@ -14,6 +15,7 @@ interface Guide {
 }
 
 interface Category {
+  category_id: number;
   name: string;
   guides: Guide[];
   author: string | null;
@@ -29,7 +31,7 @@ const KnowledgeBasePage = () => {
   const [isCreatingCategory, setIsCreatingCategory] = useState(false); // Toggle for create category modal
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  const [isCreatingGuide, setIsCreatingGuide] = useState(false); 
+  const [isCreatingGuide, setIsCreatingGuide] = useState(false);
   const [newGuideName, setNewGuideName] = useState("");
   const [newGuideContent, setNewGuideContent] = useState("");
   const [newGuideAuthor, setNewGuideAuthor] = useState("Current User");
@@ -50,32 +52,54 @@ const KnowledgeBasePage = () => {
     const loadCategories = async () => {
       try {
         console.log("Fetching categories...");
-        const data = await fetchCategories();
-        console.log("Raw category data received:", data);
+        const categoriesData = await fetchCategories();
 
-        if (!Array.isArray(data)) {
-          console.error("Error: Fetched categories are not an array!", data);
+        if (!Array.isArray(categoriesData)) {
+          console.error("Error: Fetched categories are not an array!", categoriesData);
           return;
         }
 
-        // Ensure correct naming and prevent `undefined` values
-        const formattedCategories = data
-          .map((cat) =>
-            cat?.name
-              ? {
+        // ✅ Check if fetchGuidesByCategory exists
+        if (typeof fetchGuidesByCategory !== "function") {
+          console.error("❌ Error: fetchGuidesByCategory is missing or undefined.");
+          return;
+        }
+
+        // ✅ Fetch guides for each category
+        const categoriesWithGuides = await Promise.all(
+          categoriesData.map(async (cat): Promise<Category | null> => {
+            if (!cat.category_id) {
+              console.warn(`⚠️ Skipping category without ID: ${cat.name}`);
+              return null;
+            }
+
+            try {
+              const guides = await fetchGuidesByCategory(cat.category_id);
+              console.log(`📌 Fetched ${guides.length} guides for category: ${cat.name}`);
+
+              return {
+                category_id: cat.category_id,
                 name: cat.name,
-                guides: cat.guides || [], // Ensure guides exist
+                guides: Array.isArray(guides) ? guides : [], // ✅ Ensure guides is always an array
                 author: cat.author || "Unknown",
                 color: cat.color || "bg-gradient-to-r from-yellow-400 to-yellow-600",
-              }
-              : null
-          )
-          .filter((cat): cat is Category => cat !== null); // <-- Ensure type correctness
+              };
+            } catch (error) {
+              console.error(`❌ Failed to fetch guides for category: ${cat.name}`, error);
+              return null;
+            }
+          })
+        );
 
-        console.log("Formatted categories for UI:", formattedCategories);
-        setCategories(formattedCategories);
+        // ✅ Correct TypeScript Type Filtering (No More Errors!)
+        const validCategories: Category[] = categoriesWithGuides.filter(
+          (cat): cat is Category => cat !== null && typeof cat.category_id !== "undefined"
+        );
+
+        console.log("✅ Final Categories with Guides:", validCategories);
+        setCategories(validCategories);
       } catch (error) {
-        console.error("Failed to load categories:", error);
+        console.error("❌ Failed to load categories:", error);
       }
     };
 
@@ -94,12 +118,12 @@ const KnowledgeBasePage = () => {
   );
 
   // Guides within the selected category
-  const selectedCategoryGuides = selectedCategory
-    ? categories
-      .find((category) => category.name === selectedCategory)
-      ?.guides.filter((guide) =>
-        guide.title.toLowerCase().startsWith(guideSearchQuery.toLowerCase())
-      ) ?? []
+  const selectedCategoryObject = categories.find(category => category.name === selectedCategory);
+
+  const selectedCategoryGuides = selectedCategoryObject
+    ? selectedCategoryObject.guides.filter(guide =>
+      guide.title.toLowerCase().startsWith(guideSearchQuery.toLowerCase())
+    )
     : [];
 
   // Create Category
@@ -109,7 +133,7 @@ const KnowledgeBasePage = () => {
       return;
     }
 
-    // Ensure no duplicate category names locally
+    // ✅ Ensure no duplicate category names locally
     const isDuplicate = categories.some(
       (category) =>
         category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
@@ -119,33 +143,42 @@ const KnowledgeBasePage = () => {
       return;
     }
 
-    // Prepare new category object for UI update
-    const newCategory = {
-      name: newCategoryName.trim(),
-      color: `bg-gradient-to-r from-${randomColor()}-400 to-${randomColor()}-600`,
-      author: "Current User",
-      guides: [],
-    };
-
     try {
       console.log("🟡 Sending request to API...");
 
-      // Send API request to Flask backend
+      // ✅ Send API request to Flask backend
       const response = await fetch("http://localhost:3300/add_category", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ category_name: newCategory.name }),
+        body: JSON.stringify({ category_name: newCategoryName.trim() }),
       });
 
-      console.log("🟢 API response received", response);
+      const data = await response.json();
+      console.log("🟢 API response received:", data);
 
       if (!response.ok) {
-        throw new Error(`Failed to add category: ${response.statusText}`);
+        throw new Error(`Failed to add category: ${data.error || response.statusText}`);
       }
 
-      // Update UI after successful API call
+      // ✅ Ensure API response contains a valid `category_id`
+      if (!data.category || !data.category.category_id) {
+        throw new Error("API response missing category_id.");
+      }
+
+      // ✅ Properly formatted new category with category_id
+      const newCategory: Category = {
+        category_id: data.category.category_id, // ✅ Ensure category_id exists
+        name: data.category.name,
+        color:
+          data.category.color ||
+          `bg-gradient-to-r from-${randomColor()}-400 to-${randomColor()}-600`,
+        author: data.category.author || "Unknown",
+        guides: [], // No guides initially
+      };
+
+      // ✅ Update UI after successful API call
       setCategories([...categories, newCategory]);
 
       alert("Category added successfully!");
@@ -389,7 +422,7 @@ const KnowledgeBasePage = () => {
                   >
                     <h2 className="text-xl font-bold mb-2">{category.name}</h2>
                     <p className="text-sm">Created by: {category.author || "Unknown"}</p>
-                    <p className="text-sm mb-2">0 guides (To be updated)</p>
+                    <p className="text-sm mb-2">{category.guides.length} guides</p>
 
                     {/* Edit and Delete Buttons for Category */}
                     <div className="flex gap-2">

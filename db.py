@@ -301,6 +301,46 @@ def add_post():
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    
+# get posts 
+@app.route('/guides/<int:category_id>', methods=['GET'])
+def get_posts_by_category(category_id):
+    try:
+        db = get_db()
+        db.row_factory = sqlite3.Row
+        cursor = db.cursor()
+
+        cursor.execute("""
+            SELECT 
+                kb.post_id AS id, 
+                kb.content AS content, 
+                kb.author_id AS author_id, 
+                kc.category_name AS category, 
+                e.first_name || ' ' || e.second_name AS author_name
+            FROM KnowledgeBase kb
+            LEFT JOIN KnowledgeBaseCategories kc ON kb.category_id = kc.category_id
+            LEFT JOIN Employees e ON kb.author_id = e.employee_id
+            WHERE kb.category_id = ? AND kb.deleted = 0
+        """, (category_id,))
+
+        posts = cursor.fetchall()
+        formatted_posts = [
+            {
+                "id": post["id"],
+                "title": post["content"][:30] + "...",  # ✅ Extracting first 30 chars as title
+                "category": post["category"],
+                "author": post["author_name"] or "Unknown",
+                "content": post["content"],
+            }
+            for post in posts
+        ]
+
+        return jsonify(formatted_posts), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
 
 #Add Category to knowledge base
 @app.route("/add_category", methods=["POST"])
@@ -348,6 +388,7 @@ def add_category():
 def get_categories():
     try:
         db = get_db()
+        db.row_factory = sqlite3.Row  # ✅ Ensures `fetchall()` returns dictionary-like objects
         cursor = db.cursor()
         
         cursor.execute("""
@@ -361,8 +402,9 @@ def get_categories():
 
         formatted_categories = [
             {
+                "category_id": cat["category_id"],  # ✅ Add category_id for guide fetching
                 "name": cat["category_name"],
-                "guides_count": cat["guide_count"],  # Number of guides
+                "guides_count": cat["guide_count"],  
                 "author": "Unknown",
                 "color": "bg-gradient-to-r from-yellow-400 to-yellow-600"
             }
@@ -370,8 +412,10 @@ def get_categories():
         ]
 
         return jsonify(formatted_categories), 200
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
         
 #Delete a post from the knowledge base (mark as deleted and archive it)
 @app.route("/delete_post/<int:post_id>", methods=["DELETE"])
@@ -485,20 +529,21 @@ def new_todo():
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 #Delete ToDo
-@app.route("/delete_todo", methods=["DELETE"])
+@app.route("/delete_todo", methods=["POST"])
 def delete_todo():
     try:
-        employee_id = request.args.get("employee_id")
+        data = request.json
+        employee_id = data.get("employee_id")
         
         if employee_id is None:
             return jsonify({"error": "No item given"}), 400
         
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("DELETE FROM ToDo WHERE deleted = 1 AND employee_id = ?", ( employee_id, ))
+        cursor.execute("DELETE FROM ToDo WHERE deleted = 1 AND employee_id = ?", ( employee_id))
         commit_changes(db)
 
-        return jsonify({"success": True, "message": "To-Do deleted successfully"}), 200
+        return jsonify({"success": True, "message": "To-Do deleted successfully"}), 201 
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:
