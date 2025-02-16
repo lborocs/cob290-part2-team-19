@@ -98,7 +98,8 @@ const Login = () => {
     fetchHtmlContent()
     }, [])
 
-    const isDev = process.env.NODE_ENV === 'development';
+    // const isDev = process.env.NODE_ENV === 'development';
+    const isDev = false;
     const devContent = isDev ? <div>
     <div className='absolute top-[1em] right-[1em]'>
         <div className='flex gap-[.3em] justify-start items-center'>
