@@ -18,7 +18,10 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
     let title = "Make It All";
     const userData = JSON.parse(localStorage.getItem('userdata') || 'null');
-    
+    const [userRole, setUserRole] = useState<UserRole>("Employee");
+
+
+
     // enable in prod
     // if (userData === null) {
     //     console.log("User data is empty");
