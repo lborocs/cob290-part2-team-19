@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS Permissions (
     create_knowledgebase_post BOOLEAN,
     edit_knowledgebase_post BOOLEAN,
     delete_knowledgebase_post BOOLEAN,
-    change_permissions BOOLEAN,
+    access_archive BOOLEAN,
     view_task_archive BOOLEAN,
     view_project_archive BOOLEAN,
     view_knowledgebase_archive BOOLEAN,

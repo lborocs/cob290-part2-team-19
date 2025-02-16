@@ -818,6 +818,20 @@ def change_user_type():
     
 """ ARCHIVE FUNCTIONS """
 
+#Get archive durations
+@app.route("/get_archive_limits", methods=["GET"])
+def get_all_archive_duration():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT taskDuration, projectDuration, kbDuration FROM ArchiveLimits WHERE id = 1;")
+        duration = cursor.fetchone()
+        return jsonify(duration)
+    except sqlite3.DatabaseError:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500   
+
 #Update Archive Durations
 @app.route("/update_archive_durations", methods=["PUT"])
 def update_archive_durations():
@@ -843,6 +857,7 @@ def update_archive_durations():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 #Get time tasks are kept in archive
+@app.route("/get_task_archive_duration", methods=["GET"])
 def get_task_archive_duration():
     try:
         db = get_db()
@@ -856,6 +871,7 @@ def get_task_archive_duration():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500     
 
 #Get time projects are kept in archive
+@app.route("/get_project_archive_duration", methods=["GET"])
 def get_project_archive_duration():
     try:
         db = get_db()
@@ -869,6 +885,7 @@ def get_project_archive_duration():
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500        
 
 #Get time kb posts are kept in archive
+@app.route("/get_kb_archive_duration", methods=["GET"])
 def get_kb_archive_duration():
     try:
         db = get_db()
