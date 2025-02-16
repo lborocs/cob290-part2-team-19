@@ -9,9 +9,10 @@ interface HeaderProps {
     icon?: any;
 }
 
-const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => {
+const Header = ({ userRole, onRoleChange, tabName, icon = ""}: HeaderProps) => {
     const [role, setUserRole] = useState<UserRole>("Employee"); // Default role
-    const [name, setName] = useState("");
+    const [name, setName] = useState<string>("");
+
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
         if (userData && userData.user_type_id) {
@@ -23,8 +24,8 @@ const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => 
             };
             setUserRole(roleMap[userData.user_type_id] || "Employee"); // Default to "Employee" if user_type_id is invalid
         }
-        if (userData && userData.first_name) {
-            setName(userData.first_name);
+        if (userData) {
+            setName(userData.name);
         }
     }, []); // This effect runs only once, on component mount
 
@@ -38,7 +39,7 @@ const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => 
                 {icon} {tabName}
             </div>
             <div className='mr-[7em]'>
-                {name}  {role}
+                {name} | {role}
             </div>
             <div className='absolute right-[1em]'>  
                 <button className='bg-slate-600 p-2 rounded-xl font-semibold' onClick={LogOut}>
