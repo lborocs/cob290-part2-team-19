@@ -44,13 +44,7 @@ export default function Dashboard() {
       setLoggedInUser(userData.user_id);
     }
   })
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
-    if (userData.user_id && userData.user_type_id) {
-      setUserType(userData.user_type_id);
-      setLoggedInUser(userData.user_id);
-    }
-  })
+
 
   //getting projects
   useEffect(() => {
