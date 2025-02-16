@@ -14,3 +14,29 @@ export const fetchGuidesByCategory = async (categoryId: number) => {
         return [];
     }
 };
+export const addGuide = async (authorId: number, content: string, categoryId: number) => {
+    try {
+        const response = await fetch("http://localhost:3300/add_post", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                author_id: authorId,
+                content,
+                category_id: categoryId,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to add guide");
+        }
+
+        return data; // ✅ Now it returns data
+    } catch (error) {
+        console.error("❌ Error adding guide:", error);
+        return null; // ✅ Return null on failure
+    }
+};

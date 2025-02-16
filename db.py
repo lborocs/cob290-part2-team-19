@@ -271,36 +271,50 @@ def update_permissions(user_type):
 #Add a new post to the knowledge base
 @app.route("/add_post", methods=["POST"])
 def add_post():
+    print("🔹 Received /add_post request")  # ✅ Debugging: Check if Flask receives the request
     try:
         data = request.json
+        print("🔵 Incoming Request Data:", data)  # ✅ Debugging line
+
         author_id = data.get("author_id")
         content = data.get("content")
         category_id = data.get("category_id")
 
+        print("🔵 Checking Category ID:", category_id)
+
         if not all([author_id, content, category_id]):
-            return jsonify({"error": "Author ID, content, and category id are required."}), 400
+            print("❌ ERROR: Missing required fields!")
+            return jsonify({"error": "Author ID, content, and category_id are required."}), 400
 
         db = get_db()
         cursor = db.cursor()
         
         # Check if category exists
         cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_id = ?", (category_id,))
-        category_id = cursor.fetchone()
-        if not category_id:
-            return jsonify({"error": "Category does not exist."}), 50
+        category = cursor.fetchone()
+        print("🔵 Category Lookup Result:", category)
+
+        if not category:
+            print(f"❌ ERROR: Category ID {category_id} does not exist!")
+            return jsonify({"error": "Category does not exist."}), 400
 
         # Insert post
+        print(f"🔹 Inserting Post: Author ID = {author_id}, Content = {content}, Category ID = {category_id}")
         cursor.execute("""
             INSERT INTO KnowledgeBase (author_id, content, category_id)
             VALUES (?, ?, ?)
         """, (author_id, content, category_id))
 
-        commit_changes(db)
+        db.commit()
+        print("✅ Post added successfully!")
         return jsonify({"success": True, "message": "Post added successfully"}), 201
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+    except sqlite3.DatabaseError as e:
+        print(f"❌ Database error: {str(e)}")  # ✅ Print full database error
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        print(f"❌ Unexpected error: {str(e)}")  # ✅ Print full unexpected error
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
     
 # get posts 
 @app.route('/guides/<int:category_id>', methods=['GET'])
