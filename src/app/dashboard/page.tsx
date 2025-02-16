@@ -41,6 +41,13 @@ export default function Dashboard() {
   setLoggedInUser(userData.user.id);
   setUserType(userData.user.user_type_id);
 
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
+    if (userData.user_id && userData.user_type_id) {
+      setUserType(userData.user_type_id);
+      setLoggedInUser(userData.user_id);
+    }
+  })
 
   //getting projects
   useEffect(() => {
@@ -380,7 +387,7 @@ export default function Dashboard() {
                     return (
                       <div
                         key={project.project_id}
-                        className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer hover:bg-gray-200 transition"
+                        className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
                         onClick={() => console.log(`Navigating to ${project.project_name}`)} // change this to the routing - need db
                       >
                         <div>

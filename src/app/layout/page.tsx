@@ -9,8 +9,6 @@ import Head from 'next/head';
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";
 
-
-
 interface LayoutProps {
     tabName?: string;
     icon?: any;
@@ -19,24 +17,17 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
     let title = "Make It All";
+    const userData = JSON.parse(localStorage.getItem('userdata') || 'null');
+    const [userRole, setUserRole] = useState<UserRole>("Employee");
 
-    const [userRole, setUserRole] = useState<UserRole>("Employee"); // Default to "Employee"
 
-    useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        if (userData && userData.user_type_id) {
-            // Map user_type_id to role
-            const roleMap: Record<number, UserRole> = {
-                0: "Manager",
-                1: "Team Leader",
-                2: "Employee",
-            };
-            setUserRole(roleMap[userData.user_type_id] || "Employee"); // Default to "Employee"
-        }
-    }, []); // Run once when the component mounts
-    
 
-    
+    // enable in prod
+    // if (userData === null) {
+    //     console.log("User data is empty");
+    //     router.push("/login");
+    // }
+
     return (
         <html lang="en">
         <head>
