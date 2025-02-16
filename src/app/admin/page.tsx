@@ -131,7 +131,8 @@ export default function AdminDashboard() {
   }
 
   const handleChangeUserType = async () => {
-    if (selectedUser && newUserType) {
+    if (selectedUser != null && newUserType != null) {
+      console.log("Attempting change type")
       await update_user_type(selectedUser, newUserType)
       alert("User role updated!")
     }
@@ -240,10 +241,13 @@ export default function AdminDashboard() {
           <div className="mt-2">
             <label>Select User</label>
             <select
-              onChange={(e) => setSelectedUser(Number(e.target.value))}
+              onChange={(e) => {
+                console.log("Selected User Name:", e.target.options[e.target.selectedIndex].text);
+                setSelectedUser(Number(e.target.value));
+              }}
               className="border p-2 w-full"
             >
-              <option value="">Select User</option>
+              <option value=''>Select User</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
@@ -254,7 +258,10 @@ export default function AdminDashboard() {
           <div className="mt-2">
             <label>New User Type</label>
             <select
-              onChange={(e) => setNewUserType(Number(e.target.value))}
+              onChange={(e) => {
+                console.log("Selected User Name:", e.target.options[e.target.selectedIndex].text);
+                setNewUserType(Number(e.target.value))
+              }}
               className="border p-2 w-full"
             >
               <option value="">Select User Type</option>
@@ -267,7 +274,10 @@ export default function AdminDashboard() {
           </div>
           <button
             className="mt-4 bg-blue-500 text-white p-2 rounded"
-            onClick={handleChangeUserType}
+            onClick={() => {
+              console.log("Button pressed");
+              handleChangeUserType();
+            }}
             disabled={selectedUser === null || newUserType === null}
           >
             Update User Type

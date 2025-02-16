@@ -115,6 +115,8 @@ export const update_user_type = async (
   newUserType: number
 ): Promise<void> => {
   try {
+    console.log(selectedUser);
+    console.log(newUserType);
     const response = await fetch(`${BASE_URL}/change_user_type`, {
       method: "PUT",
       headers: {
