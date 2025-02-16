@@ -10,10 +10,10 @@ import { useRouter } from "next/navigation"
 type UserRole = "Manager" | "Team Leader" | "Employee"
 
 interface LayoutProps {
-    tabName?: string
-    icon?: any
-    children?: React.ReactNode // No need for default null here
-  }
+  tabName?: string
+  icon?: any
+  children?: React.ReactNode // No need for default null here
+}
 
 const Layout: React.FC<LayoutProps> = ({
   tabName = "",
@@ -47,6 +47,10 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <html lang='en'>
+      <link
+        rel='stylesheet'
+        href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css'
+      />
       <Head>
         <title>Make It All</title>
         <meta charSet='utf-8' />
