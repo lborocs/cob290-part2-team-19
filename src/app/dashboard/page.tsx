@@ -38,7 +38,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const user = localStorage.getItem('loggedInUser');
-    if (user) {
+    if (user !== null && user !== undefined) {
       const parsedUser = JSON.parse(user);
       setLoggedInUser(parsedUser ?? 0);
       fetchUserType(parsedUser ?? 0).then(result => {
