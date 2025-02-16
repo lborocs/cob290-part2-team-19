@@ -18,8 +18,12 @@ interface LayoutProps {
 const Layout = ({ tabName="", icon = "", children=null }) => {
     let title = "Make It All";
     const router = useRouter();
-    const userData = JSON.parse(localStorage.getItem('userdata') || 'null');
+    const userData = JSON.parse(localStorage.getItem('userData') || 'null');
     const [userRole, setUserRole] = useState<UserRole>("Employee");
+
+    if (userData === null) {
+        router.push('/login');
+    }
 
     return (
         <html lang="en">
