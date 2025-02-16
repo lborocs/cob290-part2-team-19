@@ -10,15 +10,15 @@ import { useRouter } from "next/navigation"
 type UserRole = "Manager" | "Team Leader" | "Employee"
 
 interface LayoutProps {
-  tabName?: string
-  icon?: any
-  children?: React.ReactNode
-}
+    tabName?: string
+    icon?: any
+    children?: React.ReactNode // No need for default null here
+  }
 
 const Layout: React.FC<LayoutProps> = ({
   tabName = "",
   icon = "",
-  children = null,
+  children,
 }) => {
   const router = useRouter()
   const [userRole, setUserRole] = useState<UserRole>("Employee") // Default role
