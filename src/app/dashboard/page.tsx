@@ -37,17 +37,17 @@ export default function Dashboard() {
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-  const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
-  setLoggedInUser(userData.user.id);
-  setUserType(userData.user.user_type_id);
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    setLoggedInUser(userData.id);
+    setUserType(userData.user_type_id);
 
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
-    if (userData.user_id && userData.user_type_id) {
-      setUserType(userData.user_type_id);
-      setLoggedInUser(userData.user_id);
-    }
-  })
+//   useEffect(() => {
+//     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+//     if (userData.user_id && userData.user_type_id) {
+//       setUserType(userData.user_type_id);
+//       setLoggedInUser(userData.user_id);
+//     }
+//   })
 
   //getting projects
   useEffect(() => {
