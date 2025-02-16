@@ -31,7 +31,7 @@ export default function Dashboard() {
   const [selectedManager, setSelectedManager] = useState<string>('0');
   const [selectedStatus, setSelectedStatus] = useState<string>('0');
   const [sillyToDoID, setSillyToDo] = useState<number>(1);
-  const [loggedInUser, setLoggedInUser] = useState<number>(0)
+  const [loggedInUser, setLoggedInUser] = useState<number>(-1)
   const [userType, setUserType] = useState<number>(2)
 
   const toggleFullscreen = () => {
@@ -43,57 +43,29 @@ export default function Dashboard() {
       setUserType(userData.type_id);
       setLoggedInUser(userData.id);
     }
-  })
+  }, []); // runs once when start
 
-
-  //getting projects
   useEffect(() => {
+    if (!loggedInUser || !userType) return; // making sure we have thge user
+
     const fetchData = async () => {
       try {
-        const data = await fetchProjects(loggedInUser, userType);
-        setProjects(data);
+        const [projectsData, tasksData, todosData] = await Promise.all([
+          fetchProjects(loggedInUser, userType),
+          fetchTasks(loggedInUser, userType),
+          fetchToDo(loggedInUser),
+        ]);
+
+        setProjects(projectsData);
+        setTasks(tasksData || []);
+        setToDos(todosData || []);
       } catch (error) {
         console.log('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, []);
 
-  //getting tasks
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchTasks(loggedInUser, userType);
-        setTasks(data || [])
-      } catch (error) {
-        console.log('Error fetching data:', error)
-      }
-    };
     fetchData();
-  }, []);
-
-  //delete deleted todos
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-
-      } catch (error) {
-        console.log('Error deletinng: ', error)
-      }
-    }
-  })
-  //getting todo
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchToDo(loggedInUser);
-        setToDos(data || []);
-      } catch (error) {
-        console.log('Error fetching data: ', error);
-      }
-    };
-    fetchData();
-  }, []);
+  }, [loggedInUser, userType]);//once they are set
 
   //we want to get the sillyid
   useEffect(() => {
