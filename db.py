@@ -480,46 +480,20 @@ def new_todo():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-#Complete ToDo
-@app.route("/complete_todo", methods=["POST"])
-def complete_todo():
-    try:
-        data = request.json
-        to_do_id = data.get("to_do_id")
-        employee_id = data.get("employee_id")
-        if to_do_id is None or employee_id is None:
-            return jsonify({"error": "Not enough items given"}), 400
-        
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("UPDATE ToDo SET completed = 1 WHERE to_do_id = ? AND employee_id = ?", (to_do_id, employee_id))
-        db.commit()
-        
-        return jsonify({"success": True, "message": "To-Do completed successfully"}), 201 
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
 #Delete ToDo
 @app.route("/delete_todo", methods=["POST"])
 def delete_todo():
     try:
         data = request.json
-        to_do_id = data.get("to_do_id")
         employee_id = data.get("employee_id")
         
-        if not to_do_id:
+        if employee_id is None:
             return jsonify({"error": "No item given"}), 400
-
-        delete_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
-
-
+        
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("UPDATE ToDo SET deleted = 1 AND future_autodelete_date = ? WHERE to_do_id = ? AND employee_id = ?", (delete_date, to_do_id, employee_id))
+        cursor.execute("DELETE FROM ToDo WHERE deleted = 1 AND employee_id = ?", ( employee_id))
         db.commit()
-        
 
         return jsonify({"success": True, "message": "To-Do deleted successfully"}), 201 
     except sqlite3.DatabaseError:
