@@ -1,6 +1,7 @@
 "use client"
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import AddUser from '@/api/addUser';
 
 const CreateAccount = () => {
     const [htmlContent, setHtmlContent] = useState('');
@@ -78,6 +79,13 @@ const CreateAccount = () => {
             `;
             const scriptElement = document.createElement('script');
             scriptElement.innerHTML = scriptContent;
+            const signUpBtn = document.querySelector('button.signInBtn');
+            if (signUpBtn) {
+                signUpBtn.addEventListener('click', () => {
+                    alert("Account created successfully!");
+                    window.location.href = '/login';
+                });
+            }
             document.body.appendChild(scriptElement);
         };
 
