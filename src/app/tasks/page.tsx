@@ -6,13 +6,15 @@ import { Task } from "@/interfaces/interfaces";
 export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loggedInUser] = useState<number>(0);
+  const [userType] = useState<number>(2);
 
+  //getting tasks
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchTasks(0);
-        console.log("Fetched tasks:", data);
-        setTasks(data);
+        const data = await fetchTasks(loggedInUser, userType);
+        setTasks(data || []);
       } catch (error) {
         console.log("Error fetching data:", error);
       }
@@ -86,10 +88,10 @@ export default function TasksPage() {
                         {task.project_id}
                       </td>
                       <td className="table-cell px-2 py-3 text-gray-500">
-                        {task.start_date.toLocaleDateString()}
+                        {new Date(task.start_date).toLocaleDateString()}
                       </td>
                       <td className="table-cell px-2 py-3 text-gray-500">
-                        {task.finish_date.toLocaleDateString()}
+                        {new Date(task.finish_date).toLocaleDateString()}
                       </td>
                       <td className="table-cell px-2 py-3 text-yellow-600 text-center">
                         {task.completed}
@@ -117,11 +119,11 @@ export default function TasksPage() {
                 </p>
                 <p>
                   <strong>Start Date:</strong>{" "}
-                  {selectedTask.start_date.toLocaleDateString()}
+                  {new Date(selectedTask.start_date).toLocaleDateString()}
                 </p>
                 <p>
                   <strong>Due Date:</strong>{" "}
-                  {selectedTask.finish_date.toLocaleDateString()}
+                  {new Date(selectedTask.finish_date).toLocaleDateString()}
                 </p>
                 <p>
                   <strong>Status:</strong> {selectedTask.completed}
@@ -139,4 +141,3 @@ export default function TasksPage() {
     </Layout>
   );
 }
-

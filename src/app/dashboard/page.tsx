@@ -14,6 +14,7 @@ import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
 import { updateToDoStatus } from '@/api/updateToDo';
 import { fetchUserType } from '@/api/fetchUserType';
+import Select from 'react-select'
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -210,12 +211,12 @@ export default function Dashboard() {
 
   };
 
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedProject(e.target.value);
+  const handleProjectChange = (selectedOption: any) => {
+    setSelectedProject(selectedOption ? selectedOption.project_name : '0');
   };
 
-  const handleManagerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedManager(e.target.value);
+  const handleManagerChange = (selectedOption: any) => {
+    setSelectedManager(selectedOption ? `${selectedOption.employeeDetails.first_name} ${selectedOption.employeeDetails.second_name}` : '0');
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -226,7 +227,10 @@ export default function Dashboard() {
     setSelectedProject('0');
     setSelectedManager('0');
     setSelectedStatus('0');
-  }
+  };
+
+
+
   // filter the project based on the selectors
   const filteredProjects = projects.filter(project => {
     const matchesProject = selectedProject === '0' || project.project_name === selectedProject;
@@ -303,22 +307,41 @@ export default function Dashboard() {
                     <h3 className="text-normal font-semibold">Project Summary</h3>
                   </div>
                   <div className="flex gap-4">
-                    <select className="border p-2 rounded w-[25%] ml-auto" value={selectedProject} onChange={handleProjectChange}>
-                      <option value="0">Project</option>
-                      {projects.map(project => (
-                        <option key={project.project_id} value={project.project_name}>{project.project_name}</option>
-                      ))}
-                    </select>
-                    <select className="border p-2 rounded w-[25%] ml-auto" value={selectedManager} onChange={handleManagerChange}>
-                      <option value="0">Manager</option>
-                      {projects.map(project => (
-                        project.employeeDetails && (
-                          <option key={project.project_id} value={`${project.employeeDetails.first_name} ${project.employeeDetails.second_name}`}>
-                            {`${project.employeeDetails.first_name} ${project.employeeDetails.second_name}`}
-                          </option>
-                        )
-                      ))}
-                    </select>
+                    {/** they can search instead */}
+                    <Select
+                      className="w-[25%] ml-auto"
+                      value={projects.find(project => project.project_name === selectedProject) || null}
+                      onChange={handleProjectChange}
+                      getOptionLabel={(project) => project.project_name}
+                      getOptionValue={(project) => project.project_name}
+                      options={projects}
+                      placeholder="Project"
+                      isClearable
+                      styles={{ container: (provided) => ({ ...provided, width: '200px' }) }}
+                    />
+                    <Select
+                      className="w-[25%] ml-auto"
+                      value={projects.find(
+                        (project) =>
+                          project.employeeDetails &&
+                          `${project.employeeDetails.first_name} ${project.employeeDetails.second_name}` === selectedManager
+                      ) || null}
+                      onChange={handleManagerChange}
+                      getOptionLabel={(project) =>
+                        project.employeeDetails
+                          ? `${project.employeeDetails.first_name} ${project.employeeDetails.second_name}`
+                          : "Unknown"
+                      }
+                      getOptionValue={(project) =>
+                        project.employeeDetails
+                          ? `${project.employeeDetails.first_name} ${project.employeeDetails.second_name}`
+                          : ""
+                      }
+                      options={projects.filter((project) => project.employeeDetails)}
+                      placeholder="Manager"
+                      isClearable
+                      styles={{ container: (provided) => ({ ...provided, width: '200px' }) }}
+                    />
                     <select className="border p-2 rounded w-[25%] ml-auto" value={selectedStatus} onChange={handleStatusChange}>
                       <option value="0">Status</option>
                       <option value="Completed">Completed</option>
@@ -382,6 +405,7 @@ export default function Dashboard() {
               </div>
             </Card>
 
+            {/**card 4 */}
             <Card className="min-h-full p-4 flex flex-col">
               {/* Header */}
               <div className="mb-3 mt-1 flex justify-between items-center">
