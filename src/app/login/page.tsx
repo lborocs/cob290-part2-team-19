@@ -28,6 +28,7 @@ const Login = () => {
                 const email = emailElement ? emailElement.value : '';
                 const passwordElement = document.getElementById('password');
                 const password = passwordElement ? passwordElement.value : '';
+                
                 fetch('http://localhost:3300/login', {
                     method: 'POST',
                     headers: {
@@ -38,6 +39,9 @@ const Login = () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Store user data in localStorage
+                        localStorage.setItem('userData', JSON.stringify(data.user));
+                        // Redirect to dashboard
                         window.location.href = '/dashboard';
                     } else {
                         const toastContent = document.getElementById('toast-content');
@@ -60,25 +64,28 @@ const Login = () => {
                     }
                 });
             }
+
+            // Close toast function
             function closeToast() {
                 const alertToast = document.querySelector('.alert-toast');
                 if (alertToast) {
-                let opacity = 1;
-                const fadeOut = setInterval(() => {
-                    if (opacity <= 0) {
-                        clearInterval(fadeOut);
-                    }
-                    alertToast.style.opacity = opacity;
-                    opacity -= 0.1;
-                }, 50);
+                    let opacity = 1;
+                    const fadeOut = setInterval(() => {
+                        if (opacity <= 0) {
+                            clearInterval(fadeOut);
+                        }
+                        alertToast.style.opacity = opacity;
+                        opacity -= 0.1;
+                    }, 50);
                     alertToast.style.display = 'none';
                 }
             }
 
+            // Add event listener for the signIn button
             document.querySelector('.signInBtn')?.addEventListener('click', () => {
                 validateUser();
-            });
-            `;
+            });`
+
             const scriptElement = document.createElement('script');
             scriptElement.innerHTML = scriptContent;
             document.body.appendChild(scriptElement);
