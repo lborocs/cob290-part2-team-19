@@ -38,10 +38,10 @@ export default function Dashboard() {
     setIsFullscreen(!isFullscreen);
   };
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
-    if (userData.user_id && userData.user_type_id) {
-      setUserType(userData.user_type_id);
-      setLoggedInUser(userData.user_id);
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (userData.id && userData.type_id) {
+      setUserType(userData.type_id);
+      setLoggedInUser(userData.id);
     }
   })
 
