@@ -28,11 +28,6 @@ const Header = ({ userRole, onRoleChange, tabName, icon = "" }: HeaderProps) => 
         }
     }, []); // This effect runs only once, on component mount
 
-    // const handleRoleChange = (role: UserRole) => {
-    //     setUserRole(role);
-    //     onRoleChange(role);
-    // };
-
     return (
         <header className="sticky top-0 left-0 z-[1] bg-gray-800 text-white py-4 px-6 flex justify-between items-center">
             <div className="flex gap-4 items-center">
