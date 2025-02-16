@@ -855,7 +855,6 @@ def add_user():
 @app.route("/login", methods=["POST"])
 def login():
     try:
-        
         data = request.get_json()
         email = data.get("email")
         entered_password = data.get("password")
@@ -865,16 +864,28 @@ def login():
         
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT hashed_password FROM Employees WHERE employee_email = ?", (email,))
+        # Fetch user data from the database based on the provided email
+        cursor.execute("SELECT employee_id, first_name, second_name, employee_email, user_type_id, hashed_password FROM Employees WHERE employee_email = ?;", (email,))
         row = cursor.fetchone()
-        if row and bcrypt.checkpw(entered_password.encode(), row[0].encode()):
-            return jsonify({"success": True, "message":"Login successful"})
+
+        if row and len(row) == 6:  # Ensure that the row has exactly 6 values
+            # Check if entered password matches stored hash
+            if bcrypt.checkpw(entered_password.encode(), row[5].encode()):  # Access hashed_password at index 5
+                user = { 
+                    "id": row[0],
+                    "name": row[1] + " " + row[2],  # Concatenate first name and second name
+                    "email": row[3],
+                    "user_type_id": row[4],
+                }
+                return jsonify({"success": True, "message": "Login successful", "user": user})
+            else:
+                return jsonify({"error": "Email or password is incorrect"}), 401
         else:
-            return jsonify({"error": "Email or password is incorrect"}), 401
+            return jsonify({"error": "An unexpected error occurred. Tuple index out of range. Please try again later."}), 500
     except sqlite3.DatabaseError as e:
-        return jsonify({"error":"Database error occurred. Please try again later."}), 500
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception as e:
-        return jsonify({"error":f"An unexpected error occurred. {str(e)} Please try again later."}), 500
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 #Change User Type
 @app.route("/change_user_type", methods=["PUT"])
