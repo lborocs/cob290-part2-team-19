@@ -1,6 +1,8 @@
 import json
 import sqlite3
 import bcrypt
+import schedule
+import time
 from flask import Flask, g
 from flask import request, jsonify
 from flask_cors import CORS
@@ -68,7 +70,88 @@ def execute_query():
         return jsonify({'error': str(e)}), 400
 
 
+
+"""autodelete function"""
+def autodelete_projects():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # archive, projects, employee projects,
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute("SELECT project_id FROM ArchivedProjects WHERE future_autodelete_date < ?", (current_date,))
+        expired_projects = cursor.fetchall()
+        
+        for project in expired_projects:
+            project_id = project['project_id']
+            cursor.execute("DELETE FROM Projects WHERE project_id = ?", (project_id,))
+            cursor.execute("DELETE FROM ArchivedProjects WHERE project_id = ?", (project_id,))
+            cursor.execute("DELETE FROM EmployeeProjects WHERE project_id = ?", (project_id,))
+        
+        db.commit()
+        print(f"Deleted {len(expired_projects)} expired projects.")
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+
+def autodelete_tasks():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # archive, tasks, employee taks, prerequisite tasks
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute("SELECT task_id FROM ArchivedTasks WHERE future_autodelete_date < ?", (current_date,))
+        expired_tasks = cursor.fetchall()
+        
+        for task in expired_tasks:
+            task_id = task['task_id']
+            cursor.execute("DELETE FROM Tasks WHERE task_id = ?", (task_id,))
+            cursor.execute("DELETE FROM ArchivedTasks WHERE task_id = ?", (task_id,))
+            cursor.execute("DELETE FROM EmployeeTasks WHERE task_id = ?", (task_id,))
+            cursor.execute("DELETE FROM PrerequisiteTasks WHERE task_id = ? OR prerequisite = ?", (task_id,task_id,))
+        
+        db.commit()
+        print(f"Deleted {len(expired_tasks)} expired tasks.")
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+
+def autodelete_knowledgebase():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # archive, knowledge base,knowledge base edits
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute("SELECT id FROM ArchivedKnowledgeBasePages WHERE future_autodelete_date < ?", (current_date,))
+        expired_posts = cursor.fetchall()
+        
+        for post in expired_posts:
+            post_id = post['id']
+            cursor.execute("DELETE FROM ArchivedKnowledgeBasePages WHERE id = ?", (post_id,))
+            cursor.execute("DELETE FROM KnowledgeBase WHERE post_id = ?", (post_id,))
+            cursor.execute("DELETE FROM KnowledgeBaseEdits WHERE post_id = ?", (post_id,))
+        
+        db.commit()
+        print(f"Deleted {len(expired_posts)} expired knowledge base posts.")
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+
+# scheduling
+schedule.every().day.at("00:00").do(autodelete_projects)
+schedule.every().day.at("00:00").do(autodelete_tasks)
+schedule.every().day.at("00:00").do(autodelete_knowledgebase)
+
+
+
 """ User functions """
+
+
 
 # Fetch User Types
 @app.route("/get_user_types", methods=["GET"])
@@ -1488,3 +1571,7 @@ def get_employee_details(employee_id):
 if __name__ == '__main__':
     app.run(port=PORT)
     init_db()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+        print("Running...")
