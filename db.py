@@ -27,7 +27,11 @@ def get_db():
     except sqlite3.DatabaseError as e:
         print(f"Database connection error: {str(e)}")
         return None
-
+    
+def commit_changes(db):
+    db.commit()
+    db.close()
+    
 def init_db():  
     try:
         with app.app_context():
@@ -38,7 +42,7 @@ def init_db():
             with open('schema.sql', 'r') as f:
                 schema_sql = f.read()
             cursor.executescript(schema_sql)
-            db.commit()
+            commit_changes(db)
     except sqlite3.DatabaseError as e:
         print(f"Database error during initialization: {str(e)}")
 
@@ -88,7 +92,7 @@ def autodelete_projects():
             cursor.execute("DELETE FROM ArchivedProjects WHERE project_id = ?", (project_id,))
             cursor.execute("DELETE FROM EmployeeProjects WHERE project_id = ?", (project_id,))
         
-        db.commit()
+        commit_changes(db)
         print(f"Deleted {len(expired_projects)} expired projects.")
     except sqlite3.DatabaseError as e:
         print(f"Database error: {str(e)}")
@@ -112,7 +116,7 @@ def autodelete_tasks():
             cursor.execute("DELETE FROM EmployeeTasks WHERE task_id = ?", (task_id,))
             cursor.execute("DELETE FROM PrerequisiteTasks WHERE task_id = ? OR prerequisite = ?", (task_id,task_id,))
         
-        db.commit()
+        commit_changes(db)
         print(f"Deleted {len(expired_tasks)} expired tasks.")
     except sqlite3.DatabaseError as e:
         print(f"Database error: {str(e)}")
@@ -135,7 +139,7 @@ def autodelete_knowledgebase():
             cursor.execute("DELETE FROM KnowledgeBase WHERE post_id = ?", (post_id,))
             cursor.execute("DELETE FROM KnowledgeBaseEdits WHERE post_id = ?", (post_id,))
         
-        db.commit()
+        commit_changes(db)
         print(f"Deleted {len(expired_posts)} expired knowledge base posts.")
     except sqlite3.DatabaseError as e:
         print(f"Database error: {str(e)}")
@@ -253,7 +257,7 @@ def update_permissions(user_type):
         if cursor.rowcount == 0:
             return jsonify({"error": "User type not found."}), 404
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Permissions updated successfully."}), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -291,7 +295,7 @@ def add_post():
             VALUES (?, ?, ?)
         """, (author_id, content, category_id))
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Post added successfully"}), 201
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -320,7 +324,7 @@ def add_category():
         cursor.execute("INSERT INTO KnowledgeBaseCategories (category_name) VALUES (?)", (category,))
         category_id = cursor.lastrowid  # Get the newly inserted category ID
 
-        db.commit()
+        commit_changes(db)
 
         # Return the created category
         return jsonify({
@@ -389,7 +393,7 @@ def delete_post(post_id):
             VALUES (?, ?, ?)
         """, (post_id, archived_date, future_autodelete_date))
         
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Post archived successfully"}), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -439,7 +443,7 @@ def update_post(post_id):
             VALUES (?, ?, ?, ?, ?, ?)
         """, (post_id, editor_id, edit_date, old_content, content, category_id))
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Edit request submitted for review."}), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -470,7 +474,7 @@ def new_todo():
         VALUES (?, ?, ?, 0, 0)
         """
         cursor.execute(query, (employee_id, task_id, description))
-        db.commit()
+        commit_changes(db)
 
         return jsonify({"success": True, "todo_id": cursor.lastrowid}), 201
 
@@ -493,7 +497,7 @@ def delete_todo():
         db = get_db()
         cursor = db.cursor()
         cursor.execute("DELETE FROM ToDo WHERE deleted = 1 AND employee_id = ?", ( employee_id))
-        db.commit()
+        commit_changes(db)
 
         return jsonify({"success": True, "message": "To-Do deleted successfully"}), 201 
     except sqlite3.DatabaseError:
@@ -527,7 +531,7 @@ def update_todo():
         params.append(to_do_id)
         params.append(employee_id)
         cursor.execute(query, params)
-        db.commit()
+        commit_changes(db)
         
         return jsonify({"success": True, "message": "To-Do updated successfully"}), 201 
     except sqlite3.DatabaseError:
@@ -601,7 +605,7 @@ def new_project():
             VALUES (?,?,?,?,?)
         """, (project_name, team_leader_id, description, start_date, finish_date)) 
 
-        db.commit()
+        commit_changes(db)
         
         if tags:
             tags_list = tags.split(",")
@@ -612,7 +616,7 @@ def new_project():
                 cursor.execute("INSERT INTO ProjectTags (tag_name) VALUES (?)", (tag,))
                 #add tags to tag table
                 cursor.execute("INSERT OR IGNORE INTO tags VALUES (?)",(tag,))
-        db.commit()
+        commit_changes(db)
 
                 
         return jsonify({"success": True, "message": "Project created successfully"}), 201 
@@ -660,7 +664,7 @@ def new_task():
 
         # Insert prerequisite tasks if they exist
         if prerequesite_tasks:
-            db.commit()
+            commit_changes(db)
 
             # Retrieve the task_id
             cursor.execute("""
@@ -677,7 +681,7 @@ def new_task():
                         INSERT INTO PrerequisiteTasks (task_id, prerequesite_task_id) VALUES (?,?)
                     """, (task_id, task)) 
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Task created successfully"}), 201  
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -702,7 +706,7 @@ def complete_task():
         cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (task_id, completed_date,))
         cursor.execute("INSERT INTO completedTasksBacklog (task_id, completed_date) VALUES (?, ?)", (task_id, completed_date))
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Task marked as completed."}), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -727,7 +731,7 @@ def complete_project():
         cursor.execute("UPDATE Projects SET completed = 1 AND completed_date = ? WHERE project_id = ?", (project_id, completed_date,))
         cursor.execute("INSERT INTO completedProjectsBacklog (project_id, completed_date) VALUES (?, ?)", (project_id, completed_date))
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Project marked as completed."}), 200
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -818,7 +822,7 @@ def add_user():
             INSERT INTO Employees (employee_email, first_name, second_name, hashed_password, user_type_id, current_employee)
             VALUES (?, ?, ?, ?, 2, TRUE)
         """, (email, first_name, second_name, hashed_password))
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "User created successfully"}), 201 
     except sqlite3.DatabaseError as e:
         return jsonify({"error": "Database Error occurred. Please try again later."}), 500
@@ -875,7 +879,7 @@ def change_user_type():
             SET user_type_id = ? 
             WHERE employee_id = ?
         ''', (new_user_type, employee_id))
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message":"User Type changed!"})
     except sqlite3.DatabaseError as e:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -920,7 +924,7 @@ def update_archive_durations():
         cursor.execute('''
             UPDATE ArchiveLimits SET taskDuration = ?, projectDuration = ?, kbDuration = ? WHERE id = 1;
         ''', (task, project, kb, ))
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Durations updated successfully."}), 200
 
     except sqlite3.DatabaseError:
@@ -997,7 +1001,7 @@ def archive_task():
         delete_query = "DELETE FROM completedTasksBacklog WHERE task_id = ?"
         cursor.execute(delete_query, (task_id,))
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Task archived successfully."}), 200
 
     except sqlite3.DatabaseError:
@@ -1039,7 +1043,7 @@ def archive_project():
         delete_query = "DELETE FROM completedProjectsBacklog WHERE project_id = ?;"
         cursor.execute(delete_query, (project_id,))
 
-        db.commit()
+        commit_changes(db)
         return jsonify({"success": True, "message": "Project archived successfully."}), 200
     except sqlite3.DatabaseError as e:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
@@ -1073,7 +1077,7 @@ def archive_kb_post():
         """, (post_id, archived_date, delete_date))
 
         # Commit the changes to the database
-        db.commit()
+        commit_changes(db)
 
         return jsonify({"success": True, "message": "Knowledge base post archived successfully."}), 200
 
