@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "../globals.css"; // Ensure Tailwind is loaded
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Head from 'next/head';
+
 
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";
@@ -17,8 +18,22 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
-    const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
     let title = "Make It All";
+
+    const [userRole, setUserRole] = useState<UserRole>("Employee"); // Default to "Employee"
+
+    useEffect(() => {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (userData && userData.user_type_id) {
+            // Map user_type_id to role
+            const roleMap: Record<number, UserRole> = {
+                0: "Manager",
+                1: "Team Leader",
+                2: "Employee",
+            };
+            setUserRole(roleMap[userData.user_type_id] || "Employee"); // Default to "Employee"
+        }
+    }, []); // Run once when the component mounts
     
 
     
