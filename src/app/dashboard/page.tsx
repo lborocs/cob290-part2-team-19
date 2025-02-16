@@ -15,6 +15,8 @@ import FullCalendar from "@fullcalendar/react";
 import { updateToDoStatus } from '@/api/updateToDo';
 import { fetchUserType } from '@/api/fetchUserType';
 import Select from 'react-select'
+import { deleteToDo } from '@/api/deleteToDo';
+
 
 export default function Dashboard() {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -35,22 +37,13 @@ export default function Dashboard() {
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-
-  useEffect(() => {
-    const user = localStorage.getItem('loggedInUser');
-    if (user !== null && user !== undefined) {
-      const parsedUser = JSON.parse(user);
-      setLoggedInUser(parsedUser ?? 0);
-      fetchUserType(parsedUser ?? 0).then(result => {
-        if (result.success) {
-          setUserType(result.userType ?? 2);
-          console.log("user type", userType);
-        } else {
-          console.error(result.message);
-        }
-      });
-    }
-  }, []);
+<<<<<<< Updated upstream
+  const userData = JSON.parse(local_storage.getItem('userdata') || '{}');
+=======
+  const userData = JSON.parse(localStorage.getItem('userdata') || '{}');
+>>>>>>> Stashed changes
+  setLoggedInUser(userData.user.id);
+  setUserType(userData.user.user_type_id);
 
 
   //getting projects
@@ -79,6 +72,16 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  //delete deleted todos
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+
+      } catch (error) {
+        console.log('Error deletinng: ', error)
+      }
+    }
+  })
   //getting todo
   useEffect(() => {
     const fetchData = async () => {

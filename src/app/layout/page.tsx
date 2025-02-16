@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "../globals.css"; // Ensure Tailwind is loaded
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Head from 'next/head';
-import { useRouter } from 'next/navigation';
+
 
 // Define the user roles as a union type
 type UserRole = "Manager" | "Team Leader" | "Employee";
@@ -16,8 +16,6 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ tabName="", icon = "", children=null }) => {
-    const router = useRouter();
-    const [userRole, setUserRole] = useState<UserRole>("Manager"); // Default role
     let title = "Make It All";
     const userData = JSON.parse(localStorage.getItem('userdata') || 'null');
     
