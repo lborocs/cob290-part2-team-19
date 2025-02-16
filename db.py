@@ -820,13 +820,17 @@ def change_user_type():
 
 #Get archive durations
 @app.route("/get_archive_limits", methods=["GET"])
-def get_all_archive_duration():
+def get_archive_limits():
     try:
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT taskDuration, projectDuration, kbDuration FROM ArchiveLimits WHERE id = 1;")
         duration = cursor.fetchone()
-        return jsonify(duration)
+        return jsonify({
+                "task": duration[0],
+                "project": duration[1],
+                "kb": duration[2]
+            })
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
     except Exception:

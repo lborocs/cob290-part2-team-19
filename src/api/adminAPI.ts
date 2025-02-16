@@ -60,15 +60,15 @@ export const get_permissions_by_user_type = async (
 
 export const get_archive_limits = async (): Promise<ArchiveDurations> => {
   try {
-    const durations = await fetch(`${BASE_URL}/get_all_archive_duration`)
+    const durations = await fetch(`${BASE_URL}/get_archive_limits`)
     if (!durations.ok) {
       throw new Error("Failed to fetch archive limits")
     }
     // Parse the JSON responses
     const taskData = await durations.json()
+    console.log("Archive durations updated successfully")
 
     return taskData
-    console.log("Archive durations updated successfully")
   } catch (error) {
     console.error("Error fetching archive durations:", error)
     throw error
