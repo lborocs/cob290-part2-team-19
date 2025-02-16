@@ -13,7 +13,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import FullCalendar from "@fullcalendar/react";
 import { updateToDoStatus } from '@/api/updateToDo';
-import { fetchUserType } from '@/api/fetchUserType';
 import Select from 'react-select'
 import { deleteToDo } from '@/api/deleteToDo';
 import { useRouter } from "next/navigation"
