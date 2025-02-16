@@ -31,33 +31,40 @@ export default function Dashboard() {
   const [selectedManager, setSelectedManager] = useState<string>('0');
   const [selectedStatus, setSelectedStatus] = useState<string>('0');
   const [sillyToDoID, setSillyToDo] = useState<number>(1);
-  const [loggedInUser, setLoggedInUser] = useState<number>(-1)
-  const [userType, setUserType] = useState<number>(2)
+  const [loggedInUser, setLoggedInUser] = useState<number | null>(null);
+  const [userType, setUserType] = useState<number | null>(null);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    if (userData.id && userData.type_id) {
-      setUserType(userData.type_id);
-      setLoggedInUser(userData.id);
-    }
-  }, []); // runs once when start
 
   useEffect(() => {
-    if (!loggedInUser || !userType) return; // making sure we have thge user
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (userData.id !== undefined && userData.user_type_id !== undefined) {
+      setUserType(userData.user_type_id);
+      setLoggedInUser(userData.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loggedInUser === null || userType === null) return;
 
     const fetchData = async () => {
       try {
+        await deleteToDo(loggedInUser); // Delete before fetching
         const [projectsData, tasksData, todosData] = await Promise.all([
           fetchProjects(loggedInUser, userType),
           fetchTasks(loggedInUser, userType),
           fetchToDo(loggedInUser),
         ]);
 
+        // Sort tasks before setting state
+        const sortedTasks = tasksData?.sort((a: Task, b: Task) =>
+          new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime()
+        ) || [];
+
         setProjects(projectsData);
-        setTasks(tasksData || []);
+        setTasks(sortedTasks);
         setToDos(todosData || []);
       } catch (error) {
         console.log('Error fetching data:', error);
@@ -65,20 +72,16 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [loggedInUser, userType]);//once they are set
+  }, [loggedInUser, userType]);
 
-  //we want to get the sillyid
+
+
   useEffect(() => {
+    if (!ToDos) return;
     setSillyToDo(ToDos.length > 0 ? ToDos[ToDos.length - 1].todo_id + 1 : 1);
-  }, [ToDos])
+  }, [ToDos]);
 
-  //sort tasks
-  useEffect(() => {
-    if (tasks != null) {
-      const sortedTasks = tasks.sort((a, b) => new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime());
-      setTasks(sortedTasks);
-    }
-  }, [tasks]);
+
 
 
   const events = tasks.map((task) => {
@@ -124,64 +127,74 @@ export default function Dashboard() {
   };
 
   const handleAddToDo = async () => {
-    if (!newToDoDescription.trim()) {
-      alert('To-Do description cannot be empty.');
-      return;
-    }
+    if (loggedInUser) {
+      if (!newToDoDescription.trim()) {
+        alert('To-Do description cannot be empty.');
+        return;
+      }
 
-    const result = await addToDo(loggedInUser, newToDoDescription.trim(), sillyToDoID);
-    if (result.success) {
-      setNewToDoDescription('');
-      //update the todos
-      const data = await fetchToDo(loggedInUser);
-      setToDos(data);
+      const result = await addToDo(loggedInUser, newToDoDescription.trim(), sillyToDoID);
+      if (result.success) {
+        setNewToDoDescription('');
+        //update the todos
+        const data = await fetchToDo(loggedInUser);
+        setToDos(data);
+      }
     }
   };
 
   const handleCompleteToDo = async (todo_id: number) => {
-    const result = await updateToDoStatus(todo_id, loggedInUser, 1, null);
-    if (result.success) {
-      const updatedToDos = ToDos.map(todo =>
-        todo.todo_id === todo_id ? { ...todo, completed: true } : todo
-      );
-      setToDos(updatedToDos);
-    } else {
-      alert(result.message);
+    if (loggedInUser) {
+      const result = await updateToDoStatus(todo_id, loggedInUser, 1, null);
+      if (result.success) {
+        const updatedToDos = ToDos.map(todo =>
+          todo.todo_id === todo_id ? { ...todo, completed: true } : todo
+        );
+        setToDos(updatedToDos);
+      } else {
+        alert(result.message);
+      }
     }
   };
   const handleDeleteToDo = async (todo_id: number) => {
-    const result = await updateToDoStatus(todo_id, loggedInUser, null, 1);
-    if (result.success) {
-      const updatedToDos = ToDos.map(todo =>
-        todo.todo_id === todo_id ? { ...todo, deleted: true } : todo
-      );
-      setToDos(updatedToDos);
-    } else {
-      alert(result.message);
+    if (loggedInUser) {
+      const result = await updateToDoStatus(todo_id, loggedInUser, null, 1);
+      if (result.success) {
+        const updatedToDos = ToDos.map(todo =>
+          todo.todo_id === todo_id ? { ...todo, deleted: true } : todo
+        );
+        setToDos(updatedToDos);
+      } else {
+        alert(result.message);
+      }
     }
   };
 
   const handleUncompleteToDo = async (todo_id: number) => {
-    const result = await updateToDoStatus(todo_id, loggedInUser, 0, null);
-    if (result.success) {
-      const updatedToDos = ToDos.map(todo =>
-        todo.todo_id === todo_id ? { ...todo, completed: false } : todo
-      );
-      setToDos(updatedToDos);
-    } else {
-      alert(result.message);
+    if (loggedInUser) {
+      const result = await updateToDoStatus(todo_id, loggedInUser, 0, null);
+      if (result.success) {
+        const updatedToDos = ToDos.map(todo =>
+          todo.todo_id === todo_id ? { ...todo, completed: false } : todo
+        );
+        setToDos(updatedToDos);
+      } else {
+        alert(result.message);
+      }
     }
   };
 
   const handleRestoreToDo = async (todo_id: number) => {
-    const result = await updateToDoStatus(todo_id, loggedInUser, null, 0);
-    if (result.success) {
-      const updatedToDos = ToDos.map(todo =>
-        todo.todo_id === todo_id ? { ...todo, deleted: false } : todo
-      );
-      setToDos(updatedToDos);
-    } else {
-      alert(result.message);
+    if (loggedInUser) {
+      const result = await updateToDoStatus(todo_id, loggedInUser, null, 0);
+      if (result.success) {
+        const updatedToDos = ToDos.map(todo =>
+          todo.todo_id === todo_id ? { ...todo, deleted: false } : todo
+        );
+        setToDos(updatedToDos);
+      } else {
+        alert(result.message);
+      }
     }
 
   };
