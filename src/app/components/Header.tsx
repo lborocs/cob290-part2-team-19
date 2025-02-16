@@ -13,9 +13,11 @@ const Header = ({ userRole, onRoleChange, tabName, icon = ""}: HeaderProps) => {
     const [role, setUserRole] = useState<UserRole>("Employee"); // Default role
     const [name, setName] = useState<string>("");
 
+
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        if (userData && userData.user_type_id) {
+        console.log(JSON.stringify(userData));
+        if (userData && userData.user_type_id !== undefined) {
             // Map the user_type_id to a userRole string
             const roleMap: Record<number, UserRole> = {
                 0: "Manager",
