@@ -91,3 +91,14 @@ export const fetchProjectsForCompletion = async (employeeId: number, userType: n
         return null;
     }
 };
+
+export const fetchProjectTags = async () => {
+    try {
+        const response = await fetch(`http://localhost:3300/all_tags`);
+        const data = await response.json();        
+        return data;
+    } catch (error) {
+        console.error('Error fetching project tags:', error);
+        return [];
+    }
+}

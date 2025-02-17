@@ -1530,21 +1530,38 @@ def search_employees_projects():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-#Search function for Projects associated with Tags
-@app.route('/projects/tags', methods=['GET'])
-def search_projects_tags():
-    tag_name = request.args.get('tag_name')
-    query = "SELECT project_id FROM ProjectTags WHERE tag_name = ?"
+@app.route("/all_tags", methods=["GET"])
+def all_tags():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute(query, (tag_name,))
+        cursor.execute("SELECT * FROM Tags")
+        tags = cursor.fetchall()
+        return jsonify([dict(tag) for tag in tags])
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
+
+#Search function for Projects associated with Tags
+@app.route('/projects/tags', methods=['GET'])
+def search_projects_tags():
+    tag_name = request.args.get('tag_name') or ""
+    query = "SELECT * FROM Tags"
+       
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        if tag_name!="":
+            cursor.execute(query, (tag_name,))
+        else:
+            cursor.execute(query)
         projects = cursor.fetchall()
         return jsonify([row['project_id'] for row in projects])
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error":f"Database error: {str(e)}. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error":f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
 
 #Search function for Tasks associated with Tags
 @app.route('/tasks/tags', methods=['GET'])
@@ -1558,10 +1575,12 @@ def search_tasks_tags():
         tasks = cursor.fetchall()
         return jsonify([row['task_id'] for row in tasks])
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error":f"Database error: {str(e)}. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error":f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
     
+    
+
 #Search function for Tasks that employees are assigned to for a given project
 @app.route('/projects/<int:project_id>/tasks/employees', methods=['GET'])
 def get_tasks_employees_for_project(project_id):
