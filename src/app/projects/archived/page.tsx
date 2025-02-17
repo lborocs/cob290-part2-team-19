@@ -6,6 +6,7 @@ import Layout from "@/app/layout/page";
 import { fetchArchivedProjects } from "@/api/fetchProjects";
 import { Project } from "@/interfaces/interfaces";
 const BASE_URL = "http://localhost:3300"
+
 const ArchivedProjects = () => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
@@ -31,6 +32,7 @@ const ArchivedProjects = () => {
                 const [projectsData,] = await Promise.all([
                     fetchArchivedProjects(),
                 ]);
+
                 setProjects(projectsData)
             } catch (error) {
                 console.log('Error fetching data:', error);

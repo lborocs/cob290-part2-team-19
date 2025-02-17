@@ -1405,24 +1405,6 @@ def get_archived_projects():
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-@app.route("/archived_tasks", methods=["GET"])
-def get_archived_tasks():
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("""
-            SELECT t.task_id, t.task_name, t.assigned_employee, e.first_name || ' ' || e.second_name AS employee_name, at.archived_date, t.completed
-            FROM Tasks t
-            JOIN ArchivedTasks at ON t.task_id = at.id
-            JOIN Employees e ON t.assigned_employee = e.employee_id
-        """)
-        archived_tasks = cursor.fetchall()
-        return jsonify([dict(task) for task in archived_tasks]), 200
-    except sqlite3.DatabaseError as e:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception as e:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
 #Search function for Tasks
 @app.route('/tasks/search', methods=['GET'])
 def search_tasks():
