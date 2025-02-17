@@ -1,4 +1,4 @@
-import mysqlconnector
+import mysql.connector
 import json
 import sqlite3
 import bcrypt
