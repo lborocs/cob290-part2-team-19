@@ -1,10 +1,20 @@
-"use client";
+// components/Sidebar.js
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { get_permissions_by_user_type } from "@/api/adminAPI"; // Import the permissions fetching function
 
 type Permissions = {
   [key: string]: boolean;
+};
+
+const Loading = () => {
+  return (
+    <nav className="fixed top-0 left-0 z-[0] bg-[#374151] w-[15em] p-4 h-[100vh] sidebar">
+      <div className="flex flex-col items-start mt-[4em] gap-2">
+        {/* Empty space for skeleton sidebar */}
+      </div>
+    </nav>
+  );
 };
 
 // Define LinkDefinition (static)
@@ -67,9 +77,9 @@ const Sidebar = () => {
     }
   }, []);
 
-  // If permissions are still being fetched, show a loading spinner or message
+  // If permissions are still being fetched, show the skeleton sidebar using the Loading component
   if (loading) {
-    return <div>Loading...</div>; // Optionally, render a loading spinner or message
+    return <Loading />;
   }
 
   console.log("6 - Final permissions state:", permissions); // Log the permissions object after it's set

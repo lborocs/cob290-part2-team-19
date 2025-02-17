@@ -758,7 +758,6 @@ def new_task():
 def complete_task():
     try:
         print("somethngn")
-        
         task_id = request.args.get("task_id")
         print("task_id", task_id)
         if not task_id:
@@ -770,7 +769,6 @@ def complete_task():
         # Mark the task as completed
         completed_date = datetime.now().date()
         cursor.execute("UPDATE Tasks SET completed = 1, completed_date = ? WHERE task_id = ?", (completed_date, task_id))
-        cursor.execute("INSERT INTO completedTasksBacklog (task_id, completed_date) VALUES (?, ?)", (task_id, completed_date))
     
         commit_changes(db)
         
@@ -1331,7 +1329,50 @@ def search_projects():
         return f"Database error: {str(e)}. Please try again later."
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
+#delete project, delete from archive project, delete all tasks with that project,
+#delete all archived tasks, delete all tasks with that project from employee tasks
+#and delete employee projects
+#and prequisite tasks and project tags
+@app.route("/delete_project", methods=["DELETE"])
+def delete_project():
+    try:
+        project_id = request.args.get("project_id")
+        if not project_id:
+            return jsonify({"error": "Project ID is required."}), 400
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM Projects WHERE project_id = ?", (project_id,))
+        cursor.execute("DELETE FROM ArchivedProjects WHERE id = ?", (project_id,))
+        cursor.execute("DELETE FROM Tasks WHERE project_id = ?", (project_id,))
+        cursor.execute("DELETE FROM EmployeeTasks WHERE task_id IN (SELECT task_id FROM Tasks WHERE project_id = ?)", (project_id,))
+        cursor.execute("DELETE FROM ArchivedTasks WHERE project_id = ?", (project_id,))
+        cursor.execute("DELETE FROM EmployeeProjects WHERE project_id = ?", (project_id,))
+        cursor.execute("DELETE FROM PrerequisiteTasks WHERE task_id IN (SELECT task_id FROM Tasks WHERE project_id = ?)", (project_id,))
+        cursor.execute("DELETE FROM ProjectTags WHERE project_id = ?", (project_id,))
+        commit_changes(db)
+        return jsonify({"success": True, "message": "Project deleted successfully."}), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
+#delete a project from archive project
+@app.route("/delete_archived_project", methods=["DELETE"])
+def delete_archived_project():
+    try:
+        project_id = request.args.get("project_id")
+        if not project_id:
+            return jsonify({"error": "Project ID is required."}), 400
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM ArchivedProjects WHERE id = ?", (project_id,))
+        commit_changes(db)
+        return jsonify({"success": True, "message": "Archived project deleted successfully."}), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    
 #Get all projects
 @app.route('/projects', methods=['GET'])
 def get_projects():
@@ -1345,6 +1386,24 @@ def get_projects():
         return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
+
+@app.route("/archived_projects", methods=["GET"])
+def get_archived_projects():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            SELECT p.project_id, p.project_name, p.team_leader_id, e.first_name || ' ' || e.second_name AS team_leader_name, ap.archived_date, p.completed
+            FROM Projects p
+            JOIN ArchivedProjects ap ON p.project_id = ap.id
+            JOIN Employees e ON p.team_leader_id = e.employee_id
+        """)
+        archived_projects = cursor.fetchall()
+        return jsonify([dict(project) for project in archived_projects]), 200
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": "Database error occurred. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 #Search function for Tasks
 @app.route('/tasks/search', methods=['GET'])
