@@ -560,7 +560,9 @@ export default function Dashboard() {
                         const taskColor = completed ? "bg-green-500" : isOverdue ? "bg-red-500" : "bg-yellow-500";
 
                         return (
-                          <li key={task.task_id} className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">
+                          <li key={task.task_id}
+                            onClick={() => (router.push('/tasks'))}
+                            className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">
                             <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
                             <div className="flex-1 ml-2">
                               <div className="font-medium">{task.task_name}</div>
