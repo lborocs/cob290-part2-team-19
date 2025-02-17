@@ -199,17 +199,7 @@ def get_user_permissions_by_type(user_type):
         db = get_db()
         cursor = db.cursor()
         cursor.execute("""
-            SELECT new_project, 
-                   new_task, 
-                   edit_project, 
-                   edit_task,
-                   create_knowledgebase_post,
-                   edit_knowledgebase_post,
-                   delete_knowledgebase_post,
-                   view_task_archive,
-                   view_project_archive,
-                   view_knowledgebase_archive,
-                   authorise_completed
+            SELECT *
             FROM Permissions 
             WHERE user_type = ?
         """, (user_type,))

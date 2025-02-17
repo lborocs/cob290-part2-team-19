@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS Permissions (
     create_knowledgebase_post BOOLEAN,
     edit_knowledgebase_post BOOLEAN,
     delete_knowledgebase_post BOOLEAN,
-    access_archive BOOLEAN,
+    access_admin BOOLEAN,
     view_task_archive BOOLEAN,
     view_project_archive BOOLEAN,
     view_knowledgebase_archive BOOLEAN,
@@ -144,10 +144,11 @@ CREATE TABLE IF NOT EXISTS Permissions (
     FOREIGN KEY (user_type) REFERENCES UserTypes(type_id)
 );
 
+
 -- Insert default permissions
-INSERT OR IGNORE INTO Permissions VALUES (0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-INSERT OR IGNORE INTO Permissions VALUES (1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0);
-INSERT OR IGNORE INTO Permissions VALUES (2, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0);
+INSERT OR IGNORE INTO Permissions VALUES (0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT OR IGNORE INTO Permissions VALUES (1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0);
+INSERT OR IGNORE INTO Permissions VALUES (2, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0);
 
 -- KnowledgeBaseEdits Table
 CREATE TABLE IF NOT EXISTS KnowledgeBaseEdits (
