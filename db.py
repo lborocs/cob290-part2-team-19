@@ -279,7 +279,7 @@ def update_permissions(user_type):
 def add_post():
     print("🔹 Received /add_post request") 
     try:
-        data = request.json()
+        data = request.get_json()
         print("🔵 Incoming Request Data:", data)  
 
         author_id = data.get("author_id")
@@ -366,7 +366,7 @@ def get_posts_by_category(category_id):
 @app.route("/add_category", methods=["POST"])
 def add_category():
     try:
-        data = request.json()
+        data = request.get_json()
         category = data.get("category_name")
         if not category:
             return jsonify({"error": "A category name is required."}), 400
@@ -468,7 +468,7 @@ def delete_post(post_id):
 @app.route("/update_post/<int:post_id>", methods=["PUT"])
 def update_post(post_id):
     try:
-        data = request.json()
+        data = request.get_json()
         editor_id = data.get("editor_id")
         content = data.get("content")
         category_name = data.get("category_name")
@@ -574,14 +574,13 @@ def delete_todo():
 @app.route("/update_todo_status", methods=["PUT"])
 def update_todo():
     try:
-        data = request.json()
-        to_do_id = data.get("to_do_id")
+        data = request.get_json()
+        to_do_id = data.get("todo_id")
         employee_id = data.get("employee_id")
         completed = data.get("completed")
         deleted = data.get("deleted")
         if to_do_id is None or employee_id is None or (completed is None and deleted is None):
             return jsonify({"error": "No item given"}), 400
-
         db = get_db()
         cursor = db.cursor()
         params = []
@@ -595,6 +594,7 @@ def update_todo():
         query += " WHERE todo_id = ? AND employee_id = ?"
         params.append(to_do_id)
         params.append(employee_id)
+        print("query", query)
         cursor.execute(query, params)
         commit_changes(db)
         
@@ -645,7 +645,7 @@ def get_to_dos():
 @app.route("/new_project", methods=["POST"])
 def new_project():
     try:
-        data = request.json()
+        data = request.get_json()
         project_name = data.get("project_name")
         team_leader_id = data.get("team_leader_id")
         description = data.get("description")
@@ -694,7 +694,7 @@ def new_project():
 @app.route("/new_task", methods=["POST"])
 def new_task():
     try:
-        data = request.json()
+        data = request.get_json()
         task_name = data.get("task_name")
         project_id = data.get("project_id")
         assigned_employee = data.get("assigned_employee")
@@ -784,7 +784,7 @@ def complete_task():
 @app.route("/complete_project", methods=["POST"])
 def complete_project():
     try:
-        data = request.json()
+        data = request.get_json()
         project_id = data.get("project_id")
 
         if not project_id:
@@ -865,7 +865,7 @@ def task_status(task_id):
 @app.route("/add_user", methods=["POST"])
 def add_user():
     try:
-        data = request.json()
+        data = request.get_json()
         email = data.get("email")
         password = data.get("password")
         first_name = data.get("first_name")
@@ -979,7 +979,7 @@ def get_archive_limits():
 @app.route("/update_archive_durations", methods=["PUT"])
 def update_archive_durations():
     try:
-        data = request.json()
+        data = request.get_json()
         task = data.get("task")
         project = data.get("project")
         kb = data.get("kb")
