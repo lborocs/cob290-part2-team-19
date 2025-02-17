@@ -71,3 +71,29 @@ export const fetchEmployeesForTask = async (taskId: number) => {
         return [];
     }
 };
+
+export const fetchArchivedTasks = async () => {
+    try {
+        const response = await fetch('http://localhost:3300/archived_tasks');
+        const tasks = await response.json();
+
+        if (!tasks || tasks.length === 0) {
+            return [];
+        }
+
+        // Fetch employee details for each task asynchronously
+        const tasksWithEmployeeDetails = await Promise.all(
+            tasks.map(async (task: any) => {
+                const employeeDetails = await fetchEmployeeDetails(task.team_leader_id);
+                return { ...task, employeeDetails };
+            })
+        );
+
+        console.log('Archived Tasks with Employee Details:', tasksWithEmployeeDetails);
+        return tasksWithEmployeeDetails;
+
+    } catch (error) {
+        console.error('Error fetching archived tasks:', error);
+        return [];
+    }
+};
