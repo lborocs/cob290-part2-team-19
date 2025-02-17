@@ -199,17 +199,7 @@ def get_user_permissions_by_type(user_type):
         db = get_db()
         cursor = db.cursor()
         cursor.execute("""
-            SELECT new_project, 
-                   new_task, 
-                   edit_project, 
-                   edit_task,
-                   create_knowledgebase_post,
-                   edit_knowledgebase_post,
-                   delete_knowledgebase_post,
-                   view_task_archive,
-                   view_project_archive,
-                   view_knowledgebase_archive,
-                   authorise_completed
+            SELECT *
             FROM Permissions 
             WHERE user_type = ?
         """, (user_type,))
@@ -762,7 +752,7 @@ def complete_task():
 
         # Mark the task as completed
         completed_date = datetime.now().date()
-        cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (task_id, completed_date,))
+        cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (completed_date, task_id,))
         cursor.execute("INSERT INTO completedTasksBacklog (task_id, completed_date) VALUES (?, ?)", (task_id, completed_date))
 
         commit_changes(db)
