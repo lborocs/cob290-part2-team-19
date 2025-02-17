@@ -1,4 +1,5 @@
-const BASEURL = "http://35.240.24.117";
+import { BASE_URL } from "./globals";
+const BASEURL = BASE_URL;
 export async function addToDo(employee_id: number, description: string, task_id: number): Promise<{ success: boolean; message: string }> {
     try {
         const response = await fetch(`${BASEURL}:3300/new_todo`, {

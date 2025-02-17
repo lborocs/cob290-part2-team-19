@@ -3,7 +3,7 @@ export type ArchiveDurations = { task: number; project: number; kb: number }
 export type User = { id: number; name: string }
 
 // Base API URL (adjust if needed)
-const BASE_URL = "http://35.240.24.117:3300" 
+import { BASE_URL } from "./globals";
 
 export const get_user_types = async (): Promise<
   { type_id: number; type_name: string }[]

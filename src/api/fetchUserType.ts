@@ -1,4 +1,4 @@
-const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
+import { BASE_URL } from "./globals";// Change if hosted elsewhere
 
 export async function fetchUserType(user_id: number): Promise<{ success: boolean; userType?: number; message?: string }> {
     try {

@@ -1,4 +1,4 @@
-const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
+import { BASE_URL } from "./globals";// Change if hosted elsewhere
 
 export interface ArchiveRequest {
   task_id?: number;
