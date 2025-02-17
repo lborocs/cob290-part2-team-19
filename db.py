@@ -223,7 +223,7 @@ def get_user_permissions_by_type(user_type):
 @app.route("/update_permissions/<int:user_type>", methods=["PUT"])
 def update_permissions(user_type):
     try:
-        data = request.json
+        data = request.json()
         db = get_db()
         cursor = db.cursor()
 
@@ -261,10 +261,10 @@ def update_permissions(user_type):
 #Add a new post to the knowledge base
 @app.route("/add_post", methods=["POST"])
 def add_post():
-    print("🔹 Received /add_post request")  # ✅ Debugging: Check if Flask receives the request
+    print("🔹 Received /add_post request") 
     try:
-        data = request.json
-        print("🔵 Incoming Request Data:", data)  # ✅ Debugging line
+        data = request.json()
+        print("🔵 Incoming Request Data:", data)  
 
         author_id = data.get("author_id")
         content = data.get("content")
@@ -350,7 +350,7 @@ def get_posts_by_category(category_id):
 @app.route("/add_category", methods=["POST"])
 def add_category():
     try:
-        data = request.json
+        data = request.json()
         category = data.get("category_name")
         if not category:
             return jsonify({"error": "A category name is required."}), 400
@@ -452,7 +452,7 @@ def delete_post(post_id):
 @app.route("/update_post/<int:post_id>", methods=["PUT"])
 def update_post(post_id):
     try:
-        data = request.json
+        data = request.json()
         editor_id = data.get("editor_id")
         content = data.get("content")
         category_name = data.get("category_name")
@@ -558,7 +558,7 @@ def delete_todo():
 @app.route("/update_todo_status", methods=["PUT"])
 def update_todo():
     try:
-        data = request.json
+        data = request.json()
         to_do_id = data.get("to_do_id")
         employee_id = data.get("employee_id")
         completed = data.get("completed")
@@ -629,7 +629,7 @@ def get_to_dos():
 @app.route("/new_project", methods=["POST"])
 def new_project():
     try:
-        data = request.json
+        data = request.json()
         project_name = data.get("project_name")
         team_leader_id = data.get("team_leader_id")
         description = data.get("description")
@@ -678,7 +678,7 @@ def new_project():
 @app.route("/new_task", methods=["POST"])
 def new_task():
     try:
-        data = request.json
+        data = request.json()
         task_name = data.get("task_name")
         project_id = data.get("project_id")
         assigned_employee = data.get("assigned_employee")
@@ -741,9 +741,10 @@ def new_task():
 @app.route("/complete_task", methods=["POST"])
 def complete_task():
     try:
-        data = request.json
-        task_id = data.get("task_id")
-
+        print("somethngn")
+        
+        task_id = request.args.get("task_id")
+        print("task_id", task_id)
         if not task_id:
             return jsonify({"error": "Task ID is required."}), 400
 
@@ -752,21 +753,24 @@ def complete_task():
 
         # Mark the task as completed
         completed_date = datetime.now().date()
-        cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (completed_date, task_id,))
+        cursor.execute("UPDATE Tasks SET completed = 1, completed_date = ? WHERE task_id = ?", (completed_date, task_id))
         cursor.execute("INSERT INTO completedTasksBacklog (task_id, completed_date) VALUES (?, ?)", (task_id, completed_date))
-
+    
         commit_changes(db)
+        
         return jsonify({"success": True, "message": "Task marked as completed."}), 200
-    except sqlite3.DatabaseError:
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")  # Add debugging information
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")  # Add debugging information
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-
+    
 #Function for completing project
 @app.route("/complete_project", methods=["POST"])
 def complete_project():
     try:
-        data = request.json
+        data = request.json()
         project_id = data.get("project_id")
 
         if not project_id:
@@ -847,7 +851,7 @@ def task_status(task_id):
 @app.route("/add_user", methods=["POST"])
 def add_user():
     try:
-        data = request.json
+        data = request.json()
         email = data.get("email")
         password = data.get("password")
         first_name = data.get("first_name")
@@ -961,7 +965,7 @@ def get_archive_limits():
 @app.route("/update_archive_durations", methods=["PUT"])
 def update_archive_durations():
     try:
-        data = request.json
+        data = request.json()
         task = data.get("task")
         project = data.get("project")
         kb = data.get("kb")
@@ -1530,21 +1534,38 @@ def search_employees_projects():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
 
-#Search function for Projects associated with Tags
-@app.route('/projects/tags', methods=['GET'])
-def search_projects_tags():
-    tag_name = request.args.get('tag_name')
-    query = "SELECT project_id FROM ProjectTags WHERE tag_name = ?"
+@app.route("/all_tags", methods=["GET"])
+def all_tags():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute(query, (tag_name,))
+        cursor.execute("SELECT * FROM Tags")
+        tags = cursor.fetchall()
+        return jsonify([dict(tag) for tag in tags])
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}. Please try again later."}), 500
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
+
+#Search function for Projects associated with Tags
+@app.route('/projects/tags', methods=['GET'])
+def search_projects_tags():
+    tag_name = request.args.get('tag_name') or ""
+    query = "SELECT * FROM Tags"
+       
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        if tag_name!="":
+            cursor.execute(query, (tag_name,))
+        else:
+            cursor.execute(query)
         projects = cursor.fetchall()
         return jsonify([row['project_id'] for row in projects])
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error":f"Database error: {str(e)}. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error":f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
 
 #Search function for Tasks associated with Tags
 @app.route('/tasks/tags', methods=['GET'])
@@ -1558,10 +1579,12 @@ def search_tasks_tags():
         tasks = cursor.fetchall()
         return jsonify([row['task_id'] for row in tasks])
     except sqlite3.DatabaseError as e:
-        return f"Database error: {str(e)}. Please try again later."
+        return jsonify({"error":f"Database error: {str(e)}. Please try again later."}), 500
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}. Please try again later."
+        return jsonify({"error":f"An unexpected error occurred: {str(e)}. Please try again later."}), 500
     
+    
+
 #Search function for Tasks that employees are assigned to for a given project
 @app.route('/projects/<int:project_id>/tasks/employees', methods=['GET'])
 def get_tasks_employees_for_project(project_id):
