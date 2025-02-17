@@ -2,7 +2,7 @@ import { BASE_URL } from "./globals";
 const BASEURL = BASE_URL;
 export async function addToDo(employee_id: number, description: string, task_id: number): Promise<{ success: boolean; message: string }> {
     try {
-        const response = await fetch(`${BASEURL}:3300/new_todo`, {
+        const response = await fetch(`${BASEURL}/new_todo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
