@@ -1,0 +1,17 @@
+.card {
+    padding: 1em;
+    padding-top:0.5em;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    display:inline-block;
+    width: 30em;
+    height: 18.5em;
+}
+.card h2 {
+    font-size:1.4em;
+    font-weight: 600;
+}
+.card h1 {
+    font-size:1.8em;
+    font-weight: 600;
+}

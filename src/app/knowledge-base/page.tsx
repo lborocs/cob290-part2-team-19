@@ -4,6 +4,7 @@ import Layout from "../layout/page";
 import Link from "next/link";
 import { fetchCategories } from "@/api/fetchCategorey";
 import { fetchGuidesByCategory, addGuide as addGuideAPI } from "@/api/fetchGuides";
+const BASE_URL = "http://localhost:3300"
 
 
 interface Guide {
@@ -147,7 +148,7 @@ const KnowledgeBasePage = () => {
       console.log("🟡 Sending request to API...");
 
       // ✅ Send API request to Flask backend
-      const response = await fetch("http://localhost:3300/add_category", {
+      const response = await fetch(`${BASE_URL} /add_category`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

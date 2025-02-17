@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AddUser from '@/api/addUser';
+const BASE_URL = "http://localhost:3300"
 
 const CreateAccount = () => {
     const [htmlContent, setHtmlContent] = useState('');
@@ -25,7 +26,7 @@ const CreateAccount = () => {
             document.body.removeChild(script);
         };
     }, []);
-    
+
     useEffect(() => {
         const fetchHtmlContent = async () => {
             const response = await fetch('/create-account.html');
@@ -57,7 +58,7 @@ const CreateAccount = () => {
                 };
 
                 try {
-                    const response = await fetch('http://localhost:3300/add_user', {
+                    const response = await fetch('${BASE_URL}/add_user', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -95,13 +96,13 @@ const CreateAccount = () => {
 
     return (
         <html>
-        <head>
-            <title>Login - Make-It-All</title>
-        </head>
-        <body>
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
-            </div>
-        </body>
+            <head>
+                <title>Login - Make-It-All</title>
+            </head>
+            <body>
+                <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="text-black">
+                </div>
+            </body>
         </html>
     );
 }

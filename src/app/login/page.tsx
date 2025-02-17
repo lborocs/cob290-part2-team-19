@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Head from "next/head"
+const BASE_URL = "http://localhost:3300"
 
 const Login = () => {
     const [htmlContent, setHtmlContent] = useState("")
@@ -9,31 +10,31 @@ const Login = () => {
 
     // Load FontAwesome script dynamically
     useEffect(() => {
-    const script = document.createElement("script")
-    script.src = "https://kit.fontawesome.com/c8b5e2a200.js"
-    script.crossOrigin = "anonymous"
-    script.async = true
-    document.body.appendChild(script)
-    return () => {
-        document.body.removeChild(script) // Clean up the script when the component unmounts
-    }
+        const script = document.createElement("script")
+        script.src = "https://kit.fontawesome.com/c8b5e2a200.js"
+        script.crossOrigin = "anonymous"
+        script.async = true
+        document.body.appendChild(script)
+        return () => {
+            document.body.removeChild(script) // Clean up the script when the component unmounts
+        }
     }, [])
 
     // Fetch and set HTML content
     useEffect(() => {
-    const fetchHtmlContent = async () => {
-        const response = await fetch("/login.html")
-        const text = await response.text()
-        setHtmlContent(text)
+        const fetchHtmlContent = async () => {
+            const response = await fetch("/login.html")
+            const text = await response.text()
+            setHtmlContent(text)
 
-        const scriptContent = `
+            const scriptContent = `
                 function validateUser() {
                     const emailElement = document.getElementById('email');
                     const email = emailElement ? emailElement.value : '';
                     const passwordElement = document.getElementById('password');
                     const password = passwordElement ? passwordElement.value : '';
 
-                    fetch('http://localhost:3300/login', {
+                    fetch('${BASE_URL}/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -90,66 +91,66 @@ const Login = () => {
                 });
             `
 
-        const scriptElement = document.createElement("script")
-        scriptElement.innerHTML = scriptContent
-        document.body.appendChild(scriptElement)
-    }
+            const scriptElement = document.createElement("script")
+            scriptElement.innerHTML = scriptContent
+            document.body.appendChild(scriptElement)
+        }
 
-    fetchHtmlContent()
+        fetchHtmlContent()
     }, [])
 
     // const isDev = process.env.NODE_ENV === 'development';
     const isDev = false;
     const devContent = isDev ? <div>
-    <div className='absolute top-[1em] right-[1em]'>
-        <div className='flex gap-[.3em] justify-start items-center'>
-        <i className='fa-solid fa-code w-[1em]'></i>
-        <span>Development Mode: {isDev ? "Yes" : "No"}</span>
+        <div className='absolute top-[1em] right-[1em]'>
+            <div className='flex gap-[.3em] justify-start items-center'>
+                <i className='fa-solid fa-code w-[1em]'></i>
+                <span>Development Mode: {isDev ? "Yes" : "No"}</span>
+            </div>
         </div>
-    </div>
-    <div className='absolute top-[1em] left-[1em]'>
-        <div className='flex gap-[.3em] justify-start items-center'>
-        <i className='fa-solid fa-table-columns w-[1em]'></i>
-        <button className='' onClick={() => router.push("/dashboard")}>
-            Dev: Dashboard
-        </button>
-        </div>
+        <div className='absolute top-[1em] left-[1em]'>
+            <div className='flex gap-[.3em] justify-start items-center'>
+                <i className='fa-solid fa-table-columns w-[1em]'></i>
+                <button className='' onClick={() => router.push("/dashboard")}>
+                    Dev: Dashboard
+                </button>
+            </div>
 
-        <div className='flex gap-[.3em] justify-start items-center'>
-        <i className='fa-solid fa-database w-[1em]'></i>
-        <button className='' onClick={() => router.push("/db-test")}>
-            Dev: Database Test
-        </button>
-        </div>
+            <div className='flex gap-[.3em] justify-start items-center'>
+                <i className='fa-solid fa-database w-[1em]'></i>
+                <button className='' onClick={() => router.push("/db-test")}>
+                    Dev: Database Test
+                </button>
+            </div>
 
-        <div className='flex gap-[.3em] justify-start items-center'>
-        <i className='fa-solid fa-computer-mouse w-[1em]'></i>
-        <button
-            className=''
-            onClick={() => router.push("/input-components")}
-        >
-            Dev: Input Previews
-        </button>
+            <div className='flex gap-[.3em] justify-start items-center'>
+                <i className='fa-solid fa-computer-mouse w-[1em]'></i>
+                <button
+                    className=''
+                    onClick={() => router.push("/input-components")}
+                >
+                    Dev: Input Previews
+                </button>
+            </div>
         </div>
-    </div>
     </div> : "";
 
 
     return (
-    <html>
-        <head>
-        <title>Login - Make-It-All</title>
-        </head>
-        <body>
-        <div>
-            <div
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-            className='text-black'
-            ></div>
-            {devContent}
-        </div>
-        </body>
-    </html>
+        <html>
+            <head>
+                <title>Login - Make-It-All</title>
+            </head>
+            <body>
+                <div>
+                    <div
+                        dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        className='text-black'
+                    ></div>
+                    {devContent}
+                </div>
+            </body>
+        </html>
     )
 }
 

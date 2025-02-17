@@ -1,5 +1,4 @@
 const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
-
 export const fetchCategories = async () => {
     try {
         const response = await fetch(`${BASE_URL}/categories`);
