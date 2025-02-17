@@ -10,7 +10,7 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 
 # Update these settings with your MySQL configuration
-DATABASE_HOST = 'http://35.240.24.117:3300'  
+DATABASE_HOST = '35.240.24.117'  
 DATABASE_USER = 'admin'     # Your MySQL username
 DATABASE_PASSWORD = 'password123' # Your MySQL password
 DATABASE_NAME = 'productivityManagement'      # Your MySQL database name
