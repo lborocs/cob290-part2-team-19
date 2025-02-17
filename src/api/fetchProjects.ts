@@ -67,7 +67,7 @@ export const fetchProjects = async (employeeId: number, userType: number) => {
 
 export const fetchProjectsForCompletion = async (employeeId: number, userType: number) => {
     try {
-       
+
         const response = await fetch(`http://localhost:3300/projects/search?completed=True?authorised=False`);
         const projects = await response.json();
 
@@ -89,5 +89,31 @@ export const fetchProjectsForCompletion = async (employeeId: number, userType: n
     } catch (error) {
         console.error('Error fetching tasks:', error);
         return null;
+    }
+};
+
+export const fetchArchivedProjects = async () => {
+    try {
+        const response = await fetch('http://localhost:3300/archived_projects');
+        const projects = await response.json();
+
+        if (!projects || projects.length === 0) {
+            return [];
+        }
+
+        // Fetch employee details for each project asynchronously
+        const projectsWithEmployeeDetails = await Promise.all(
+            projects.map(async (project: any) => {
+                const employeeDetails = await fetchEmployeeDetails(project.team_leader_id);
+                return { ...project, employeeDetails };
+            })
+        );
+
+        console.log('Archived Projects with Employee Details:', projectsWithEmployeeDetails);
+        return projectsWithEmployeeDetails;
+
+    } catch (error) {
+        console.error('Error fetching archived projects:', error);
+        return [];
     }
 };
