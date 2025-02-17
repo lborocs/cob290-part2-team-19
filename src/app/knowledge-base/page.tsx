@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
 import { fetchCategories } from "@/api/fetchCategorey";
-import { fetchGuidesByCategory } from "@/api/fetchGuides"
+import { fetchGuidesByCategory, addGuide as addGuideAPI } from "@/api/fetchGuides";
 
 
 interface Guide {
@@ -196,8 +196,8 @@ const KnowledgeBasePage = () => {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  // Create Guide
-  const addGuide = () => {
+  // add guide
+  const addGuide = async () => {
     if (!newGuideName.trim() || !newGuideContent.trim()) {
       alert("Guide name and content cannot be empty.");
       return;
@@ -212,42 +212,42 @@ const KnowledgeBasePage = () => {
       return;
     }
 
-    // Check for duplicate guide names within the category
-    const isDuplicate = currentCategory.guides.some(
-      (guide) =>
-        guide.title.toLowerCase() === newGuideName.trim().toLowerCase()
-    );
+    try {
+      console.log("🟡 Sending request to API to add guide...");
 
-    if (isDuplicate) {
-      alert("Guide name already exists in this category.");
-      return;
-    }
+      // ✅ Use `addGuideAPI` to avoid naming conflicts
+      const response = await addGuideAPI(1, newGuideContent.trim(), currentCategory.category_id);
 
-    // Add the new guide
-    const updatedCategories = categories.map((category) => {
-      if (category.name === selectedCategory) {
-        return {
-          ...category,
-          guides: [
-            ...category.guides,
-            {
-              id: Date.now().toString(), // Temporary unique ID
-              title: newGuideName.trim(),
-              category: selectedCategory,
-              author: newGuideAuthor === "No Author" ? null : newGuideAuthor,
-              content: newGuideContent.trim(),
-            },
-          ],
-        };
+      if (!response || response.error) {
+        alert(`Failed to add guide: ${response?.error || "Unknown error"}`);
+        return;
       }
-      return category;
-    });
 
-    setCategories(updatedCategories);
-    setNewGuideName("");
-    setNewGuideContent("");
-    setNewGuideAuthor("Current User");
-    setIsCreatingGuide(false);
+      console.log("🟢 Guide added successfully:", response);
+
+      // ✅ Fetch updated guides from API
+      const updatedGuides = await fetchGuidesByCategory(currentCategory.category_id);
+
+      // ✅ Update categories state with new guide
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.category_id === currentCategory.category_id
+            ? { ...category, guides: updatedGuides }
+            : category
+        )
+      );
+
+      // ✅ Reset UI state
+      setNewGuideName("");
+      setNewGuideContent("");
+      setNewGuideAuthor("Current User");
+      setIsCreatingGuide(false);
+
+      alert("Guide added successfully!");
+    } catch (error) {
+      console.error("❌ Error adding guide:", error);
+      alert("Failed to add guide.");
+    }
   };
 
   // Delete Category
