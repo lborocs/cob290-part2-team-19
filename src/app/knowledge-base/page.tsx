@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
-import { fetchCategories } from "@/api/fetchCategorey";
+import { fetchCategories, deleteCategory } from "@/api/fetchCategorey";
 import { fetchGuidesByCategory, addGuide as addGuideAPI } from "@/api/fetchGuides";
 
 
@@ -251,15 +251,38 @@ const KnowledgeBasePage = () => {
   };
 
   // Delete Category
-  const deleteCategory = (categoryName: string, e: React.MouseEvent) => {
+  const deleteCategoryHandler = async (categoryId: number, categoryName: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this category?")) {
-      setCategories(categories.filter((cat) => cat.name !== categoryName));
+
+    if (!window.confirm(`Are you sure you want to delete "${categoryName}"?`)) {
+      return;
+    }
+
+    try {
+      console.log(`🟡 Deleting category ID: ${categoryId}...`);
+
+      const response = await deleteCategory(categoryId);
+      if (!response || !response.success) {
+        throw new Error("Failed to delete category.");
+      }
+
+      console.log("🟢 Category deleted successfully.");
+
+      // ✅ Remove the deleted category from the state
+      setCategories(categories.filter((cat) => cat.category_id !== categoryId));
+
+      // ✅ Reset selected category if it was deleted
       if (selectedCategory === categoryName) {
         setSelectedCategory(null);
       }
+
+      alert(`Category "${categoryName}" deleted successfully!`);
+    } catch (error) {
+      console.error("❌ Error deleting category:", error);
+      alert("Failed to delete category.");
     }
   };
+
 
   // Open Edit Category Modal
   const openEditCategoryModal = (category: Category, e: React.MouseEvent) => {
@@ -409,14 +432,13 @@ const KnowledgeBasePage = () => {
               Back to Guides
             </button>
           )}
-
           {/* Categories View */}
           {!selectedCategory && !selectedGuide && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {categories.length > 0 ? (
                 filteredCategories.map((category) => (
                   <div
-                    key={category.name}
+                    key={category.category_id}
                     className={`p-6 rounded-lg shadow-md hover:shadow-lg cursor-pointer ${category.color}`}
                     onClick={() => setSelectedCategory(category.name)}
                   >
@@ -434,7 +456,7 @@ const KnowledgeBasePage = () => {
                       </button>
                       <button
                         className="px-2 py-1 bg-red-500 text-white rounded text-xs"
-                        onClick={(e) => deleteCategory(category.name, e)}
+                        onClick={(e) => deleteCategoryHandler(category.category_id, category.name, e)}
                       >
                         Delete
                       </button>
