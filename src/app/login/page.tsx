@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Head from "next/head"
-const BASE_URL = "http://localhost:3300"
+export const BASE_URL = "http://35.240.24.117:3300";
 
 const Login = () => {
     const [htmlContent, setHtmlContent] = useState("")
