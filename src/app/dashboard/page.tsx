@@ -60,7 +60,10 @@ export default function Dashboard() {
         const sortedTasks = tasksData?.sort((a: Task, b: Task) =>
           new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime()
         ) || [];
-        setProjects(projectsData);
+        const sortedProjects = projectsData?.sort((a: Project, b: Project) =>
+          new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime()
+        ) || [];
+        setProjects(sortedProjects);
         setTasks(sortedTasks);
         setToDos(todosData || []);
       } catch (error) {

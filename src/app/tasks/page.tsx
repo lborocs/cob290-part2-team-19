@@ -38,12 +38,12 @@ export default function TasksPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3300/complete_task", {
+      const response = await fetch(`http://localhost:3300/complete_task?task_id=${taskId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ task_id: taskId }),
+
       });
 
       // Check if the response is OK (status 200-299)
