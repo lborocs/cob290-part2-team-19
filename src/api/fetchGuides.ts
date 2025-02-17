@@ -1,6 +1,7 @@
+const BASE_URL = "http://localhost:3300"
 export const fetchGuidesByCategory = async (categoryId: number) => {
     try {
-        const response = await fetch(`http://localhost:3300/guides/${categoryId}`);
+        const response = await fetch(`${BASE_URL}/guides/${categoryId}`);
         const data = await response.json();
 
         if (!Array.isArray(data)) {
@@ -16,7 +17,7 @@ export const fetchGuidesByCategory = async (categoryId: number) => {
 };
 export const addGuide = async (authorId: number, content: string, categoryId: number) => {
     try {
-        const response = await fetch("http://localhost:3300/add_post", {
+        const response = await fetch(`${BASE_URL}/add_post`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

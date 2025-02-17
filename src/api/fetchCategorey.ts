@@ -1,6 +1,7 @@
+const BASE_URL = "http://localhost:3300"
 export const fetchCategories = async () => {
     try {
-        const response = await fetch("http://localhost:3300/categories");
+        const response = await fetch(`${BASE_URL}/categories`);
         const data = await response.json();
 
         if (!Array.isArray(data)) {

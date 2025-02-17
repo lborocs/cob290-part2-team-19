@@ -1,6 +1,7 @@
+const BASE_URL = "http://localhost:3300"
 export const fetchEmployeeDetails = async (employeeId: number) => {
     try {
-        const response = await fetch(`http://localhost:3300/employees/${employeeId}/details`);
+        const response = await fetch(`${BASE_URL}/employees/${employeeId}/details`);
         const data = await response.json();
         //console.log('Employee details:', data);
         return data;

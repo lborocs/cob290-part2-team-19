@@ -1,6 +1,8 @@
+const BASE_URL = "http://localhost:3300"
+
 export async function fetchUserType(user_id: number): Promise<{ success: boolean; userType?: number; message?: string }> {
     try {
-        const response = await fetch(`http://localhost:3300/get_user_type/${user_id}`, {
+        const response = await fetch(`${BASE_URL}/get_user_type/${user_id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import { Modal } from "@/app/components/Input/Modals";
 import Layout from "@/app/layout/page";
 import { fetchArchivedProjects } from "@/api/fetchProjects";
 import { Project } from "@/interfaces/interfaces";
-
+const BASE_URL = "http://localhost:3300"
 const ArchivedProjects = () => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
@@ -31,7 +31,6 @@ const ArchivedProjects = () => {
                 const [projectsData,] = await Promise.all([
                     fetchArchivedProjects(),
                 ]);
-
                 setProjects(projectsData)
             } catch (error) {
                 console.log('Error fetching data:', error);
@@ -53,7 +52,7 @@ const ArchivedProjects = () => {
         try {
             await Promise.all(
                 selectedProjects.map(async (projectId) => {
-                    await fetch(`http://localhost:3300/delete_project?project_id=${projectId}`, {
+                    await fetch(`${BASE_URL}/delete_project?project_id=${projectId}`, {
                         method: 'DELETE',
                     });
                 })
@@ -69,7 +68,7 @@ const ArchivedProjects = () => {
         try {
             await Promise.all(
                 selectedProjects.map(async (projectId) => {
-                    await fetch(`http://localhost:3300/delete_archived_project?project_id=${projectId}`, {
+                    await fetch(`${BASE_URL}/delete_archived_project?project_id=${projectId}`, {
                         method: 'POST',
                     });
                 })
@@ -85,7 +84,7 @@ const ArchivedProjects = () => {
         try {
             await Promise.all(
                 projects.map(async (project) => {
-                    await fetch(`http://localhost:3300/delete_archived_project?project_id=${project.project_id}`, {
+                    await fetch(`${BASE_URL}/delete_archived_project?project_id=${project.project_id}`, {
                         method: 'POST',
                     });
                 })

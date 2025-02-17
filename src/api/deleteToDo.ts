@@ -1,6 +1,7 @@
+const BASE_URL = "http://localhost:3300"
 export async function deleteToDo(employee_id: number) {
     try {
-        const response = await fetch(`http://localhost:3300/delete_todo?employee_id=${employee_id}`, {
+        const response = await fetch(`${BASE_URL}/delete_todo?employee_id=${employee_id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
