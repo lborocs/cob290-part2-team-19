@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
 import { fetchCategories, deleteCategory } from "@/api/fetchCategorey";
-import { fetchGuidesByCategory, addGuide as addGuideAPI } from "@/api/fetchGuides";
+import { fetchGuidesByCategory, addGuide as addGuideAPI, deletePost } from "@/api/fetchGuides";
 
 
 interface Guide {
@@ -254,13 +254,14 @@ const KnowledgeBasePage = () => {
   const deleteCategoryHandler = async (categoryId: number, categoryName: string, e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (!window.confirm(`Are you sure you want to delete "${categoryName}"?`)) {
+    if (!window.confirm(`Are you sure you want to delete "${categoryName}" and all its guides?`)) {
       return;
     }
 
     try {
       console.log(`🟡 Deleting category ID: ${categoryId}...`);
 
+      // ✅ Call API to delete category and its guides
       const response = await deleteCategory(categoryId);
       if (!response || !response.success) {
         throw new Error("Failed to delete category.");
@@ -268,11 +269,13 @@ const KnowledgeBasePage = () => {
 
       console.log("🟢 Category deleted successfully.");
 
-      // ✅ Remove the deleted category from the state
-      setCategories(categories.filter((cat) => cat.category_id !== categoryId));
+      // ✅ Fetch updated categories from backend to prevent orphaned guides
+      const updatedCategories = await fetchCategories();
+      setCategories(updatedCategories);
 
-      // ✅ Reset selected category if it was deleted
-      if (selectedCategory === categoryName) {
+      // ✅ Reset selected category if deleted
+      // ✅ Reset selected category if deleted
+      if (selectedCategory && typeof selectedCategory === "string" && selectedCategory === categoryName) {
         setSelectedCategory(null);
       }
 
@@ -282,6 +285,7 @@ const KnowledgeBasePage = () => {
       alert("Failed to delete category.");
     }
   };
+
 
 
   // Open Edit Category Modal
@@ -329,16 +333,39 @@ const KnowledgeBasePage = () => {
   };
 
   // Delete Guide
-  const deleteGuide = (guideId: string) => {
-    if (window.confirm("Are you sure you want to delete this guide?")) {
+  // Delete Guide
+  const deleteGuide = async (guideId: number) => {
+    if (!window.confirm("Are you sure you want to delete this guide?")) {
+      return;
+    }
+
+    try {
+      console.log("🟡 Deleting guide...");
+
+      // Call API to delete guide
+      const response = await deletePost(guideId);
+
+      if (!response || response.error) {
+        alert("Failed to delete guide.");
+        return;
+      }
+
+      console.log("🟢 Guide deleted successfully!");
+
+      // ✅ Ensure guide.id is a number before comparison
       const updatedCategories = categories.map((cat) => ({
         ...cat,
-        guides: cat.guides.filter((guide) => guide.id !== guideId),
+        guides: cat.guides.filter((guide) => Number(guide.id) !== guideId),
       }));
       setCategories(updatedCategories);
-      if (selectedGuide && selectedGuide.id === guideId) {
+
+      // ✅ Ensure selectedGuide.id is a number before comparison
+      if (selectedGuide && Number(selectedGuide.id) === guideId) {
         setSelectedGuide(null);
       }
+    } catch (error) {
+      console.error("❌ Error deleting guide:", error);
+      alert("Failed to delete guide.");
     }
   };
 
@@ -513,7 +540,7 @@ const KnowledgeBasePage = () => {
                 </button>
                 <button
                   className="px-4 py-2 bg-red-500 text-white rounded"
-                  onClick={() => deleteGuide(selectedGuide.id)}
+                  onClick={() => deleteGuide(Number(selectedGuide.id))}
                 >
                   Delete Guide
                 </button>

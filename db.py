@@ -410,11 +410,14 @@ def delete_category(category_id):
         if not existing_category:
             return jsonify({"error": "Category not found."}), 404
 
-        # Delete category
+        # Delete all guides associated with this category
+        cursor.execute("DELETE FROM KnowledgeBase WHERE category_id = ?", (category_id,))
+
+        # Delete the category itself
         cursor.execute("DELETE FROM KnowledgeBaseCategories WHERE category_id = ?", (category_id,))
         db.commit()
 
-        return jsonify({"success": True, "message": "Category deleted successfully"}), 200
+        return jsonify({"success": True, "message": "Category and all related guides deleted successfully"}), 200
 
     except sqlite3.DatabaseError as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
@@ -492,26 +495,23 @@ def delete_post(post_id):
     try:
         db = get_db()
         cursor = db.cursor()
-        
-        # Mark the post as deleted
-        cursor.execute("UPDATE KnowledgeBase SET deleted = 1 WHERE post_id = ?", (post_id,))
-        if cursor.rowcount == 0:
+
+        # Check if the post exists
+        cursor.execute("SELECT post_id FROM KnowledgeBase WHERE post_id = ?", (post_id,))
+        existing_post = cursor.fetchone()
+        if not existing_post:
             return jsonify({"error": "Post not found."}), 404
-        
-        # Archive the post
-        archived_date = datetime.now().date()
-        future_autodelete_date = archived_date + timedelta(days=365)
-        cursor.execute("""
-            INSERT INTO ArchivedKnowledgeBasePages (id, archived_date, future_autodelete_date)
-            VALUES (?, ?, ?)
-        """, (post_id, archived_date, future_autodelete_date))
-        
-        commit_changes(db)
-        return jsonify({"success": True, "message": "Post archived successfully"}), 200
-    except sqlite3.DatabaseError:
-        return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+
+        # Delete the post permanently
+        cursor.execute("DELETE FROM KnowledgeBase WHERE post_id = ?", (post_id,))
+        db.commit()
+
+        return jsonify({"success": True, "message": "Post deleted successfully"}), 200
+
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 # Update a post in the knowledge base (log edits instead of modifying directly)
 @app.route("/update_post/<int:post_id>", methods=["PUT"])
