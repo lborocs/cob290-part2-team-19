@@ -488,6 +488,37 @@ def get_categories():
         return jsonify({"error": f"Database error: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    
+# Edit category name
+@app.route("/update_category/<int:category_id>", methods=["PUT"])
+def update_category(category_id):
+    try:
+        data = request.json
+        new_category_name = data.get("category_name")
+
+        if not new_category_name:
+            return jsonify({"error": "New category name is required."}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        # Check if the category exists
+        cursor.execute("SELECT category_id FROM KnowledgeBaseCategories WHERE category_id = ?", (category_id,))
+        existing_category = cursor.fetchone()
+        if not existing_category:
+            return jsonify({"error": "Category not found."}), 404
+
+        # Update category name
+        cursor.execute("UPDATE KnowledgeBaseCategories SET category_name = ? WHERE category_id = ?", 
+                       (new_category_name, category_id))
+        db.commit()
+
+        return jsonify({"success": True, "message": "Category updated successfully"}), 200
+
+    except sqlite3.DatabaseError as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
         
 #Delete a post from the knowledge base (mark as deleted and archive it)
 @app.route("/delete_post/<int:post_id>", methods=["DELETE"])
