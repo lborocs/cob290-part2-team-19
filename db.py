@@ -430,9 +430,7 @@ def delete_category(category_id):
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-    # update category name 
-@app.route("/update_category/<int:category_id>", methods=["PUT"])
-def update_category(category_id):
+
     try:
         data = request.json
         new_category_name = data.get("category_name")
