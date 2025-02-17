@@ -4,7 +4,6 @@ import { IconButton, TextButton } from "@/app/components/Input/Buttons";
 import { Modal } from "@/app/components/Input/Modals";
 import Layout from "@/app/layout/page";
 import { fetchArchivedProjects } from "@/api/fetchProjects";
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Project } from "@/interfaces/interfaces";
 
 const ArchivedProjects = () => {
