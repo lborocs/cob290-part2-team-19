@@ -40,3 +40,5 @@ yarn-error.log*
 next-env.d.ts
 __pycache__/
 __pycache__/
+database.db # Add to .gitignore
+database.db
