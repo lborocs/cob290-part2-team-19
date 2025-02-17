@@ -3,11 +3,14 @@ import Layout from "../layout/page";
 import React, { useEffect, useState } from "react";
 import { fetchTasks } from "@/api/fetchTasks";
 import { Task } from "@/interfaces/interfaces";
+import { TextButton } from "@/app/components/Input/Buttons";
+
 export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loggedInUser] = useState<number>(0);
   const [userType] = useState<number>(2);
+  const [responseMessage, setResponseMessage] = useState("");
 
   //getting tasks
   useEffect(() => {
@@ -15,6 +18,8 @@ export default function TasksPage() {
       try {
         const data = await fetchTasks(loggedInUser, userType);
         setTasks(data || []);
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        console.log("User Data T:", userData); // Debugging log
       } catch (error) {
         console.log("Error fetching data:", error);
       }
@@ -24,6 +29,43 @@ export default function TasksPage() {
 
   const handleRowClick = (task: Task) => {
     setSelectedTask(task);
+  };
+
+  const handleCompleteTask = async (taskId: number) => {
+    if (!taskId) {
+      console.error("No task ID provided.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3300/complete_task", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ task_id: taskId }),
+      });
+
+      // Check if the response is OK (status 200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      // Parse the response JSON
+      const data = await response.json();
+
+      // Log the full response to see what's inside
+      console.log("Full API response:", data);
+
+      // Check if the message exists
+      if (data.message) {
+        console.log("Task completed:", data.message);
+      } else {
+        console.warn("No message field in response:", data);
+      }
+    } catch (error) {
+      console.error("Error completing task:", error);
+    }
   };
 
   return (
@@ -131,6 +173,17 @@ export default function TasksPage() {
                 <p>
                   <strong>Description:</strong> {selectedTask.description}
                 </p>
+                <TextButton
+                  style={{ width: "100%", fontSize: "1.5em" }}
+                  icon={<i className="fa-solid fa-file-circle-plus mr-2"></i>}
+                  color="bg-blue-500 text-[#e6f3f9]"
+                  hoverColor="hover:bg-blue-400 hover:text-white"
+                  callback={() => {
+                    handleCompleteTask(selectedTask.task_id);
+                  }}
+                >
+                  Complete Task
+                </TextButton>
               </div>
             ) : (
               <p>Select a task to view details.</p>

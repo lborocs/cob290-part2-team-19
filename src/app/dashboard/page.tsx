@@ -48,7 +48,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (loggedInUser === null || userType === null) return;
-
     const fetchData = async () => {
       try {
         await deleteToDo(loggedInUser); // Delete before fetching
@@ -57,12 +56,10 @@ export default function Dashboard() {
           fetchTasks(loggedInUser, userType),
           fetchToDo(loggedInUser),
         ]);
-
         // Sort tasks before setting state
         const sortedTasks = tasksData?.sort((a: Task, b: Task) =>
           new Date(a.finish_date).getTime() - new Date(b.finish_date).getTime()
         ) || [];
-
         setProjects(projectsData);
         setTasks(sortedTasks);
         setToDos(todosData || []);
@@ -74,15 +71,10 @@ export default function Dashboard() {
     fetchData();
   }, [loggedInUser, userType]);
 
-
-
   useEffect(() => {
     if (!ToDos) return;
     setSillyToDo(ToDos.length > 0 ? ToDos[ToDos.length - 1].todo_id + 1 : 1);
   }, [ToDos]);
-
-
-
 
   const events = tasks.map((task) => {
     const currentDate = new Date();
@@ -100,8 +92,6 @@ export default function Dashboard() {
     };
   });
 
-
-
   // check for any tasks due for today
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -112,17 +102,14 @@ export default function Dashboard() {
     setSelectedDateTasks(filteredTasks);
   }, [tasks]);
 
-
   const handleDateClick = (info: DateClickArg) => {
     const clickedDate = info.dateStr;
     setSelectedDate(clickedDate);
-
     // tasks for the selected date
     const filteredTasks = tasks.filter((task) => {
       const taskDate = new Date(task.finish_date).toISOString().split("T")[0];
       return taskDate === clickedDate;
     });
-
     setSelectedDateTasks(filteredTasks);
   };
 
@@ -132,7 +119,6 @@ export default function Dashboard() {
         alert('To-Do description cannot be empty.');
         return;
       }
-
       const result = await addToDo(loggedInUser, newToDoDescription.trim(), sillyToDoID);
       if (result.success) {
         setNewToDoDescription('');
@@ -156,6 +142,7 @@ export default function Dashboard() {
       }
     }
   };
+
   const handleDeleteToDo = async (todo_id: number) => {
     if (loggedInUser) {
       const result = await updateToDoStatus(todo_id, loggedInUser, null, 1);
@@ -217,8 +204,6 @@ export default function Dashboard() {
     setSelectedStatus('0');
   };
 
-
-
   // filter the project based on the selectors
   const filteredProjects = projects.filter(project => {
     const matchesProject = selectedProject === '0' || project.project_name === selectedProject;
@@ -239,7 +224,6 @@ export default function Dashboard() {
             <Card className="min-h-full">
               <TaskCompletionChart tasks={tasks} />
             </Card>
-
             {/* Card 2: Upcoming Tasks */}
             <Card className="min-h-full p-4 flex flex-col">
               <div className="pb-2 flex justify-between items-center title">
@@ -248,10 +232,7 @@ export default function Dashboard() {
                   <i className="fa-solid fa-expand hover:bg-gray-200 transition"></i>
                 </button>
               </div>
-
               <hr className="border-gray-300 my-2" />
-
-
               <ul className="space-y-3 pe-2 overflow-clip overflow-y-auto">
                 {tasks && tasks.length > 0 ? (
                   tasks
@@ -261,9 +242,7 @@ export default function Dashboard() {
                       const finishDate = new Date(task.finish_date);
                       const isOverdue = currentDate > finishDate;
                       const taskColor = isOverdue ? "bg-red-500" : "bg-orange-500";
-
                       return (
-
                         <li key={task.task_id}
                           onClick={() => (router.push('/tasks'))}
                           className="flex items-center justify-between border p-2 rounded shadow-sm hover:bg-gray-200 transition">
@@ -284,10 +263,8 @@ export default function Dashboard() {
                   <li className="text-center text-gray-500">No tasks available</li>
                 )}
               </ul>
-
             </Card>
           </div>
-
           <div className="grid grid-cols-3 gap-4 h-3/5 mt-4">
             {/* Card 3: Project Summar */}
             <Card className="col-span-2 min-h-full bg-white p-4 overflow-clip">
@@ -343,7 +320,6 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
-
                 {/* line */}
                 <hr className="border-gray-300 my-2" />
               </div>
@@ -356,7 +332,6 @@ export default function Dashboard() {
                     const tlDetails = project.employeeDetails;
                     let statusClass = "";
                     let statusText = "";
-
                     if (project.completed) {
                       statusClass = "bg-green-200 text-green-800";
                       statusText = "Completed";
@@ -367,14 +342,11 @@ export default function Dashboard() {
                       statusClass = "bg-red-200 text-red-800";
                       statusText = "Overdue";
                     }
-
                     return (
                       <div
-
                         key={project.project_id}
                         onClick={() => (router.push('/projects'))}
                         className="border shadow-sm p-4 rounded-lg flex justify-between items-center hover:bg-gray-100 transition cursor-pointer"
-
                       >
                         <div>
                           <h4 className="font-semibold text-lg">{project.project_name}</h4>
@@ -395,13 +367,12 @@ export default function Dashboard() {
                 )}
               </div>
             </Card>
-
             {/**card 4 */}
-            <Card className="min-h-full p-4 flex flex-col">
+            <Card className="min-h-full p-4 flex flex-col ">
               {/* Header */}
-              <div className="mb-3 mt-1 flex justify-between items-center">
+              <div className="mb-3 mt-1 flex justify-between items-center ">
                 <h3 className="text-lg font-semibold">To-Do List</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ">
                   <button
                     className={`p-2 rounded ${ToDoState === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                     onClick={() => setToDoState(1)}
@@ -422,10 +393,8 @@ export default function Dashboard() {
                   </button>
                 </div>
               </div>
-
               {/* Divider */}
               <hr className="border-gray-300 my-2" />
-
               {/* To-Do Input */}
               {ToDoState === 1 && (
                 <div className="flex items-center gap-2 border p-2 rounded">
@@ -441,10 +410,8 @@ export default function Dashboard() {
                   </button>
                 </div>
               )}
-
               {/* To-Do List Container */}
-
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-4 space-y-2 overflow-clip overflow-y-auto">
                 {ToDoState === 1 && (
                   <>
                     {ToDos.filter(todo => !todo.completed && !todo.deleted).length > 0 ? (
@@ -518,7 +485,6 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
-
       </div>
       {isFullscreen && <div className="h-full p-4 ps-0 pb-0">
         <Card className="w-full h-full ">
@@ -529,10 +495,8 @@ export default function Dashboard() {
               <span>Back</span>
             </button>
           </div>
-
           <hr className="border-gray-300 my-2" />
           <div className='grid grid-cols-2 gap-4 h-full'>
-
             {
               <>
                 <FullCalendar
@@ -558,9 +522,10 @@ export default function Dashboard() {
                         const isOverdue = currentDate > finishDate;
                         const completed = task.completed;
                         const taskColor = completed ? "bg-green-500" : isOverdue ? "bg-red-500" : "bg-yellow-500";
-
                         return (
-                          <li key={task.task_id} className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">
+                          <li key={task.task_id}
+                            onClick={() => (router.push('/tasks'))}
+                            className="flex items-center justify-between border p-2 m-1 rounded shadow-sm">
                             <span className={`w-3 h-3 ${taskColor} rounded-full`}></span>
                             <div className="flex-1 ml-2">
                               <div className="font-medium">{task.task_name}</div>
@@ -574,7 +539,6 @@ export default function Dashboard() {
                             </div>
                           </li>
                         )
-
                       })}
                     </ul>
                   ) : (
@@ -584,7 +548,6 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-
         </Card>
       </div >
       }
