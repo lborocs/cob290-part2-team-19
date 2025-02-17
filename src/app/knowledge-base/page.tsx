@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
-import { fetchCategories, deleteCategory } from "@/api/fetchCategorey";
+import { fetchCategories, deleteCategory, updateCategory } from "@/api/fetchCategorey";
 import { fetchGuidesByCategory, addGuide as addGuideAPI, deletePost } from "@/api/fetchGuides";
 
 
@@ -297,11 +297,12 @@ const KnowledgeBasePage = () => {
   };
 
   // Save Category Edit
-  const saveCategoryEdit = () => {
+  const saveCategoryEdit = async () => {
     if (!editCategoryName.trim()) {
       alert("Category name cannot be empty.");
       return;
     }
+
     // Check for duplicate names (ignoring the category being edited)
     const isDuplicate = categories.some(
       (cat) =>
@@ -312,27 +313,48 @@ const KnowledgeBasePage = () => {
       alert("Another category with that name already exists.");
       return;
     }
-    // Update category name and update each guide's category field
+
+    if (!categoryToEdit) {
+      alert("No category selected for editing.");
+      return;
+    }
+
+    // Call the updateCategory API to update the category name in the backend
+    const updateResponse = await updateCategory(categoryToEdit.category_id, editCategoryName.trim());
+
+    if (!updateResponse) {
+      alert("Failed to update category.");
+      return;
+    }
+
+    // Update category name in the frontend state
     const updatedCategories = categories.map((cat) => {
-      if (cat.name === categoryToEdit?.name) {
+      if (cat.category_id === categoryToEdit.category_id) {
         const updatedGuides = cat.guides.map((guide) => ({
           ...guide,
-          category: editCategoryName.trim(),
+          category: editCategoryName.trim(), // Update guide's category name if necessary
         }));
         return { ...cat, name: editCategoryName.trim(), guides: updatedGuides };
       }
       return cat;
     });
+
     setCategories(updatedCategories);
-    if (selectedCategory === categoryToEdit?.name) {
+
+    // If the selected category was edited, update the selected category name
+    if (selectedCategory === categoryToEdit.name) {
       setSelectedCategory(editCategoryName.trim());
     }
+
+    // Close the modal and reset the inputs
     setIsEditingCategory(false);
     setCategoryToEdit(null);
     setEditCategoryName("");
+
+    alert("Category updated successfully!");
   };
 
-  // Delete Guide
+
   // Delete Guide
   const deleteGuide = async (guideId: number) => {
     if (!window.confirm("Are you sure you want to delete this guide?")) {
