@@ -219,41 +219,57 @@ def get_user_permissions_by_type(user_type):
     except Exception:
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
-#Chang user permissions
 @app.route("/update_permissions/<int:user_type>", methods=["PUT"])
 def update_permissions(user_type):
     try:
-        data = request.json()
+        data = request.get_json()  # Correct method to access JSON data
         db = get_db()
         cursor = db.cursor()
 
         update_fields = []
         update_values = []
         for key, value in data.items():
-            if key in ["new_project", "new_task", "edit_project", "edit_task", "create_knowledgebase_post", 
-                       "edit_knowledgebase_post", "delete_knowledgebase_post", "change_permissions", 
-                       "view_task_archive", "view_project_archive", "view_knowledgebase_archive", "authorise_completed"]:
+            # List of valid permission fields
+            valid_fields = [
+                "new_project", "new_task", "edit_project", "edit_task", 
+                "create_knowledgebase_post", "edit_knowledgebase_post", 
+                "delete_knowledgebase_post", "access_admin", 
+                "view_task_archive", "view_project_archive", 
+                "view_knowledgebase_archive", "authorise_completed_tasks", 
+                "authorise_completed_projects"
+            ]
+            
+            # If the key is valid, append it for updating
+            if key in valid_fields:
                 update_fields.append(f"{key} = ?")
                 update_values.append(value)
 
         if not update_fields:
             return jsonify({"error": "No valid fields provided for update."}), 400
 
+        # Append user_type to update_values
         update_values.append(user_type)
+        
+        # Update query with placeholders for the dynamic fields
         cursor.execute(f"""
             UPDATE Permissions SET {', '.join(update_fields)} WHERE user_type = ?
         """, update_values)
 
+        # Check if any rows were updated
         if cursor.rowcount == 0:
             return jsonify({"error": "User type not found."}), 404
 
-        commit_changes(db)
+        # Commit the changes to the database
+        db.commit()
+
         return jsonify({"success": True, "message": "Permissions updated successfully."}), 200
+
     except sqlite3.DatabaseError:
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
+    except Exception as e:
+        print(f"Error: {e}")
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
-    
+
 
 
 """ Knowledge Base functions """

@@ -37,7 +37,7 @@ const generateNavigation = (permissions: Permissions) => {
   if (permissions["view_task_archive"]) allowedLinks.push(LinkDefinition["taskArchive"]);
   if (permissions["view_project_archive"]) allowedLinks.push(LinkDefinition["projectArchive"]);
   if (permissions["view_kb_archive"]) allowedLinks.push(LinkDefinition["kbArchive"]);
-  if (permissions["authorise_completed_tasks"] || permissions["authorise-completed-projects"]) allowedLinks.push(LinkDefinition["authCompleted"]);
+  if (permissions["authorise_completed_tasks"] || permissions["authorise_completed_projects"]) allowedLinks.push(LinkDefinition["authCompleted"]);
 
   return allowedLinks;
 };

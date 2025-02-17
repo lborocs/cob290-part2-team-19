@@ -7,6 +7,12 @@ import { fetchProjectsForCompletion } from "@/api/fetchProjects"
 import { fetchTasksForCompletion } from "@/api/fetchTasks"
 import { Project, Task } from "@/interfaces/interfaces"
 import { fetchUserType } from "@/api/fetchUserType"
+import { get_permissions_by_user_type } from "@/api/adminAPI"
+
+type Permissions = {
+  [key: string]: boolean;
+};
+
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -29,6 +35,24 @@ export default function Dashboard() {
       })
     }
   }, [])
+
+  const [permissions, setPermissions] = useState<Permissions>({});
+  const [loading, setLoading] = useState<boolean>(true); // Add a loading state
+  
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+    if (userData && userData.user_type_id !== undefined) {
+      get_permissions_by_user_type(userData.user_type_id)
+        .then((data) => {
+          setPermissions(data);
+          setLoading(false); // Set loading to false once permissions are fetched
+        })
+        .catch((error) => {
+          console.error("Error fetching permissions:", error);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,16 +78,27 @@ export default function Dashboard() {
     fetchData()
   }, [])
 
+  // Determine if the user has permission for tasks and/or projects
+  const hasTaskPermission = permissions?.authorise_completed_tasks;
+  const hasProjectPermission = permissions?.authorise_completed_projects;
+
+  // Set the initial view based on the permissions
+  useEffect(() => {
+    if (hasTaskPermission && !hasProjectPermission) {
+      setView("tasks");
+    } else if (!hasTaskPermission && hasProjectPermission) {
+      setView("projects");
+    }
+  }, [hasTaskPermission, hasProjectPermission]);
+
   return (
     <Layout tabName={view === "tasks" ? "Task Authorisation" : "Project Authorisation"} icon={<i className="fa-solid fa-table-columns"></i>}>
-      
-      {/* Prevents page scrolling, ensures full height */}
       <div className="h-screen flex flex-col overflow-hidden">
-        
         {/* Toggle Buttons */}
         <div className="flex justify-side p-4">
           <button
             onClick={() => setView("tasks")}
+            disabled={!hasTaskPermission}
             className={`rounded-full px-4 py-2 text-white font-semibold mx-2 transition ${
               view === "tasks" ? "bg-blue-500" : "bg-gray-400 hover:bg-gray-500"
             }`}
@@ -72,6 +107,7 @@ export default function Dashboard() {
           </button>
           <button
             onClick={() => setView("projects")}
+            disabled={!hasProjectPermission}
             className={`rounded-full px-4 py-2 text-white font-semibold mx-2 transition ${
               view === "projects" ? "bg-blue-500" : "bg-gray-400 hover:bg-gray-500"
             }`}
@@ -80,17 +116,12 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Main Content - Prevents full page scrolling */}
         <div className="flex-grow overflow-hidden">
           {view === "tasks" && (
             <Card className="h-full flex flex-col overflow-hidden">
-              
-              {/* Sticky Header */}
               <div className="p-4 bg-white sticky top-0 z-10 border-b">
                 <h3 className="text-lg font-semibold">Completed Tasks (Awaiting Authorisation)</h3>
               </div>
-              
-              {/* Scrollable Content */}
               <div className="overflow-y-auto flex-grow p-4">
                 {tasks.length > 0 ? (
                   tasks.map((task) => (
@@ -103,19 +134,14 @@ export default function Dashboard() {
                   <p className="text-gray-500 text-center">No completed tasks awaiting authorization</p>
                 )}
               </div>
-
             </Card>
           )}
 
           {view === "projects" && (
             <Card className="h-full flex flex-col overflow-hidden">
-              
-              {/* Sticky Header */}
               <div className="p-4 bg-white sticky top-0 z-10 border-b">
                 <h3 className="text-lg font-semibold">Completed Projects (Awaiting Authorisation)</h3>
               </div>
-              
-              {/* Scrollable Content */}
               <div className="overflow-y-auto flex-grow p-4">
                 {projects.length > 0 ? (
                   projects.map((project) => (
@@ -128,12 +154,10 @@ export default function Dashboard() {
                   <p className="text-gray-500 text-center">No completed projects awaiting authorization</p>
                 )}
               </div>
-
             </Card>
           )}
         </div>
-
       </div>
     </Layout>
-  )
+  );
 }
