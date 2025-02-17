@@ -1,10 +1,12 @@
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
+
 import { fetchEmployeeDetails } from './fetchEmployeeDetails';
 
 export const fetchProjects = async (employeeId: number, userType: number) => {
     try {
         if (userType === 0) {
             //user is admin
-            const response = await fetch(`http://localhost:3300/projects`);
+            const response = await fetch(`${BASE_URL}/projects`);
             const projects = await response.json();
 
             if (!projects || projects.length === 0) {
@@ -22,7 +24,7 @@ export const fetchProjects = async (employeeId: number, userType: number) => {
         }
         else if (userType === 1) {
             //user is tl so get projects they manage 
-            const response = await fetch(`http://localhost:3300/projects/team_leader?team_leader_id=${employeeId}`);
+            const response = await fetch(`${BASE_URL}/projects/team_leader?team_leader_id=${employeeId}`);
             const projects = await response.json();
 
             if (!projects || projects.length === 0) {
@@ -42,7 +44,7 @@ export const fetchProjects = async (employeeId: number, userType: number) => {
         }
         else if (userType === 2) {
             //user is normal
-            const response = await fetch(`http://localhost:3300/projects/search?employee_id=${employeeId}`);
+            const response = await fetch(`${BASE_URL}/projects/search?employee_id=${employeeId}`);
             const projects = await response.json();
 
             if (!projects || projects.length === 0) {
@@ -68,7 +70,7 @@ export const fetchProjects = async (employeeId: number, userType: number) => {
 export const fetchProjectsForCompletion = async (employeeId: number, userType: number) => {
     try {
        
-        const response = await fetch(`http://localhost:3300/projects/search?completed=True?authorised=False`);
+        const response = await fetch(`${BASE_URL}/projects/search?completed=True?authorised=False`);
         const projects = await response.json();
 
         if (!projects || projects.length === 0) {

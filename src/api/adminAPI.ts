@@ -1,10 +1,9 @@
-// Assuming the shape of data for user types and permissions
 export type PermissionType = { [key: string]: boolean }
 export type ArchiveDurations = { task: number; project: number; kb: number }
 export type User = { id: number; name: string }
 
 // Base API URL (adjust if needed)
-const BASE_URL = "http://localhost:3300" // Change if hosted elsewhere
+const BASE_URL = "http://35.240.24.117:3300" 
 
 export const get_user_types = async (): Promise<
   { type_id: number; type_name: string }[]

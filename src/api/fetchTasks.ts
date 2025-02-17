@@ -1,4 +1,5 @@
 import { fetchEmployeeDetails } from './fetchEmployeeDetails'; // Ensure this function exists and is correctly implemented
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
 
 export const fetchTasks = async (employeeId: number, userType: number) => {
     try {
@@ -6,13 +7,13 @@ export const fetchTasks = async (employeeId: number, userType: number) => {
 
         if (userType === 0) {
             // User is admin
-            url = `http://localhost:3300/tasks`;
+            url = `${BASE_URL}/tasks`;
         } else if (userType === 1) {
             // User is a team leader, so get tasks they manage
-            url = `http://localhost:3300/tasks/team_leader?team_leader_id=${employeeId}`;
+            url = `${BASE_URL}/tasks/team_leader?team_leader_id=${employeeId}`;
         } else if (userType === 2) {
             // User is a normal employee
-            url = `http://localhost:3300/tasks/search?employee_id=${employeeId}`;
+            url = `${BASE_URL}/tasks/search?employee_id=${employeeId}`;
         }
 
         const response = await fetch(url);
@@ -33,7 +34,7 @@ export const fetchTasks = async (employeeId: number, userType: number) => {
 export const fetchTasksForCompletion = async (employeeId: number, userType: number) => {
     try {
 
-        const response = await fetch(`http://localhost:3300/tasks/search?completed=True?authorised=False`);
+        const response = await fetch(`${BASE_URL}/tasks/search?completed=True?authorised=False`);
         const tasks = await response.json();
 
         if (!tasks || tasks.length === 0) {
