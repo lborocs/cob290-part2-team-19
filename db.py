@@ -1,3 +1,4 @@
+import mysqlconnector
 import json
 import sqlite3
 import bcrypt
@@ -8,7 +9,11 @@ from flask import request, jsonify
 from flask_cors import CORS
 from datetime import datetime, timedelta
 
-DATABASE = 'database.db'
+# Update these settings with your MySQL configuration
+DATABASE_HOST = 'http://35.240.24.117:3300'  
+DATABASE_USER = 'admin'     # Your MySQL username
+DATABASE_PASSWORD = 'password123' # Your MySQL password
+DATABASE_NAME = 'productivityManagement'      # Your MySQL database name
 PORT = 3300
 
 app = Flask(__name__)
@@ -21,8 +26,12 @@ def get_db():
     try:
         db = getattr(g, '_database', None)
         if db is None:
-            db = g._database = sqlite3.connect(DATABASE)
-            db.row_factory = sqlite3.Row  # Returns rows as dictionaries
+            db = g._database = mysql.connector.connect(
+                host=DATABASE_HOST,
+                user=DATABASE_USER,
+                password=DATABASE_PASSWORD,
+                database=DATABASE_NAME
+            )
         return db
     except sqlite3.DatabaseError as e:
         print(f"Database connection error: {str(e)}")
@@ -32,19 +41,6 @@ def commit_changes(db):
     db.commit()
     db.close()
     
-def init_db():  
-    try:
-        with app.app_context():
-            db = get_db()
-            if db is None:
-                return
-            cursor = db.cursor()
-            with open('schema.sql', 'r') as f:
-                schema_sql = f.read()
-            cursor.executescript(schema_sql)
-            commit_changes(db)
-    except sqlite3.DatabaseError as e:
-        print(f"Database error during initialization: {str(e)}")
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -1705,8 +1701,7 @@ def get_employee_details(employee_id):
     
         
 if __name__ == '__main__':
-    app.run(port=PORT)
-    init_db()
+    app.run(host='0.0.0.0', port=PORT)
     while True:
         schedule.run_pending()
         time.sleep(1)
