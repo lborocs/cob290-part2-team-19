@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3300"
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
 export const fetchCategories = async () => {
     try {
         const response = await fetch(`${BASE_URL}/categories`);
@@ -18,7 +18,7 @@ export const fetchCategories = async () => {
 
 export const addCategory = async (categoryName: string) => {
     try {
-        const response = await fetch("http://localhost:3300/add_category", {
+        const response = await fetch(`${BASE_URL}/add_category`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

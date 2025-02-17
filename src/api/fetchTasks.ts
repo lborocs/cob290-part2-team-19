@@ -1,5 +1,5 @@
 import { fetchEmployeeDetails } from './fetchEmployeeDetails'; // Ensure this function exists and is correctly implemented
-const BASE_URL = "http://localhost:3300"
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
 
 export const fetchTasks = async (employeeId: number, userType: number) => {
     try {

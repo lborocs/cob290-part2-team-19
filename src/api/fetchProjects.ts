@@ -1,5 +1,6 @@
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
+
 import { fetchEmployeeDetails } from './fetchEmployeeDetails';
-const BASE_URL = "http://localhost:3300"
 export const fetchProjects = async (employeeId: number, userType: number) => {
     try {
         if (userType === 0) {
@@ -67,7 +68,6 @@ export const fetchProjects = async (employeeId: number, userType: number) => {
 
 export const fetchProjectsForCompletion = async (employeeId: number, userType: number) => {
     try {
-
         const response = await fetch(`${BASE_URL}/projects/search?completed=True?authorised=False`);
         const projects = await response.json();
 

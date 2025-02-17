@@ -1,17 +1,18 @@
-const BASE_URL = "http://localhost:3300"
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
+
 export const fetchGuidesByCategory = async (categoryId: number) => {
     try {
         const response = await fetch(`${BASE_URL}/guides/${categoryId}`);
         const data = await response.json();
 
         if (!Array.isArray(data)) {
-            console.error("❌ Error: Fetched guides are not an array!", data);
+            console.error("Error: Fetched guides are not an array!", data);
             return [];
         }
 
         return data;
     } catch (error) {
-        console.error("❌ Error fetching guides:", error);
+        console.error("Error fetching guides:", error);
         return [];
     }
 };
@@ -35,9 +36,9 @@ export const addGuide = async (authorId: number, content: string, categoryId: nu
             throw new Error(data.error || "Failed to add guide");
         }
 
-        return data; // ✅ Now it returns data
+        return data; 
     } catch (error) {
-        console.error("❌ Error adding guide:", error);
-        return null; // ✅ Return null on failure
+        console.error("Error adding guide:", error);
+        return null; 
     }
 };

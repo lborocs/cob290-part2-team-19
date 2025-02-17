@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:3300"
+const BASE_URL = "http://35.240.24.117:3300" // Change if hosted elsewhere
+
 export const fetchEmployeeDetails = async (employeeId: number) => {
     try {
         const response = await fetch(`${BASE_URL}/employees/${employeeId}/details`);
