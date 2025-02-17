@@ -1,7 +1,7 @@
 const BASEURL = "http://35.240.24.117";
 export async function addToDo(employee_id: number, description: string, task_id: number): Promise<{ success: boolean; message: string }> {
     try {
-        const response = await fetch(`${BASEURL}:3300/new_todo`, 
+        const response = await fetch(`${BASEURL}:3300/new_todo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
