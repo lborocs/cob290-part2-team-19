@@ -543,24 +543,25 @@ def new_todo():
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 #Delete ToDo
-@app.route("/delete_todo", methods=["POST"])
+@app.route("/delete_todo", methods=["DELETE"])
 def delete_todo():
     try:
-        data = request.json
-        employee_id = data.get("employee_id")
-        
+        employee_id = request.args.get("employee_id")
+        print("employee_id", employee_id)  
         if employee_id is None:
             return jsonify({"error": "No item given"}), 400
         
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("DELETE FROM ToDo WHERE deleted = 1 AND employee_id = ?", ( employee_id))
+        cursor.execute("DELETE FROM ToDo WHERE deleted = 1 AND employee_id = ?", (employee_id,))
         commit_changes(db)
 
         return jsonify({"success": True, "message": "To-Do deleted successfully"}), 201 
-    except sqlite3.DatabaseError:
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {str(e)}")  # Add debugging information
         return jsonify({"error": "Database error occurred. Please try again later."}), 500
-    except Exception:
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")  # Add debugging information
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 #Update ToDo
