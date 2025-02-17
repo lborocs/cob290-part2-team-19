@@ -761,7 +761,7 @@ def complete_task():
 
         # Mark the task as completed
         completed_date = datetime.now().date()
-        cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (task_id, completed_date,))
+        cursor.execute("UPDATE Tasks SET completed = 1 AND completed_date = ? WHERE task_id = ?", (completed_date, task_id,))
         cursor.execute("INSERT INTO completedTasksBacklog (task_id, completed_date) VALUES (?, ?)", (task_id, completed_date))
 
         commit_changes(db)
