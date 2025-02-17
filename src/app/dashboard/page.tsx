@@ -368,11 +368,11 @@ export default function Dashboard() {
               </div>
             </Card>
             {/**card 4 */}
-            <Card className="min-h-full p-4 flex flex-col">
+            <Card className="min-h-full p-4 flex flex-col ">
               {/* Header */}
-              <div className="mb-3 mt-1 flex justify-between items-center">
+              <div className="mb-3 mt-1 flex justify-between items-center ">
                 <h3 className="text-lg font-semibold">To-Do List</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ">
                   <button
                     className={`p-2 rounded ${ToDoState === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                     onClick={() => setToDoState(1)}
@@ -411,7 +411,7 @@ export default function Dashboard() {
                 </div>
               )}
               {/* To-Do List Container */}
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-4 space-y-2 overflow-clip overflow-y-auto">
                 {ToDoState === 1 && (
                   <>
                     {ToDos.filter(todo => !todo.completed && !todo.deleted).length > 0 ? (
