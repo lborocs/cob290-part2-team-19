@@ -663,6 +663,11 @@ def update_todo():
         employee_id = data.get("employee_id")
         completed = data.get("completed")
         deleted = data.get("deleted")
+        print("to_do_id", to_do_id)
+        print("employee_id", employee_id)
+        print("completed", completed)
+        print("deleted", deleted)
+        
         if to_do_id is None or employee_id is None or (completed is None and deleted is None):
             return jsonify({"error": "No item given"}), 400
         db = get_db()

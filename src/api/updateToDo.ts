@@ -1,9 +1,9 @@
 import { BASE_URL } from "./globals";// Change if hosted elsewhere
 
 
-export async function updateToDoStatus(to_do_id: number, employee_id: number, completed: number | null, deleted: number | null): Promise<{ success: boolean; message: string }> {
+export async function updateToDoStatus(todo_id: number, employee_id: number, completed: number | null, deleted: number | null): Promise<{ success: boolean; message: string }> {
     try {
-        const payload: any = { to_do_id, employee_id };
+        const payload: any = { todo_id, employee_id };
         if (completed !== null) payload.completed = completed;
         if (deleted !== null) payload.deleted = deleted;
 
