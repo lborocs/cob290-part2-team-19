@@ -5,7 +5,7 @@ import { Modal } from "@/app/components/Input/Modals";
 import Layout from "@/app/layout/page";
 import { fetchArchivedProjects } from "@/api/fetchProjects";
 import { Project } from "@/interfaces/interfaces";
-const BASE_URL = "http://localhost:3300"
+import { BASE_URL } from "@/api/globals"
 
 const ArchivedProjects = () => {
     const [projects, setProjects] = useState<Project[]>([]);

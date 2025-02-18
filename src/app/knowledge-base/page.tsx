@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
-import { fetchCategories, deleteCategory, updateCategory } from "@/api/fetchCategorey";
+import { fetchCategories, deleteCategory, updateCategory } from "@/api/fetchCategory";
 import { fetchGuidesByCategory, addGuide as addGuideAPI, deletePost } from "@/api/fetchGuides";
 import { BASE_URL } from '@/api/globals'
 
