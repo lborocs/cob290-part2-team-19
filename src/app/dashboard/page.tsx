@@ -225,7 +225,19 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-4 h-2/5">
             {/* Card 1: Tasks chart */}
             <Card className="min-h-full">
-              <TaskCompletionChart tasks={tasks} />
+              <TaskCompletionChart
+                tasks={tasks.filter(task => {
+                  if (!task.completed) return false; // only completed
+
+                  const taskFinishDate = new Date(task.finish_date);
+                  const now = new Date();
+                  const oneWeekAgo = new Date();
+                  oneWeekAgo.setDate(now.getDate() - 7);
+
+                  return taskFinishDate >= oneWeekAgo && taskFinishDate <= now;
+                })}
+              />
+
             </Card>
             {/* Card 2: Upcoming Tasks */}
             <Card className="min-h-full p-4 flex flex-col">
