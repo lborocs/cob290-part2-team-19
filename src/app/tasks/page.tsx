@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { fetchTasks } from "@/api/fetchTasks";
 import { Task } from "@/interfaces/interfaces";
 import { TextButton } from "@/app/components/Input/Buttons";
+import { BASE_URL } from "@/api/globals"
 
 export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
