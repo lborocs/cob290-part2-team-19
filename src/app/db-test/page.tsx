@@ -1,7 +1,6 @@
 import Layout from '../layout/page';
 
-const BASE_URL = "http://localhost:3300"
-
+import { BASE_URL } from '@/api/globals'
 export default async function DBTest() {
     let json = null;
     try {

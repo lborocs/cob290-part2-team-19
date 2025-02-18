@@ -44,7 +44,7 @@ export const addGuide = async (authorId: number, content: string, categoryId: nu
 };
 export const deletePost = async (postId: number) => {
     try {
-        const response = await fetch(`http://localhost:3300/delete_post/${postId}`, {
+        const response = await fetch(`{${BASE_URL}}/delete_post/${postId}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
         });

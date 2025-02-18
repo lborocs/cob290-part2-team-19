@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AddUser from '@/api/addUser';
-const BASE_URL = "http://localhost:3300"
+import { BASE_URL } from '@/api/globals'
 
 const CreateAccount = () => {
     const [htmlContent, setHtmlContent] = useState('');

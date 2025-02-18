@@ -38,7 +38,7 @@ export default function TasksPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3300/complete_task?task_id=${taskId}`, {
+      const response = await fetch(`${BASE_URL}/complete_task?task_id=${taskId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

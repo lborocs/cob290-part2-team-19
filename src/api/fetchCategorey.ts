@@ -39,7 +39,7 @@ export const addCategory = async (categoryName: string) => {
 };
 export const deleteCategory = async (categoryId: number) => {
     try {
-        const response = await fetch(`http://localhost:3300/delete_category/${categoryId}`, {
+        const response = await fetch(`${BASE_URL}/delete_category/${categoryId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export const deleteCategory = async (categoryId: number) => {
 };
 export const updateCategory = async (categoryId: number, newName: string) => {
     try {
-        const response = await fetch(`http://localhost:3300/update_category/${categoryId}`, {
+        const response = await fetch(`${BASE_URL}:3300/update_category/${categoryId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
