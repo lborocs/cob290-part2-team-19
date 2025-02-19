@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../layout/page";
 import Link from "next/link";
-import { fetchCategories, deleteCategory, updateCategory } from "@/api/fetchCategory";
-import { fetchGuidesByCategory, addGuide as addGuideAPI, deletePost } from "@/api/fetchGuides";
-import { BASE_URL } from '@/api/globals'
+import { fetchCategories } from "@/api/fetchCategory";
+import { fetchGuidesByCategory, addGuide as addGuideAPI } from "@/api/fetchGuides";
+import { BASE_URL } from '@/api/globals';
 
 interface Guide {
   id: string;
@@ -59,47 +59,46 @@ const KnowledgeBasePage = () => {
           return;
         }
 
-        // ✅ Check if fetchGuidesByCategory exists
         if (typeof fetchGuidesByCategory !== "function") {
-          console.error("❌ Error: fetchGuidesByCategory is missing or undefined.");
+          console.error("Error: fetchGuidesByCategory is missing or undefined.");
           return;
         }
 
-        // ✅ Fetch guides for each category
+        // Fetch guides for each category
         const categoriesWithGuides = await Promise.all(
           categoriesData.map(async (cat): Promise<Category | null> => {
             if (!cat.category_id) {
-              console.warn(`⚠️ Skipping category without ID: ${cat.name}`);
+              console.warn(`Skipping category without ID: ${cat.name}`);
               return null;
             }
 
             try {
               const guides = await fetchGuidesByCategory(cat.category_id);
-              console.log(`📌 Fetched ${guides.length} guides for category: ${cat.name}`);
+              console.log(`Fetched ${guides.length} guides for category: ${cat.name}`);
 
               return {
                 category_id: cat.category_id,
                 name: cat.name,
-                guides: Array.isArray(guides) ? guides : [], // ✅ Ensure guides is always an array
+                guides: Array.isArray(guides) ? guides : [],
                 author: cat.author || "Unknown",
                 color: cat.color || "bg-gradient-to-r from-yellow-400 to-yellow-600",
               };
             } catch (error) {
-              console.error(`❌ Failed to fetch guides for category: ${cat.name}`, error);
+              console.error(`Failed to fetch guides for category: ${cat.name}`, error);
               return null;
             }
           })
         );
 
-        // ✅ Correct TypeScript Type Filtering (No More Errors!)
+        // Filter out any invalid categories
         const validCategories: Category[] = categoriesWithGuides.filter(
           (cat): cat is Category => cat !== null && typeof cat.category_id !== "undefined"
         );
 
-        console.log("✅ Final Categories with Guides:", validCategories);
+        console.log("Final Categories with Guides:", validCategories);
         setCategories(validCategories);
       } catch (error) {
-        console.error("❌ Failed to load categories:", error);
+        console.error("Failed to load categories:", error);
       }
     };
 
@@ -119,21 +118,19 @@ const KnowledgeBasePage = () => {
 
   // Guides within the selected category
   const selectedCategoryObject = categories.find(category => category.name === selectedCategory);
-
   const selectedCategoryGuides = selectedCategoryObject
     ? selectedCategoryObject.guides.filter(guide =>
       guide.title.toLowerCase().startsWith(guideSearchQuery.toLowerCase())
     )
     : [];
 
-  // Create Category
+  // Create Category (keeps API call as is)
   const addCategory = async () => {
     if (!newCategoryName.trim()) {
       alert("Category name cannot be empty.");
       return;
     }
 
-    // ✅ Ensure no duplicate category names locally
     const isDuplicate = categories.some(
       (category) =>
         category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
@@ -144,9 +141,7 @@ const KnowledgeBasePage = () => {
     }
 
     try {
-      console.log("🟡 Sending request to API...");
-
-      // ✅ Send API request to Flask backend
+      console.log("Sending request to API...");
       const response = await fetch(`${BASE_URL}/add_category`, {
         method: "POST",
         headers: {
@@ -156,37 +151,34 @@ const KnowledgeBasePage = () => {
       });
 
       const data = await response.json();
-      console.log("🟢 API response received:", data);
+      console.log("API response received:", data);
 
       if (!response.ok) {
-        throw new Error(`Failed to add category: ${data.error || response.statusText}`);
+        throw new Error(` added category: ${data.error || response.statusText}`);
       }
 
-      // ✅ Ensure API response contains a valid `category_id`
       if (!data.category || !data.category.category_id) {
         throw new Error("API response missing category_id.");
       }
 
-      // ✅ Properly formatted new category with category_id
       const newCategory: Category = {
-        category_id: data.category.category_id, // ✅ Ensure category_id exists
+        category_id: data.category.category_id,
         name: data.category.name,
         color:
           data.category.color ||
           `bg-gradient-to-r from-${randomColor()}-400 to-${randomColor()}-600`,
         author: data.category.author || "Unknown",
-        guides: [], // No guides initially
+        guides: [],
       };
 
-      // ✅ Update UI after successful API call
       setCategories([...categories, newCategory]);
 
       alert("Category added successfully!");
       setNewCategoryName("");
       setIsCreatingCategory(false);
     } catch (error) {
-      console.error("❌ Error adding category:", error);
-      alert("Failed to add category.");
+      console.error(" adding category:", error);
+      alert(" adding category.");
     }
   };
 
@@ -196,7 +188,7 @@ const KnowledgeBasePage = () => {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  // add guide
+  // Create Guide (keeps API call as is)
   const addGuide = async () => {
     if (!newGuideName.trim() || !newGuideContent.trim()) {
       alert("Guide name and content cannot be empty.");
@@ -213,9 +205,7 @@ const KnowledgeBasePage = () => {
     }
 
     try {
-      console.log("🟡 Sending request to API to add guide...");
-
-      // ✅ Use `addGuideAPI` to avoid naming conflicts
+      console.log("Sending request to API to add guide...");
       const response = await addGuideAPI(1, newGuideContent.trim(), currentCategory.category_id);
 
       if (!response || response.error) {
@@ -223,12 +213,10 @@ const KnowledgeBasePage = () => {
         return;
       }
 
-      console.log("🟢 Guide added successfully:", response);
+      console.log("Guide added successfully:", response);
 
-      // ✅ Fetch updated guides from API
       const updatedGuides = await fetchGuidesByCategory(currentCategory.category_id);
 
-      // ✅ Update categories state with new guide
       setCategories((prevCategories) =>
         prevCategories.map((category) =>
           category.category_id === currentCategory.category_id
@@ -237,7 +225,6 @@ const KnowledgeBasePage = () => {
         )
       );
 
-      // ✅ Reset UI state
       setNewGuideName("");
       setNewGuideContent("");
       setNewGuideAuthor("Current User");
@@ -245,65 +232,35 @@ const KnowledgeBasePage = () => {
 
       alert("Guide added successfully!");
     } catch (error) {
-      console.error("❌ Error adding guide:", error);
+      console.error("Error adding guide:", error);
       alert("Failed to add guide.");
     }
   };
 
-  // Delete Category
-  const deleteCategoryHandler = async (categoryId: number, categoryName: string, e: React.MouseEvent) => {
+  // Delete Category (UI only; does not call API)
+  const deleteCategoryHandler = (categoryId: number, categoryName: string, e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (!window.confirm(`Are you sure you want to delete "${categoryName}" and all its guides?`)) {
       return;
     }
 
-    try {
-      console.log(`🟡 Deleting category ID: ${categoryId}...`);
+    setCategories(categories.filter((category) => category.category_id !== categoryId));
 
-      // ✅ Call API to delete category and its guides
-      const response = await deleteCategory(categoryId);
-      if (!response || !response.success) {
-        throw new Error("Failed to delete category.");
-      }
-
-      console.log("🟢 Category deleted successfully.");
-
-      // ✅ Fetch updated categories from backend to prevent orphaned guides
-      const updatedCategories = await fetchCategories();
-      setCategories(updatedCategories);
-
-      // ✅ Reset selected category if deleted
-      // ✅ Reset selected category if deleted
-      if (selectedCategory && typeof selectedCategory === "string" && selectedCategory === categoryName) {
-        setSelectedCategory(null);
-      }
-
-      alert(`Category "${categoryName}" deleted successfully!`);
-    } catch (error) {
-      console.error("❌ Error deleting category:", error);
-      alert("Failed to delete category.");
+    if (selectedCategory === categoryName) {
+      setSelectedCategory(null);
     }
+
+    alert("Category deleted successfully!");
   };
 
-
-
-  // Open Edit Category Modal
-  const openEditCategoryModal = (category: Category, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCategoryToEdit(category);
-    setEditCategoryName(category.name);
-    setIsEditingCategory(true);
-  };
-
-  // Save Category Edit
-  const saveCategoryEdit = async () => {
+  // Edit Category Name (UI only; does not call API)
+  const saveCategoryEdit = () => {
     if (!editCategoryName.trim()) {
       alert("Category name cannot be empty.");
       return;
     }
 
-    // Check for duplicate names (ignoring the category being edited)
     const isDuplicate = categories.some(
       (cat) =>
         cat.name.toLowerCase() === editCategoryName.trim().toLowerCase() &&
@@ -319,34 +276,19 @@ const KnowledgeBasePage = () => {
       return;
     }
 
-    // Call the updateCategory API to update the category name in the backend
-    const updateResponse = await updateCategory(categoryToEdit.category_id, editCategoryName.trim());
-
-    if (!updateResponse) {
-      alert("Failed to update category.");
-      return;
-    }
-
-    // Update category name in the frontend state
     const updatedCategories = categories.map((cat) => {
       if (cat.category_id === categoryToEdit.category_id) {
-        const updatedGuides = cat.guides.map((guide) => ({
-          ...guide,
-          category: editCategoryName.trim(), // Update guide's category name if necessary
-        }));
-        return { ...cat, name: editCategoryName.trim(), guides: updatedGuides };
+        return { ...cat, name: editCategoryName.trim() };
       }
       return cat;
     });
 
     setCategories(updatedCategories);
 
-    // If the selected category was edited, update the selected category name
     if (selectedCategory === categoryToEdit.name) {
       setSelectedCategory(editCategoryName.trim());
     }
 
-    // Close the modal and reset the inputs
     setIsEditingCategory(false);
     setCategoryToEdit(null);
     setEditCategoryName("");
@@ -354,41 +296,31 @@ const KnowledgeBasePage = () => {
     alert("Category updated successfully!");
   };
 
-
-  // Delete Guide
-  const deleteGuide = async (guideId: number) => {
+  // Delete Guide (UI only; does not call API)
+  const deleteGuide = (guideId: number) => {
     if (!window.confirm("Are you sure you want to delete this guide?")) {
       return;
     }
 
-    try {
-      console.log("🟡 Deleting guide...");
+    const updatedCategories = categories.map((cat) => ({
+      ...cat,
+      guides: cat.guides.filter((guide) => Number(guide.id) !== guideId),
+    }));
+    setCategories(updatedCategories);
 
-      // Call API to delete guide
-      const response = await deletePost(guideId);
-
-      if (!response || response.error) {
-        alert("Failed to delete guide.");
-        return;
-      }
-
-      console.log("🟢 Guide deleted successfully!");
-
-      // ✅ Ensure guide.id is a number before comparison
-      const updatedCategories = categories.map((cat) => ({
-        ...cat,
-        guides: cat.guides.filter((guide) => Number(guide.id) !== guideId),
-      }));
-      setCategories(updatedCategories);
-
-      // ✅ Ensure selectedGuide.id is a number before comparison
-      if (selectedGuide && Number(selectedGuide.id) === guideId) {
-        setSelectedGuide(null);
-      }
-    } catch (error) {
-      console.error("❌ Error deleting guide:", error);
-      alert("Failed to delete guide.");
+    if (selectedGuide && Number(selectedGuide.id) === guideId) {
+      setSelectedGuide(null);
     }
+
+    alert("Guide deleted successfully!");
+  };
+
+  // Open Edit Category Modal
+  const openEditCategoryModal = (category: Category, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCategoryToEdit(category);
+    setEditCategoryName(category.name);
+    setIsEditingCategory(true);
   };
 
   // Open Edit Guide Modal
@@ -400,12 +332,13 @@ const KnowledgeBasePage = () => {
     setIsEditingGuide(true);
   };
 
-  // Save Guide Edit
+  // Save Guide Edit (UI only)
   const saveGuideEdit = () => {
     if (!editGuideName.trim() || !editGuideContent.trim()) {
       alert("Guide name and content cannot be empty.");
       return;
     }
+
     const updatedCategories = categories.map((cat) => {
       if (cat.name === editingGuide?.category) {
         const updatedGuides = cat.guides.map((guide) => {
@@ -424,6 +357,7 @@ const KnowledgeBasePage = () => {
       return cat;
     });
     setCategories(updatedCategories);
+
     if (selectedGuide && editingGuide && selectedGuide.id === editingGuide.id) {
       setSelectedGuide({
         ...selectedGuide,
@@ -438,13 +372,13 @@ const KnowledgeBasePage = () => {
     setEditGuideName("");
     setEditGuideContent("");
     setEditGuideAuthor("Current User");
+
+    alert("Guide updated successfully!");
   };
 
   return (
     <Layout tabName="Knowledge Base" icon={<i className="fa-solid fa-book" />}>
       <div className="p-4">
-
-        {/* Main Container */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           {/* Search Bars */}
           {!selectedCategory && !selectedGuide && (
@@ -481,6 +415,7 @@ const KnowledgeBasePage = () => {
               Back to Guides
             </button>
           )}
+
           {/* Categories View */}
           {!selectedCategory && !selectedGuide && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -494,8 +429,6 @@ const KnowledgeBasePage = () => {
                     <h2 className="text-xl font-bold mb-2">{category.name}</h2>
                     <p className="text-sm">Created by: {category.author || "Unknown"}</p>
                     <p className="text-sm mb-2">{category.guides.length} guides</p>
-
-                    {/* Edit and Delete Buttons for Category */}
                     <div className="flex gap-2">
                       <button
                         className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
@@ -521,7 +454,6 @@ const KnowledgeBasePage = () => {
           {/* Guides View */}
           {selectedCategory && !selectedGuide && (
             <>
-              {/* Button to open Create Guide Modal */}
               <button
                 className="mb-4 px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
                 onClick={() => setIsCreatingGuide(true)}
@@ -535,9 +467,7 @@ const KnowledgeBasePage = () => {
                     className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg cursor-pointer"
                     onClick={() => setSelectedGuide(guide)}
                   >
-                    <h3 className="text-lg font-semibold">
-                      {guide.title}
-                    </h3>
+                    <h3 className="text-lg font-semibold">{guide.title}</h3>
                     <p className="text-sm text-gray-500">
                       Created by: {guide.author || "No Author"}
                     </p>
@@ -567,9 +497,7 @@ const KnowledgeBasePage = () => {
                   Delete Guide
                 </button>
               </div>
-              <h2 className="text-2xl font-bold mb-4">
-                {selectedGuide.title}
-              </h2>
+              <h2 className="text-2xl font-bold mb-4">{selectedGuide.title}</h2>
               <p className="text-sm text-gray-500 mb-4">
                 Created by: {selectedGuide.author || "No Author"}
               </p>
@@ -593,15 +521,9 @@ const KnowledgeBasePage = () => {
                   key={guide.id}
                   className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-semibold">
-                    {guide.title}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Category: {guide.category}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Created by: {guide.author || "No Author"}
-                  </p>
+                  <h3 className="text-lg font-semibold">{guide.title}</h3>
+                  <p className="text-sm text-gray-500">Category: {guide.category}</p>
+                  <p className="text-sm text-gray-500">Created by: {guide.author || "No Author"}</p>
                 </div>
               ))}
             </div>
@@ -762,4 +684,6 @@ const KnowledgeBasePage = () => {
 };
 
 export default KnowledgeBasePage;
+
+
 
