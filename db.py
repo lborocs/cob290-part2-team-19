@@ -7,6 +7,7 @@ from flask import Flask, g
 from flask import request, jsonify
 from flask_cors import CORS
 from datetime import datetime, timedelta
+import threading
 
 DATABASE = 'database.db'
 PORT = 3300
@@ -1792,10 +1793,18 @@ def get_employee_details(employee_id):
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}. Please try again later."
     
-        
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=3300)
-    init_db()
+def run_scheduler():
+    """ Function to run scheduled tasks """
     while True:
         schedule.run_pending()
         time.sleep(1)
+
+if __name__ == '__main__':
+    init_db()  # Initialize the database before starting the server
+
+    # Start the scheduler in a separate thread
+    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+    scheduler_thread.start()
+
+    # Start Flask server
+    app.run(host="0.0.0.0", port=3300)
