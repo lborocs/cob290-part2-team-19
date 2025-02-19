@@ -1794,7 +1794,7 @@ def get_employee_details(employee_id):
     
         
 if __name__ == '__main__':
-    app.run(port=PORT)
+    app.run(host="0.0.0.0", port=3300)
     init_db()
     while True:
         schedule.run_pending()
