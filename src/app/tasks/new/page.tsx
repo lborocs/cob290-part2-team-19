@@ -5,6 +5,7 @@ import { SearchableDropdownSelect } from "@/app/components/Input/Dropdown";
 import { TextInput } from "@/app/components/Input/Text";
 import Layout from "@/app/layout/page";
 
+
 export default function NewTaskPage() {
     return (
     <Layout tabName={"Create New Task"} icon={<i className="fa-regular fa-square-plus"></i>}>
