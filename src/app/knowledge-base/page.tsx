@@ -159,7 +159,7 @@ const KnowledgeBasePage = () => {
       console.log("🟢 API response received:", data);
 
       if (!response.ok) {
-        throw new Error(`Failed to add category: ${data.error || response.statusText}`);
+        throw new Error(` added category: ${data.error || response.statusText}`);
       }
 
       // ✅ Ensure API response contains a valid `category_id`
@@ -186,7 +186,7 @@ const KnowledgeBasePage = () => {
       setIsCreatingCategory(false);
     } catch (error) {
       console.error("❌ Error adding category:", error);
-      alert("Failed to add category.");
+      alert("added category.");
     }
   };
 
